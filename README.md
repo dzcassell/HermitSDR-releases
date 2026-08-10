@@ -306,3 +306,8 @@ whatever GPU eye-candy strikes the mood.
 
 Built by **WU1T**. Questions and bug reports are welcome on the
 [issue tracker](../../issues).
+
+> **A note on the "Source code" links under each release:** those are
+> GitHub's automatic archives of *this download repository* — they contain
+> only this README. HermitSDR's source code is not published; the real
+> downloads are the notarized `.dmg` / `.zip` app assets above them.
