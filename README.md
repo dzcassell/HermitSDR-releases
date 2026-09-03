@@ -14,6 +14,8 @@ the inside.
 This is the **download home** for HermitSDR. Grab the latest signed,
 notarized build from the [**Releases**](../../releases/latest) page.
 
+For the complete release history, read the [**CHANGELOG**](CHANGELOG.md).
+
 > **Availability**: HermitSDR is not made available for use in the
 > Russian Federation while Russia's war against Ukraine continues. The
 > app checks the system region/timezone at startup and declines to run —
