@@ -7,6 +7,48 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0903_004] — 2026-09-03
+
+### Added
+- **Aquarium palette and living reef** — select Aquarium under the main
+  palette icon to pair sea-glass waterfall colors with photographic reef
+  artwork, eight fish species, flexing fins and tails, swaying plants/coral,
+  crawling crabs, bubble streams, drifting particles, sunbeams, and moving
+  caustics. Metal animates bounded, instanced meshes in the existing HDR scene;
+  PNG captures and YouTube window capture include the reef. Aquarium Settings
+  controls fish population, activity, waterfall visibility, and individual FX.
+  Other palettes restore ordinary effects; reef GPU resources are released.
+- **Waterfall scrolling marquee** — the main palette icon now opens saved
+  message, installed font family, size, bold, color, speed, repeat pause, and
+  vertical-position controls. Show now starts a fresh pass. Text scrolls fully
+  offscreen before the next pause and appears in YouTube Live window capture.
+  Off by default; animation does not intercept waterfall tuning or publish
+  through the radio/Scene menu graph.
+- Regression coverage for complete passes, long messages, repeat timing,
+  disabled/blank content, invalid settings, persistence, and replay timing.
+
+### Changed
+- **Calmer aquarium fish** — default fish now make fluid 100–200 second
+  circuits instead of racing around the tank. Whole-fish vertical travel is
+  reduced by roughly fourfold; slower, tail-weighted deformation and gentler
+  pitch keep bodies stable while fins and tails remain alive.
+
+### Validation
+- Full suite: 1,026 tests, two intentional skips, zero failures; unsigned Debug
+  and Release builds, repository audit, and the 9-second performance smoke
+  pass. Demo Mode checks cover settings, moving/repeating text, persistence
+  after relaunch, aquarium palette re-entry, PNG capture, and Station
+  child-window selection during animation. A timed visual pass covers the
+  revised fish speed, shallow vertical drift, and tail-weighted deformation.
+- Aquarium Metal smoke: 240 frames with 28/64/0 fish, effect toggles, and
+  population changes; no API validation errors. At 1800×720 with 4× MSAA and
+  64 fish, the revised aquarium pass measured 0.31 ms median / 0.40 ms p95 on the
+  development Mac (not the whole SDR frame).
+
+### Documentation
+- Catalog the major ZeusSDR feature gaps in GitHub issue #94 and group the
+  resulting implementation tracks under one milestone with area labels.
+
 ## [2026.0903_003] — 2026-09-03
 
 ### Fixed
