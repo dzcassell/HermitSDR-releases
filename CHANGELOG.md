@@ -7,6 +7,33 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0903_005] — 2026-09-03
+
+### Changed
+- **Broadcast aquarium signals** — add selectable Subtle, Balanced, and
+  Broadcast signal treatments. The chosen preview C becomes the Broadcast
+  default: brighter cyan-to-mint signals reach 100% opacity inside the water
+  and a fainter 36% over fish, plants, coral, and crabs. Weaker signals fade
+  progressively and the noise floor stays transparent, making band history
+  easier to read in normal use and livestreams. Existing `_004`
+  aquarium preferences migrate to Broadcast without losing scene choices.
+
+### Tests
+- Cover all three compositing levels and legacy aquarium preference migration;
+  exercise the foreground overlay in the Metal validation smoke.
+
+### Validation
+- Debug app build and the 240-frame Metal API validation smoke pass. The
+  built renderer's Broadcast PNG matches approved preview C pixel for pixel
+  using identical synthetic history and fish positions. All three levels,
+  28/64/0 fish, and effect toggles pass; the 64-fish composite measured
+  0.60 ms median / 0.70 ms p95 at 1800×720 with 4× MSAA on the development Mac.
+- Full regression suite: 1,028 tests, two intentional skips, zero failures
+  (293 seconds). The preceding overlay revision also passed an isolated Demo
+  Mode UI check; the stronger C treatment was verified offscreen.
+- Release gates: unsigned Debug/Release builds, 44 version/documentation
+  checks, repository audit, and a 9-second performance smoke all pass.
+
 ## [2026.0903_004] — 2026-09-03
 
 ### Added
