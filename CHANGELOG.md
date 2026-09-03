@@ -7,12 +7,26 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
-## [Unreleased]
+## [2026.0903_003] — 2026-09-03
+
+### Fixed
+- **Disappearing submenus during reception (#74)** — keep the application scene
+  independent of frequent meter and decoder updates, so Station and other
+  nested menus remain open and their items can be selected. Menu checkmarks
+  and availability still follow operator settings through the focused menu
+  model. Preserve deferred radio initialization after settings migration.
+
+### Tests
+- Guard the application ownership boundary against observing the broad radio
+  publisher and reintroducing menu rebuilds during reception. Full regression
+  suite: 1,016 tests, two intentional skips, zero failures; Debug/Release builds,
+  native child-window selection in Demo Mode, and release gates pass.
 
 ### Documentation
 - Record the Codex-to-Claude handoff: published versus installed version,
   completed validation, bench findings, remaining issue scope, and release
-  synchronization notes. No application code or published assets changed.
+  synchronization notes; update the record after Damon installed `_002` and
+  resumed Codex to report the submenu regression.
 
 ## [2026.0903_002] — 2026-09-03
 
