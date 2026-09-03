@@ -7,6 +7,13 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [Unreleased]
+
+### Documentation
+- Record the Codex-to-Claude handoff: published versus installed version,
+  completed validation, bench findings, remaining issue scope, and release
+  synchronization notes. No application code or published assets changed.
+
 ## [2026.0903_002] — 2026-09-03
 
 ### Fixed
