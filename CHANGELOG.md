@@ -7,6 +7,44 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0903_006] — 2026-09-03
+
+### Added
+- **More visible aquarium signals** — add Intense above Broadcast, a 50–300%
+  signal-brightness control, and Sea glass, Ice blue, Amber, Violet, White,
+  and Thermal signal colors under the palette icon's Aquarium Settings.
+  Color changes affect the signal overlay while retaining the reef's colors.
+- A photographic orange sea star creeps very slowly across the sand, and a
+  large silver-blue trevally occasionally passes through the distant water.
+  Both have independent toggles. Visits last 50 seconds, start after eight
+  minutes, and recur roughly every ten minutes; Activity cannot speed up the
+  visit schedule or sea-star crawl.
+
+### Changed
+- Fish now occasionally reverse within the tank as well as at its ends,
+  slowing into a smooth edge-on turn with their orientation following actual
+  travel. Shallow vertical drift and restrained tail motion remain.
+- Existing saved intensity, fish counts, and effects survive the settings
+  upgrade. New/reset settings select Intense; previous saved levels stay selected.
+
+### Tests
+- Cover color/brightness persistence, legacy settings, bounded signal controls,
+  and rare-visit timing/directions/hourly wrap. The Metal smoke exercises four
+  intensities, six colors, new wildlife toggles, and selectable scene times
+  for rendering rare visits without waiting eight minutes.
+
+### Validation
+- Final full suite: 1,030 tests, two intentional skips, zero failures; unsigned
+  Debug/Release builds, 44 documentation checks, repository audit, 8-second
+  performance smoke, and Metal API validation pass. The 240-frame smoke
+  covers new controls and a rare visitor at a deterministic scene time;
+  1800×720, 4× MSAA, 64 fish plus the visitor measured 0.69 ms median / 0.89 ms
+  p95 GPU time on the development Mac.
+- Muted Debug Demo checks cover color switching, brightness adjustment,
+  wildlife toggles, Reset, entry, persistence after relaunch, and picker layout.
+  Extra HDR gain is confined to the water pass at default brightness so strong
+  signals do not clip foreground wildlife to white. No RF was transmitted.
+
 ## [2026.0903_005] — 2026-09-03
 
 ### Changed
