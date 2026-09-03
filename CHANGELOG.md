@@ -7,6 +7,34 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0903_002] — 2026-09-03
+
+### Fixed
+- **SSTV and weather-fax callback locking (#61)** — image, text-status, and
+  decoder-session handlers now run after the decoder state lock is released.
+  Handlers can read capture/configuration state and replace callbacks without
+  deadlocking. Callback replacement shares the same protected state as DSP,
+  lifecycle, mode/profile, polarity, and retained image captures.
+
+### Changed
+- **Checked image-decoder ownership (#61)** — both decoders now conform to
+  checked `Sendable`, reducing unchecked declarations from 32 to 30. Immutable
+  image/status effects cross the lock boundary; slant/phase re-rendering still
+  works outside the lock on a capture snapshot. Wire formats and RF paths are
+  unchanged.
+
+### Validation
+- All 1,015 tests pass with two intentional skips and no failures. Debug and
+  Release app builds, the repository audit, and the signed Release launch
+  smoke pass. The performance smoke completes in 9 seconds against a 30-second
+  limit.
+- Generated fixtures cover all SSTV modes and WEFAX profiles, manual starts,
+  polarity, retained-image corrections, and session completion/failure.
+- Callback reentry checks and 2,000 concurrent feed, lifecycle, configuration,
+  capture, and handler-replacement operations per decoder pass under Thread
+  Sanitizer without race reports. No live radio or RF validation was performed
+  for this software-only change.
+
 ## [2026.0903_001] — 2026-09-03
 
 ### Fixed
