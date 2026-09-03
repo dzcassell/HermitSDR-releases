@@ -14,7 +14,8 @@ batch of improvements ships as a new version.
   independent of frequent meter and decoder updates, so Station and other
   nested menus remain open and their items can be selected. Menu checkmarks
   and availability still follow operator settings through the focused menu
-  model. Preserve deferred radio initialization after settings migration.
+  model, whose changes also refresh the application scene so labels stay current.
+  Preserve deferred radio initialization after settings migration.
 
 ### Tests
 - Guard the application ownership boundary against observing the broad radio
