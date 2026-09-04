@@ -39,6 +39,8 @@ batch of improvements ships as a new version.
   independent controls; Metal smoke exercises full foreground opacity and dimming.
 
 ### Fixed
+- Duplicate detection retains the full recorded ADIF parent-mode/submode pair,
+  including distinctions between broad quick logs and more specific imports.
 - LoTW confirmations now require a positive QSL and the contact's UTC second,
   call, band, mode/submode and station identity. Fractional quick-log timestamps
   match their exported whole second. Contact location details are retained only
@@ -48,12 +50,13 @@ batch of improvements ships as a new version.
   grids/reports. Imported frequency-only contacts resolve all ADIF band ranges.
 
 ### Validation
-- Full suite: 1,083 tests, two intentional skips, zero failures; final focused
-  regressions also pass. Unsigned Debug/Release builds, repository audit and the
+- Final GitHub CI: 1,084 tests, two intentional skips, zero failures. Unsigned
+  Debug/Release builds, documentation checks, repository audit and the
   10-second performance smoke (30-second limit) pass.
 - A synthetic 100,000-contact log passes import/export, duplicate handling,
-  editing, saved filters, pagination, backup restoration and awards drill-downs
-  in isolated muted Demo. Optimized import/export take about 1.1/2.3 seconds;
+  adding/editing, multi-contact bulk changes/deletion, invalid-input rejection,
+  saved filters, pagination, backup restoration and awards drill-downs in
+  isolated muted Demo. Optimized import/export take about 1.1/2.3 seconds;
   awards/world snapshots take about 0.26/0.28 seconds and LoTW matching 0.15 seconds.
 - Worked World passes deterministic geometry tests, native globe rotation,
   Home/selection navigation, 2D/layer/filter checks, and a 2,500-marker, 90-frame
