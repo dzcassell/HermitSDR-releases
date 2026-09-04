@@ -61,6 +61,9 @@ batch of improvements ships as a new version.
   grids/reports. Imported frequency-only contacts resolve all ADIF band ranges.
 
 ### Validation
+- Feature-catalog source CI passes the full suite, unsigned Debug/Release builds
+  and generated-file checks. Zeus #93 is closed, the #94 tracker is updated,
+  and the implementation/native-validation handoff is recorded in CLAUDE.md.
 - Native feature-catalog checks cover search, hardware messages, dependency
   reveal, hidden menu/palette entries, recovery without starting decoders,
   preserved window state, restart persistence and reset. Ten checked scene,
