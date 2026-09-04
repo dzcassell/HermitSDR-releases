@@ -27,6 +27,22 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0904_002
+
+- **Features catalog:** Station → Features… (⌘⇧F) searches 51 tools and lets
+  you show or hide entry points. Requirements and dependencies are explained;
+  settings, saved data and ongoing activity are preserved. Reset restores
+  visibility without enabling services, AI, decoders or transmit.
+- **Logbook workspace:** Log → QSO Log adds ADIF import/edit/export, bulk
+  changes, saved filters and automatic backups, tested with 100,000 contacts.
+  Its **Awards…** and **World & radar…** buttons open DXCC/WAS/grid analysis,
+  an interactive globe, UTC gray line, paths and local DX radar.
+- **Waterfall visibility:** palette icon → Dynamic Underlays offers Aquarium,
+  Night Garden and Deep Space. Deep Space and Night Garden now have separate
+  **Signals over scenery** and **Underlay brightness** sliders, signal colors
+  and a **High contrast** shortcut. Scene and marquee settings also open from
+  View and the Features catalog. SKIM continues to start off each launch.
+
 ## Download & install
 
 1. Open the [latest release](../../releases/latest) and download
@@ -67,12 +83,14 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | RX / TX | Receive + transmit live-validated on both protocols (dummy load; on-air QSOs user-gated) |
 | Sample rates | 48–384 kHz (P1) · up to 1536 kHz (P2) |
 | Demod modes | USB, LSB, CW, AM, SAM, FM, NFM, DSB · separate wide/narrow FM deviation · CTCSS encode/decode |
-| FT8 / FT4 | Receive: waterfall spots, decode panel, stations-heard ADIF (FT4 exported as MFSK/FT4), PSKReporter uploads, 15 s / 7.5 s UTC slots, time-machine replay. Transmit: via WSJT-X (CAT PTT + audio routing); no native FT8/FT4 modulator |
+| FT8 / FT4 | Receive: waterfall spots, decode panel, stations-heard ADIF (FT4 exported as MFSK/FT4), PSKReporter uploads, 15 s / 7.5 s UTC slots, time-machine replay. Transmit: native slot-clocked modulator + auto-sequencer behind ARM/TXCoordinator (hardware validation pending), or WSJT-X via CAT PTT + audio routing |
 | SSTV | Martin M1, Martin M2, Scottie S1, Scottie S2, Scottie DX, Robot 36, Robot 72, PD50, PD90, PD120, PD160, PD180, PD240, PD290 — auto VIS + manual mode/start, slant/phase correction, PNG export |
 | WEFAX | IOC 576 · 120 LPM, IOC 576 · 90 LPM, IOC 576 · 60 LPM, IOC 288 · 120 LPM — polarity, slant/phase, crop/rotate, PNG with metadata |
 | RTTY | 45.45/50/75/100 Bd · 170/200/425/850 Hz shifts · normal/reverse polarity · bounded AFC |
 | CW | Adaptive 8–60 WPM decoder at the 700 Hz pitch · **OmniSkimmer**: GPU polyphase channelizer skims every CW signal across the whole span at once (~375 Hz bins, per-signal decoders, waterfall labels + panel) |
 | Spotting | DX cluster telnet client (multiple nodes at once, RBN-ready, waterfall labels + Times Square ticker) · LoTW user badges + TQSL sign-and-upload · PSKReporter uploads · live planetary K-index |
+| Logbook | ADIF import/export with preserved fields · editing, bulk changes, saved filters and backups · precise LoTW contact matching · DXCC/WAS/grid coverage · interactive worked-world globe, gray line and local DX radar · 100,000-contact performance fixture |
+| Feature catalog | Searchable inventory of 51 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
 | Extras | Sub-RX (VFO B) · diversity RX (P2) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) |
 | Platform | macOS 15+, Apple silicon only |
 
@@ -176,7 +194,7 @@ laboratory**, the **Band DVR**, and the **Super Skimmer**.
   diversity or PureSignal needs the hardware.
 - **Band DVR**: continuous, disk-backed recording of the *entire sampled
   span* with a hard byte budget (2/8/32 GiB by resource preset, oldest
-  segments pruned first). A wall-clock timeline in Tools ▸ Band DVR shows
+  segments pruned first). A wall-clock timeline in Radio ▸ Band DVR shows
   everything on the shelf — click any moment and it replays through the
   production chain exactly as live: re-tune, re-mode, re-decode the past.
 - **RF time machine**: the last 3 minutes of the whole span buffered in
@@ -281,8 +299,8 @@ laboratory**, the **Band DVR**, and the **Super Skimmer**.
   waterfall for CW / FSK / FT8-shaped activity — click a detection to
   tune it, route it to the right decoder, rewind to its first
   appearance, or pin and export it.
-- **Ask The Crab**: an optional on-device assistant (Apple Foundation
-  Models — nothing leaves your Mac) with 35+ radio tools: tune, set
+- **Ask The Crab**: an optional assistant with on-device and explicitly configured
+  provider options, plus radio tools: tune, set
   modes and filters, identify signals, look up schedules and DXCC
   standings, watch for band openings, run an active multi-band **Band
   Scout** sweep and offer ranked tune-tos, and — in OAuth YouTube Live
@@ -293,8 +311,8 @@ laboratory**, the **Band DVR**, and the **Super Skimmer**.
   session management, live captions from the decoder fleet, and the
   co-host above — plus Discord voice streaming of the speaker mix.
 - **Instruments**: the header S-meter is a Metal shader (LED segments,
-  analog ballistics, EDR comet head, boost flames past S9); Tools ▸
-  **Analog Multimeter** is a finely-drawn taut-band meter with a
+  analog ballistics, EDR comet head, boost flames past S9);
+  Transmit ▸ Measurements & Checks ▸ **Analog Multimeter** is a finely-drawn taut-band meter with a
   spring-physics needle, peak-drag pointer, and six functions on a rotary
   knob; a **Performance Budget** window shows the app's live memory/GPU
   plan and lets you pick Conservative / Balanced / Maximum.
@@ -352,19 +370,18 @@ For the technically curious — what's actually under the shell:
   mmap that degrades gracefully under memory pressure; the Band DVR
   prunes itself to a byte budget; Metal textures resize on allocation
   failure. The Performance Budget window shows you the plan.
-- **Tested like it matters.** ~900 package tests run on every push —
-  DSP math, protocol framing against a deterministic virtual radio
+- **Tested like it matters.** 1,090 package tests (two intentional fixture skips)
+  run on every push — DSP math, protocol framing against a deterministic virtual radio
   (drop/duplicate/reorder/truncate/stall faults), decoder fixtures for
   every supported mode, concurrency stress under sanitizers, and a
   docs-consistency gate that fails the build if this capability table
   drifts from the code.
 - **Distribution you can verify.** Developer ID signed, Apple-notarized,
-  stapled (app, zip, *and* disk image), SHA-256 manifests on every
+  stapled (app inside the ZIP, and disk image), SHA-256 manifests on every
   release, and a self-updater that re-verifies signature + notarization
   before replacing anything.
-- **Privacy-respecting by design.** On-device AI only (Apple Foundation
-  Models), opt-in integrations, secrets in the Keychain, and an
-  anonymous daily ping you can turn off (see Privacy below).
+- **Privacy-respecting by design.** On-device AI and explicitly configured
+  providers, opt-in integrations, secrets in the Keychain, and an anonymous daily ping you can turn off (see Privacy below).
 
 ## Using it
 
@@ -378,23 +395,25 @@ For the technically curious — what's actually under the shell:
 | Notch a tone | Right-click it on the waterfall or the audio mini-waterfall |
 | Rewind time | Clock button (slider) or ⌥-click a waterfall history row |
 | Record | Header buttons: raw IQ (`.hiq`) and demod audio (WAV); replay from the connect sheet |
-| Band DVR | **Tools ▸ Band DVR**: record toggle, wall-clock timeline (click = replay that moment), budget + shelf accounting |
-| Super Skimmer | **Tools ▸ Super Skimmer** (ANAN): pick up to four bands, watch the per-band decode rates and spot feed |
+| Band DVR | **Radio ▸ Band DVR**: record toggle, wall-clock timeline (click = replay that moment), budget + shelf accounting |
+| Super Skimmer | **Decode ▸ Super Skimmer** (ANAN): pick up to four bands, watch the per-band decode rates and spot feed |
 | Band jump / step | Band menu (per-band memory), ◀/▶ 1–100 kHz grid steps |
 | Noise / squelch / AGC / EQ | DSP popover; press **N** over the panadapter to cycle NR off/gate/ML |
 | FM / CTCSS | DSP popover in FM/NFM: deviation, tone squelch, CTCSS encode |
-| Display & skins | Palette icon: 17 color schemes, 3D Waterfall, CRT Glass, Arcade FX (**A**), and the Hermit / Flux Radio skin picker |
+| Display & skins | Palette icon: color schemes, Dynamic Underlays and their settings, marquee, 3D Waterfall, CRT Glass, Arcade FX (**A**), and skins |
 | Transmit console | Pixel-art ACTIVATE TX CONTROLS banner (top center) |
 | CW keying | TX Controls ▸ CW setup (keyboard paddles, WPM, sidetone); CAT `send_morse` works too |
 | TX meters / mod scope | Gauge button in the TX Controls header |
-| Media Deck | **Tools ▸ Media Deck**: pads, groups, shortcuts; route behind the interlocks |
+| Media Deck | **Station ▸ Audio & Streaming ▸ Media Deck**: pads, groups, shortcuts; route behind the interlocks |
 | Diversity RX | Gear popover (P2 only): enable + polar steering pad |
-| CAT / audio / station | Gear popover (rigctl TCP 4532, output device, callsign/grid, PSKReporter, privacy) |
+| CAT / audio / station | **HermitSDR ▸ Settings… (⌘,)** or gear button; output device stays in the control bar |
 | CW skimmer | **SKIM** toggle in the decoder row; panel button beside it |
 | RF Vision | **VISION** toggle: classified detections with click-to-tune/decode/rewind/pin |
-| DX cluster / LoTW | **Integrations** menu (clusters, ticker toggle, LoTW badges + TQSL upload) |
-| YouTube / Discord | **Integrations** menu (stream setup, captions, co-host; Discord bot + voice) |
-| Instruments | **Tools** menu: Analog Multimeter (⌘⇧M), Bandscope, TX Meters, Performance Budget, TX Latency Map, Digital Mode Check, SSB Profile Lab, Stream Deck Setup, Trophy Case… |
+| DX cluster / LoTW | **Log** menu (clusters, ticker toggle, LoTW badges + TQSL upload) |
+| YouTube / Discord | **Station ▸ Audio & Streaming** menu (stream setup, captions, co-host; Discord bot + voice) |
+| Instruments | **Radio**, **Transmit**, **Decode**, **Log** and **Station** menus; Multimeter retains ⌘⇧M |
+| Feature visibility | **Station ▸ Features… (⌘⇧F)** or Settings → Features… |
+| Logbook / awards / globe | **Log ▸ QSO Log**, then Awards… or World & radar… |
 | Antennas (ANAN) | RX/TX chips in the header — glance for the live jacks, click to switch |
 | Ask The Crab | Crab button in the header — or just ask it to find you something to listen to |
 | Check for updates | **HermitSDR** menu ▸ Check for Updates… |
@@ -451,16 +470,16 @@ analytics are involved. No callsigns, frequencies, audio, or radio data
 ever leave your Mac unless you enable an integration that exists to send
 them (PSKReporter spotting, DX cluster posting, LoTW upload, Discord,
 YouTube Live) — each is off by default and scoped to exactly its job.
-Ask The Crab runs entirely on-device. The "Check for Updates" feature
+Ask The Crab can use on-device or explicitly configured providers; selected
+cloud providers receive submitted prompts/audio. The "Check for Updates" feature
 contacts GitHub to read the public releases list — the same data this
 page shows.
 
 ## What's next
 
 On-air work is operator-gated, not code-gated: the first on-air QSO,
-now within reach of a **native FT8 transmit engine** working through
-review, live multi-band validation of the Super Skimmer, a two-antenna
-diversity null test, and ear/eye acceptance for the newest decoders. On
+with the **native FT8 transmit engine** implemented, live multi-band validation
+of the Super Skimmer, a two-antenna diversity null test, and ear/eye acceptance for the newest decoders. On
 the feature side: PureSignal predistortion beyond the gated trial,
 physical Stream Deck hardware, the experimental lab modes on the CASCADE
 modem, and whatever GPU eye-candy strikes the mood.

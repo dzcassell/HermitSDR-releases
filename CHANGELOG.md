@@ -9,7 +9,18 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+### Documentation
+- Record the completed 2026.0904_002 publication and Claude handoff: source CI,
+  package inspection, independent public signature/notarization/checksum checks,
+  website synchronization and remaining operator-assisted validation. The public
+  download guide now reflects current features, menus and provider options.
+  No application changes are pending beyond the published release.
+
+## [2026.0904_002] — 2026-09-04
+
 ### Added
+- Release documentation and public download guide updated for the feature catalog,
+  logbook/awards/world tools and dynamic-underlay visibility controls.
 - **Features catalog** (Zeus parity #93), under Station → Features (⌘⇧F) and
   Settings: search 51 bundled tools and surfaces, inspect hardware requirements,
   dependencies and privacy/RF implications, and show or hide entry points.
