@@ -7,6 +7,61 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [Unreleased]
+
+### Added
+- **Worked World & DX Radar** (Zeus parity #82): an interactive Metal-backed
+  globe, 2D fallback, UTC day/night lighting and gray line, great-circle paths,
+  beam heading/distance, logged/confirmed/spotted/decoded layers, and band/mode/date
+  filters. Local radar prioritizes new contacts using the full log; unknown or
+  ambiguous locations remain explicit. Coastlines are bundled public-domain data.
+- **Logbook workspace** (Zeus parity #81): streaming ADIF import with validation,
+  duplicate preview/policy, preserved unknown/typed fields, standard-field editing,
+  bulk changes/deletion, saved filters, sortable paged tables and scoped exports.
+  Atomic background persistence retains the legacy JSON format, creates migration
+  and per-operation backups, supports recovery, and flushes safely at shutdown.
+- **Worked and confirmed awards** (Zeus parity #83): filtered-log DXCC, WAS and
+  2/4/6-character grid coverage, needed targets, band/mode matrices, QSO drill-downs,
+  local CSV summaries, explicit unknowns and versioned entity/country data.
+  Portable calls and state ambiguity are handled conservatively; six-character
+  missing grids are generated in bounded pages.
+- Large-log benchmark and regression fixtures for ADIF preservation, malformed
+  imports, duplicate policy, atomic recovery, LoTW identity and award edge cases.
+- Independent **Signals over scenery** (0–100% foreground visibility) and
+  **Underlay brightness** (0–100%) controls for Deep Space and Night Garden.
+  Dimming affects the entire scene, including particles, without dimming the
+  signal overlay. Existing four presets, six signal colors and signal brightness
+  remain available together in a Waterfall visibility section.
+- **High contrast** shortcut selects bright amber signals over dimmed scenery.
+  Settings remain independent per scene and preserve older saved appearances.
+  Scrollable settings keep the title and action buttons reachable.
+- Regression coverage for migration, bounds, persistence, preset overrides and
+  independent controls; Metal smoke exercises full foreground opacity and dimming.
+
+### Fixed
+- LoTW confirmations now require a positive QSL and the contact's UTC second,
+  call, band, mode/submode and station identity. Fractional quick-log timestamps
+  match their exported whole second. Contact location details are retained only
+  when matching reports agree; malformed responses do not partially apply.
+- Cluster/radar receiver tuning honors explicit FM, NFM and DSB mode tokens.
+- Quick-log entry points preserve station identity; FT8/FT4 logs retain exchanged
+  grids/reports. Imported frequency-only contacts resolve all ADIF band ranges.
+
+### Validation
+- Full suite: 1,083 tests, two intentional skips, zero failures; final focused
+  regressions also pass. Unsigned Debug/Release builds, repository audit and the
+  10-second performance smoke (30-second limit) pass.
+- A synthetic 100,000-contact log passes import/export, duplicate handling,
+  editing, saved filters, pagination, backup restoration and awards drill-downs
+  in isolated muted Demo. Optimized import/export take about 1.1/2.3 seconds;
+  awards/world snapshots take about 0.26/0.28 seconds and LoTW matching 0.15 seconds.
+- Worked World passes deterministic geometry tests, native globe rotation,
+  Home/selection navigation, 2D/layer/filter checks, and a 2,500-marker, 90-frame
+  Metal API validation smoke (0.09/0.66 ms median/p95 GPU time).
+- Deep Space and Night Garden pass 240-frame Metal API validation and native
+  settings checks for sliders, High contrast, colors, presets, Reset, scrolling
+  and independent preferences. No RF transmission or live LoTW requests were made.
+
 ## [2026.0904_001] — 2026-09-04
 
 ### Added
