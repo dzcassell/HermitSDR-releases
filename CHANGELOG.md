@@ -7,6 +7,49 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0904_001] — 2026-09-04
+
+### Added
+- **Deep Space Observatory** in Dynamic Underlays: slowly curling violet/teal
+  nebulae, layered stars, a rotating gas giant, translucent planetary rings,
+  an orbiting moon with transits/shadows, drifting dust, and rare comets.
+  Independent settings include star density, motion, all signal colors/levels,
+  brightness, and individual scene effects. Planet/ring/moon occlusion and
+  surface motion are rendered directly on the GPU.
+- **Night Garden** under the palette icon: a lush moonlit rainforest with GPU
+  animated ferns and orchid vines, glowing fungi, drifting mist, moonbeams,
+  fireflies with trails, rain, reflective stream ripples, frogs, moths and a
+  rare distant owl. Includes independent scene settings, four signal levels,
+  six overlay colors and adjustable brightness. Aquarium preferences remain
+  separate, and the marquee and receiver controls remain available.
+- Focused configuration, persistence, mesh-budget and rare-visitor tests plus
+  a native Metal validation smoke with deterministic rare-event sampling.
+
+### Changed
+- Group Aquarium, Night Garden, Deep Space, and their settings in the palette icon's
+  **Dynamic Underlays** submenu. Ordinary and animated color palettes remain
+  in the main palette list; active selections retain native checkmarks.
+
+### Validation
+- Full regression suite: 1,042 tests, two intentional skips, zero failures.
+  Unsigned Debug/Release builds, all 44 documentation checks, repository audit,
+  and the 9-second performance smoke (30-second limit) pass.
+- Native 240-frame Metal API validation covers Deep Space, Night Garden and
+  the shared Aquarium signal passes. At 1800×720 with 4× MSAA, Deep Space
+  with 1,600 stars measured 0.38 ms median / 0.47 ms p95 GPU time; Night Garden
+  with 160 fireflies measured 0.61 ms / 0.90 ms on the development Mac.
+- Muted Demo checks cover the Dynamic Underlays submenu, scene switching,
+  settings launchers, color/brightness controls, Reset and saved preferences.
+  Planet visibility preserves ring/moon choices. SKIM stays off after startup
+  with an old enabled preference and after quitting while enabled.
+- Night Garden and Deep Space default to Balanced/Ice blue to preserve their
+  scenery under strong signals; Broadcast and Intense remain available.
+  No RF was transmitted.
+
+### Fixed
+- **SKIM starts off every launch**, including when an older settings file
+  saved it enabled. Enabling it remains available for the current session.
+
 ## [2026.0903_006] — 2026-09-03
 
 ### Added
