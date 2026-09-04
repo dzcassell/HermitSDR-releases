@@ -10,6 +10,17 @@ batch of improvements ships as a new version.
 ## [Unreleased]
 
 ### Added
+- **Features catalog** (Zeus parity #93), under Station → Features (⌘⇧F) and
+  Settings: search 51 bundled tools and surfaces, inspect hardware requirements,
+  dependencies and privacy/RF implications, and show or hide entry points.
+  Dependency choices persist; reset restores visibility without enabling services,
+  AI, decoders or TX. Essential controls remain available and hidden tools retain
+  saved data and existing in-window state.
+- Aquarium, Night Garden, Deep Space and marquee settings have shared windows
+  reachable from the palette, View menu and feature catalog. Visibility follows
+  the same preference at each entry point, with no meter-rate menu invalidation.
+- Catalog/window consistency, dependency, migration, required-control, search and
+  hardware-status regression coverage. See docs/Features.md for operation.
 - **Worked World & DX Radar** (Zeus parity #82): an interactive Metal-backed
   globe, 2D fallback, UTC day/night lighting and gray line, great-circle paths,
   beam heading/distance, logged/confirmed/spotted/decoded layers, and band/mode/date
@@ -50,9 +61,14 @@ batch of improvements ships as a new version.
   grids/reports. Imported frequency-only contacts resolve all ADIF band ranges.
 
 ### Validation
-- Final GitHub CI: 1,084 tests, two intentional skips, zero failures. Unsigned
+- Native feature-catalog checks cover search, hardware messages, dependency
+  reveal, hidden menu/palette entries, recovery without starting decoders,
+  preserved window state, restart persistence and reset. Ten checked scene,
+  decoder and service settings remain unchanged after reset. The palette menu
+  stays stable across a 4.5-second accessibility check during Demo rendering.
+- Full regression suite: 1,090 tests, two intentional skips, zero failures. Unsigned
   Debug/Release builds, documentation checks, repository audit and the
-  10-second performance smoke (30-second limit) pass.
+  11-second performance smoke (30-second limit) pass.
 - A synthetic 100,000-contact log passes import/export, duplicate handling,
   adding/editing, multi-contact bulk changes/deletion, invalid-input rejection,
   saved filters, pagination, backup restoration and awards drill-downs in
