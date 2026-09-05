@@ -27,7 +27,23 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0904_002
+## New in 2026.0905_001
+
+- **IQ replay:** accurate timing at loop boundaries, including very short
+  recordings, plus safer start/stop/seek and malformed-recording handling.
+- **Reliable updates:** a stalled quit cannot launch a second app. Failed
+  installation restores or preserves the previous copy, and downloads require
+  matching signed app identity and version.
+- **Logbook and World:** standard ADIF mode names and preserved imported
+  submodes; live World feeds reconnect after reopening.
+- **Startup resilience:** malformed stored clock values cannot crash the
+  build-expiry check.
+
+The release passed the complete software suite, Address/Thread Sanitizer checks,
+Debug/Release builds and native graphics checks. Live RF acceptance remains a
+separate operator-assisted step.
+
+## Recent feature additions
 
 - **Features catalog:** Station → Features… (⌘⇧F) searches 51 tools and lets
   you show or hide entry points. Requirements and dependencies are explained;
@@ -83,7 +99,7 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | RX / TX | Receive + transmit live-validated on both protocols (dummy load; on-air QSOs user-gated) |
 | Sample rates | 48–384 kHz (P1) · up to 1536 kHz (P2) |
 | Demod modes | USB, LSB, CW, AM, SAM, FM, NFM, DSB · separate wide/narrow FM deviation · CTCSS encode/decode |
-| FT8 / FT4 | Receive: waterfall spots, decode panel, stations-heard ADIF (FT4 exported as MFSK/FT4), PSKReporter uploads, 15 s / 7.5 s UTC slots, time-machine replay. Transmit: native slot-clocked modulator + auto-sequencer behind ARM/TXCoordinator (hardware validation pending), or WSJT-X via CAT PTT + audio routing |
+| FT8 / FT4 | Receive: waterfall spots, decode panel, stations-heard ADIF (FT4 exported as MFSK/FT4), PSKReporter uploads, 15 s / 7.5 s UTC slots, time-machine replay. Transmit: native slot-clocked modulator + auto-sequencer behind ARM/TXCoordinator (native FT8 dummy-load validated; on-air validation pending), or WSJT-X via CAT PTT + audio routing |
 | SSTV | Martin M1, Martin M2, Scottie S1, Scottie S2, Scottie DX, Robot 36, Robot 72, PD50, PD90, PD120, PD160, PD180, PD240, PD290 — auto VIS + manual mode/start, slant/phase correction, PNG export |
 | WEFAX | IOC 576 · 120 LPM, IOC 576 · 90 LPM, IOC 576 · 60 LPM, IOC 288 · 120 LPM — polarity, slant/phase, crop/rotate, PNG with metadata |
 | RTTY | 45.45/50/75/100 Bd · 170/200/425/850 Hz shifts · normal/reverse polarity · bounded AFC |

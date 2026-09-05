@@ -10,11 +10,52 @@ batch of improvements ships as a new version.
 ## [Unreleased]
 
 ### Documentation
+- Record the completed 2026.0905_001 bug-sweep publication, exact-source CI,
+  independent public signature/notarization/checksum verification and website
+  synchronization. Refresh website capability prose and the public download
+  guide; synchronize the public changelog. No runtime changes after the release.
+
+## [2026.0905_001] — 2026-09-05
+
+### Fixed
+- IQ replay now emits exactly one 20 ms block per tick across every loop seam,
+  preserving all tail samples and the declared sample rate even for recordings
+  shorter than a tick. Tiny loops use a bounded memory cache. Concurrent
+  start/stop/seek operations cannot close the file under a queued seek or publish
+  an incompletely configured timer; empty recordings and unsupported or extreme
+  header metadata are rejected before DSP/display use.
+- In-app updating no longer opens a second staged app when quitting stalls or a
+  copy fails. Both installation moves are checked, failed replacement restores the
+  old app, and failed rollback retains the recoverable original. The updater
+  requires the exact versioned ZIP, HTTPS URLs, complete signed bundle identity
+  and matching version; it rechecks transmitter state after downloading and
+  refuses overlapping installs.
+- ADIF export maps native NFM to FM and DSB/SAM to AM. Padded imported parent modes
+  and submodes retain their canonical identity through export, duplicate matching
+  and LoTW matching instead of losing the submode.
+- Worked World reconnects live feeds after reopening and recovers when reopened
+  during a cancelled computation. Its periodic age refresh now has a stable
+  view-lifetime task, so frequent spot updates cannot keep restarting its timer.
+- Build-date parsing rejects impossible calendar dates; extreme stored clock
+  readings produce the existing receive-only recovery state without integer traps.
+- Website publication stages a complete page beside the live index before a
+  same-filesystem rename, so requests cannot read a partially copied release card.
+
+### Verification and documentation
+- Regression fixtures cover replay timing, malformed inputs, concurrent lifecycle,
+  ADIF mode identity, update metadata and real installer success/failure/rollback
+  paths against disposable files. A production WorkedWorldModel harness covers
+  feed updates, close/reopen and cancellation recovery and runs in CI.
+- Extend sanitizer coverage to replay regressions and image-decoder concurrency.
+  Refresh versioning/roadmap documentation and native FT8 hardware-status prose
+  from the retained dummy-load evidence. See `docs/BugSweep-2026-09-05.md` for
+  the completed validation record and remaining hardware-only checks.
+
+### Documentation
 - Record the completed 2026.0904_002 publication and Claude handoff: source CI,
   package inspection, independent public signature/notarization/checksum checks,
   website synchronization and remaining operator-assisted validation. The public
   download guide now reflects current features, menus and provider options.
-  No application changes are pending beyond the published release.
 
 ## [2026.0904_002] — 2026-09-04
 
