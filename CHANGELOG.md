@@ -7,6 +7,27 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_014] — 2026-09-06
+
+### Improved
+- Decoder controls observe only their enable/panel settings and activity presence;
+  decode progress, transcripts, spots and unrelated radio updates no longer
+  publish through their presentation owner.
+- The TX EQ bank observes only gains and profile information, with meters and
+  skin changes kept on their existing separate owners.
+- Preserve FT8/FT4 exclusion, CW mode gating, decoder/window/panel behavior,
+  TX EQ normalization, profile resolution and existing persistence/engine commands.
+
+### Verification
+- Compile production adapters and actual facade property bodies against real
+  decoder/transmitter owners and inert engine sinks. Cover external restoration,
+  payload isolation, command side effects, current-value edits and owner release.
+- Guard the extracted views and run the production fixture in CI.
+
+### Documentation
+- Record verified 010–013 releases, website/public-guide updates and #109/#110
+  closures, including the source and workflow references and acceptance limits.
+
 ## [2026.0906_013] — 2026-09-06
 
 ### Improved
