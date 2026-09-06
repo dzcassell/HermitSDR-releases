@@ -27,15 +27,16 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_019
+## New in 2026.0906_020
 
-- Calibration editing observes profile and recovery state independently of detector readings.
-- The live-measurement button receives only detector inputs; captured points retain current split/XIT frequency and jack context.
-- Existing save, reset, import/export and identity/firmware checks are preserved.
+- Late Discord gateway events and HTTP replies are rejected after stop or settings changes.
+- Waterfall captures keep their original service and destination; voice callback replacement uses its owning queue.
+- Current channel fetches and connection tests retain command order, and the intended offline notification is preserved.
 
-The release passed 1,185 software tests (two intentional skips), production
-calibration fixtures and Debug/Release builds. Calibration files were temporary
-and hardware/policy sinks were inert; bench acceptance remains separate.
+The release completed 1,186 software tests with zero failures and two intentional
+skips, production lifecycle fixtures, AddressSanitizer and ThreadSanitizer checks,
+and Debug/Release builds. All new integration tests used inert transports;
+live Discord and radio acceptance remain separate.
 
 ## Recent feature additions
 

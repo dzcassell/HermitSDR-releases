@@ -7,6 +7,27 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_020] — 2026-09-06
+
+### Fixed
+- Reject late Discord gateway events and HTTP replies after stopping or replacing
+  a session. Cancel obsolete requests before they can continue test ladders,
+  webhook lookups, directory refreshes or slash-command replies.
+- Keep polling and token-change debounce bound to their original session;
+  repeated starts are idempotent and stopped settings edits cannot reconnect.
+- Bind waterfall captures and UI callbacks to the original Discord service and
+  settings, so delayed results cannot post through a replacement destination.
+- Serialize voice callback replacement on the voice queue and deliver callbacks
+  on the main actor. Preserve explicit connection tests and the intended offline
+  notification while discarding obsolete background work.
+
+### Verification
+- Reproduce late READY creating two HTTP requests after stop in the prior source.
+- Run production service, voice callback and facade bodies against inert gateway,
+  HTTP, audio and renderer boundaries, including concurrent stale callbacks,
+  cancelled replies, setting changes, current operations and owner release.
+- Run the fixture normally and with AddressSanitizer and ThreadSanitizer in CI.
+
 ## [2026.0906_019] — 2026-09-06
 
 ### Improved
