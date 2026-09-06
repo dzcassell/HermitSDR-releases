@@ -27,16 +27,16 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_020
+## New in 2026.0906_021
 
-- Late Discord gateway events and HTTP replies are rejected after stop or settings changes.
-- Waterfall captures keep their original service and destination; voice callback replacement uses its owning queue.
-- Current channel fetches and connection tests retain command order, and the intended offline notification is preserved.
+- Old Discord voice discovery replies and timer events cannot act on a replacement session.
+- Duplicate handshakes replace their sockets/timers, with audio paused until discovery completes.
+- Repeated descriptions with the same key preserve nonce progression; current failures retain diagnostics.
 
-The release completed 1,186 software tests with zero failures and two intentional
-skips, production lifecycle fixtures, AddressSanitizer and ThreadSanitizer checks,
-and Debug/Release builds. All new integration tests used inert transports;
-live Discord and radio acceptance remain separate.
+The release completed 1,187 software tests with zero failures and two intentional
+skips, production voice lifecycle fixtures, AddressSanitizer and ThreadSanitizer,
+and Debug/Release builds. New voice tests use inert network, timer and codec
+boundaries with real packet types; live Discord acceptance remains separate.
 
 ## Recent feature additions
 

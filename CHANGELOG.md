@@ -7,6 +7,29 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_021] — 2026-09-06
+
+### Fixed
+- Bind Discord voice UDP discovery, heartbeat, audio timer and UI callbacks to
+  their original session. Late work from a stopped connection cannot mark a
+  replacement discovered, stop it or send its audio.
+- Replace duplicate HELLO timers and READY sockets explicitly; suspend audio
+  during UDP rediscovery and require discovery before accepting session details.
+- Preserve nonce progression for repeated session descriptions with the same key,
+  including UDP replacement within that session. Reset old buffered audio and
+  silence tails when starting a new session.
+- Keep current failure diagnostics after teardown, avoid rearming cancelled
+  WebSocket receives, and leave codec/endpoint failures fully stopped.
+
+### Verification
+- Reproduce an old discovery reply steering a new session and a cancelled
+  heartbeat stopping its replacement against the prior source.
+- Compile the actual voice owner with inert WebSocket, UDP, timer and codec
+  boundaries. Cover replacements, duplicate handshakes, retry limits, failures,
+  RTP counter continuity, bounded catch-up, concurrent lifecycle calls and release.
+- Run the fixture normally and under AddressSanitizer and ThreadSanitizer in CI;
+  retain the prior Discord service and facade regressions.
+
 ## [2026.0906_020] — 2026-09-06
 
 ### Fixed
