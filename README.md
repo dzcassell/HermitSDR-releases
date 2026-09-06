@@ -27,15 +27,15 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_007
+## New in 2026.0906_008
 
-- RNNoise safely initializes shared tables across independent RX/TX contexts.
-- Allocation failures clean up partial state, retain pass-through fallback and permit retry.
-- A 120-frame comparison confirms unchanged audio output for the tested input.
+- PSK Reporter rejects obsolete uploads after DNS and between packets.
+- Invalid metadata cannot crash packet construction or silently alter station identity.
+- IPFIX fields, sequence counts and packet-size bounds are corrected; partial sends retry only unsent reports.
 
-The release passed 1,162 software tests (two intentional skips), 226 tests under
-each sanitizer, concurrent/fault-injection C fixtures and Debug/Release builds.
-Physical audio acceptance remains operator-assisted.
+The release passed 1,166 software tests (two intentional skips), 230 tests under
+each sanitizer, nine inert transport cases and Debug/Release builds. No live
+reports were sent during validation.
 
 ## Recent feature additions
 

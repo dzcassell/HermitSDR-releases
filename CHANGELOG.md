@@ -7,6 +7,24 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_008] — 2026-09-06
+
+### Fixed
+- Reject obsolete PSK Reporter work after DNS and between datagrams; clear
+  queued reports when station identity changes and preserve no-op configuration.
+- Correct IPFIX receiver scope and Data Record sequence counts, variable-length
+  string encoding, and byte-based packet bounds. Invalid numeric/station metadata
+  is rejected safely; partial sends retry only unsent valid reports and report
+  the actual sent count.
+
+### Verification
+- Add independent packet decoding, numeric/string boundary tests and inert
+  production transport fixtures for cancellation, identity changes and retries.
+  No reports are sent by the test fixtures.
+
+### Documentation
+- Record PSK Reporter protocol and lifecycle evidence with live-service limits.
+
 ## [2026.0906_007] — 2026-09-06
 
 ### Fixed
