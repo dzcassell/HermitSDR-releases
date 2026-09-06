@@ -27,21 +27,23 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0905_001
+## New in 2026.0906_001
 
-- **IQ replay:** accurate timing at loop boundaries, including very short
-  recordings, plus safer start/stop/seek and malformed-recording handling.
-- **Reliable updates:** a stalled quit cannot launch a second app. Failed
-  installation restores or preserves the previous copy, and downloads require
-  matching signed app identity and version.
-- **Logbook and World:** standard ADIF mode names and preserved imported
-  submodes; live World feeds reconnect after reopening.
-- **Startup resilience:** malformed stored clock values cannot crash the
-  build-expiry check.
+- **Streaming recovery:** YouTube reconnects start with fresh protocol state;
+  delayed replies and stopped-session callbacks cannot revive an old attempt.
+  Malformed server messages fail cleanly within bounded memory limits.
+- **Capture and audio:** stopping during screen-capture startup releases the
+  capture when it finishes opening. Old encoder failures cannot stop a new
+  session, and AAC callback replacement is synchronized.
+- **Connect:** delayed Bonjour results cannot restore stale destinations after
+  closing or reopening the connection sheet.
+- **Arcade:** the overlay observes its own events and samples meter/display
+  values without subscribing to unrelated radio updates.
 
-The release passed the complete software suite, Address/Thread Sanitizer checks,
-Debug/Release builds and native graphics checks. Live RF acceptance remains a
-separate operator-assisted step.
+The release passed 1,131 software tests (two intentional skips), 98 tests under
+both Address and Thread Sanitizer, Debug/Release builds, and production
+presentation/browser lifecycle harnesses. Radio and external broadcast checks
+remain operator-assisted.
 
 ## Recent feature additions
 

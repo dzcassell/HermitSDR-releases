@@ -10,6 +10,45 @@ batch of improvements ships as a new version.
 ## [Unreleased]
 
 ### Documentation
+- Record the completed 2026.0906_001 GitHub issue sweep and publication,
+  exact-source CI, independent public ZIP/DMG checksum, signature, notarization
+  and Gatekeeper verification, and the website release-card update. Record
+  completion evidence for #97–#99 and progress on #60/#61; refresh the public
+  download guide and synchronize its changelog. No runtime changes after release.
+
+## [2026.0906_001] — 2026-09-06
+
+### Fixed
+- RTMP reconnects reset handshake, chunk, acknowledgement and send-budget state.
+  Command replies are matched to their transactions; malformed or fractional
+  stream IDs fail cleanly. Stopping or replacing a session invalidates queued
+  callbacks, and terminal failure supersedes an undelivered ready notification.
+- RTMP compressed messages inherit timestamp deltas correctly, Abort discards
+  partial messages, and malformed chunk sizes, missing context, incomplete AMF
+  objects and excessive nesting/buffering are rejected within explicit limits.
+  A shared 4,096-value AMF budget bounds decoded allocation as well as wire bytes.
+- YouTube capture now disposes a stream even when Stop races enumeration or
+  asynchronous startup. Capture ownership and callback generations reject old
+  screen/video events and late failures after a replacement session starts.
+  Encoded frame values cross queues without sharing CMSampleBuffer objects.
+- AAC callback replacement is synchronized with encoding. Converter output is
+  accepted when it returns a packet without pulling fresh input. Audio/video
+  clocks reject non-finite times and wrap 32-bit RTMP timestamps for long streams.
+- The arcade overlay subscribes only to its events through a narrow presentation
+  model; sampled meter/display readings and unrelated state changes add no
+  publications. Its existing animation schedule and calibration are preserved.
+- Closing or reopening Connect rejects queued Bonjour results from a cancelled
+  browser, preventing stale remote destinations from replacing the current list.
+
+### Verification
+- Add loopback TCP reconnect/cancellation fixtures, malformed RTMP/AMF cases,
+  synthetic capture lifecycle tests, AAC continuity/concurrency tests and a
+  compiled arcade presentation isolation harness. A production Bonjour-browser
+  harness verifies close/reopen, stale delivery and weak ownership. CI runs the harnesses and
+  the extended sanitizer workflow covers these integration boundaries.
+
+
+### Documentation
 - Record the completed 2026.0905_001 bug-sweep publication, exact-source CI,
   independent public signature/notarization/checksum verification and website
   synchronization. Refresh website capability prose and the public download
