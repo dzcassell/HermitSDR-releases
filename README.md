@@ -27,16 +27,16 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_022
+## New in 2026.0906_023
 
-- Each replacement AAC callback receives configuration before raw audio, including callback-triggered resets.
-- Audio feeds coalesce into bounded queue turns while preserving FIFO capacity and overflow timing.
-- Stream metadata reads a cached negotiated bitrate rather than touching the active converter.
+- Replacement or newly installed video callbacks wait for configuration and a keyframe before receiving dependent frames.
+- Stopping capture during a configuration callback rejects the following old raw frame.
+- Capture, compression and callback generations are checked together at delivery boundaries.
 
-The release completed 1,188 software tests with zero failures and two intentional
-skips, production AAC fixtures, AddressSanitizer and ThreadSanitizer, and
-Debug/Release builds. New tests use generated audio through the CPU AAC codec;
-audio devices and live streaming acceptance remain separate.
+The release completed 1,189 software tests with zero failures and two intentional
+skips, production video callback fixtures, AddressSanitizer and ThreadSanitizer,
+and Debug/Release builds. Synthetic encoded frames exercise the actual delivery
+and stop paths without starting screen capture, GPU compression or live streaming.
 
 ## Recent feature additions
 

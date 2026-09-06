@@ -7,6 +7,25 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_023] — 2026-09-06
+
+### Fixed
+- Give replacement video callbacks a configuration header and keyframe before
+  delivering dependent frames. Installing a late callback or restoring a cleared
+  callback now gets a complete decodable start.
+- Recheck capture, compression and callback generations after delivering the
+  AVC configuration header. Stopping capture or replacing the callback while
+  that header runs prevents the old raw frame from being delivered afterward.
+
+### Verification
+- Reproduce missing configuration on callback replacement and raw delivery after
+  stop against the prior video encoder source.
+- Compile the full production video owner and drive synthetic encoded frames
+  through its delivery path, including the actual stop method. Cover keyframe
+  ordering, stale generations, 500 concurrent callback changes and owner release
+  normally and under AddressSanitizer and ThreadSanitizer in CI. Screen capture,
+  GPU compression, live streaming and credentials are not used by these tests.
+
 ## [2026.0906_022] — 2026-09-06
 
 ### Fixed
