@@ -9,6 +9,37 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.0906_002] — 2026-09-06
+
+### Fixed
+- Validate manual Hermit Remote destinations before pairing or connection:
+  empty hosts and malformed ports produce an inline error, while IPv6 and
+  bracketed IPv6 ports are parsed without crashes or silent port substitution.
+- Remote client callbacks reject replaced connections, reset disconnected
+  state and synchronize handler replacement. The server admits only one
+  authenticated client, bounds pending handshakes, and invalidates queued
+  commands, IQ work and send completions when a client is kicked or replaced.
+  Listener/UI callbacks likewise require their current owner after delivery.
+- Remote payloads reject trailing bytes, invalid UTF-8, non-finite or invalid
+  state metadata, and overlong pairing codes. Long outgoing names retain whole
+  UTF-8 characters. Pairing and listener setup surface Keychain write failures.
+- Remote tuning/gain bursts coalesce before main-queue delivery; stalled
+  clients retain at most two state/meter sends. Latest state retries on the
+  next meter tick, and WELCOME is queued before the client can receive IQ.
+
+### Changed
+- Connect and its pairing/network-configuration sheets use a narrow
+  presentation adapter, the session owner and SkinCenter instead of observing
+  all radio state. Existing action gates and persistence remain centralized.
+
+### Verification
+- Add deterministic production remote-client/server lifecycle fixtures using
+  in-process network and credential substitutes, plus manual-address cases.
+  Run them in CI and both extended sanitizer jobs, including concurrent handler
+  replacement, stalled handshakes and send-backpressure generation checks.
+- Add a production Connect adapter fixture for event isolation, duplicate
+  suppression, command forwarding and weak ownership, and run it in CI.
+
 ### Documentation
 - Record the completed 2026.0906_001 GitHub issue sweep and publication,
   exact-source CI, independent public ZIP/DMG checksum, signature, notarization

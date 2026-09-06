@@ -27,22 +27,21 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_001
+## New in 2026.0906_002
 
-- **Streaming recovery:** YouTube reconnects start with fresh protocol state;
-  delayed replies and stopped-session callbacks cannot revive an old attempt.
-  Malformed server messages fail cleanly within bounded memory limits.
-- **Capture and audio:** stopping during screen-capture startup releases the
-  capture when it finishes opening. Old encoder failures cannot stop a new
-  session, and AAC callback replacement is synchronized.
-- **Connect:** delayed Bonjour results cannot restore stale destinations after
-  closing or reopening the connection sheet.
-- **Arcade:** the overlay observes its own events and samples meter/display
-  values without subscribing to unrelated radio updates.
+- **Remote pairing:** manual addresses validate hosts and ports, support IPv6,
+  and show input or credential-saving errors before connecting.
+- **Remote recovery:** old connection callbacks cannot overwrite a replacement
+  session. Overlapping handshakes still admit only one authenticated client,
+  and stopping or kicking a client invalidates its queued work.
+- **Slow clients:** bounded handshakes and send queues prevent growing backlogs;
+  rapid tuning/gain changes coalesce and the latest state recovers after a stall.
+- **Connect:** the sheet observes its connection, error and appearance owners,
+  reducing redraws caused by unrelated radio updates.
 
-The release passed 1,131 software tests (two intentional skips), 98 tests under
-both Address and Thread Sanitizer, Debug/Release builds, and production
-presentation/browser lifecycle harnesses. Radio and external broadcast checks
+The release passed 1,139 software tests (two intentional skips), 122 tests under
+both Address and Thread Sanitizer, Debug/Release builds, and production remote
+and presentation fixtures. Actual two-Mac TLS/Bonjour and radio acceptance
 remain operator-assisted.
 
 ## Recent feature additions
