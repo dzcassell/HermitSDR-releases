@@ -27,15 +27,15 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_015
+## New in 2026.0906_016
 
-- Receive-filter controls observe only mode, bandwidth and shift together.
-- Tuning and gain updates no longer publish into the filter presentation model.
-- Existing slider, preset, scroll, shift-reset and per-mode memory behavior is retained.
+- VFO B, split, RIT/XIT, antennas, display and audio-output controls observe focused state.
+- S-meter calibration updates separately from raw signal readings.
+- Existing commands, antenna hot-switch guards and calibration arithmetic are preserved.
 
-The release passed 1,181 software tests (two intentional skips), an eight-mode
-production command fixture and Debug/Release builds. Engine calls were inert and
-preferences used a temporary suite; operator acceptance remains separate.
+The release passed 1,182 software tests (two intentional skips), production
+command fixtures and Debug/Release builds. Engine calls were inert, with
+isolated preferences and calibration storage; bench acceptance remains separate.
 
 ## Recent feature additions
 

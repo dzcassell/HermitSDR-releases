@@ -7,6 +7,26 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_016] — 2026-09-06
+
+### Improved
+- VFO B, split, RIT/XIT, antenna routing, display settings and audio-output
+  controls observe their own deduplicated presentation state. Receiver
+  restoration delivers one complete VFO/offset snapshot.
+- The S-meter observes calibration/gain separately from raw meter readings;
+  unrelated receiver, decoder, transmitter and integration updates no longer
+  invalidate these five controls.
+- Preserve existing VFO/sub-receiver commands, antenna hot-switch guards,
+  calibration arithmetic, device refresh, window actions and persistence paths.
+
+### Verification
+- Exercise production presentation models and facade commands against real
+  domain owners, inert engine sinks and isolated preferences/calibration storage.
+- Cover restoration, replay/connection transitions, command side effects,
+  diversity ordering, all four TX antenna guards, meter calibration, display
+  settings, default audio routing, duplicate isolation and released owners.
+- Run the fixture in CI and retain a source guard for the operator UI hooks.
+
 ## [2026.0906_015] — 2026-09-06
 
 ### Improved
