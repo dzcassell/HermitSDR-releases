@@ -27,12 +27,12 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_010
+## New in 2026.0906_011
 
-- The TX footprint follows the actual split/XIT transmit frequency and is hidden in SAM.
-- Main-window layout, spectrum, FT8 labels and display controls observe focused state.
+- RX EQ and DSP controls observe their own settings, reducing unrelated redraws.
+- Existing profile, Gate/ML, FM/NFM, CTCSS and manual-notch commands retain their behavior.
 
-The release passed 1,174 software tests (two intentional skips), production
+The release passed 1,177 software tests (two intentional skips), production
 presentation fixtures and Debug/Release builds. Radio acceptance remains
 operator-assisted.
 

@@ -7,6 +7,20 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_011] — 2026-09-06
+
+### Improved
+- Receive EQ and DSP controls observe focused settings and skin owners, keeping
+  unrelated radio, decoder, meter and integration traffic out of their views.
+- Preserve profile selection/saving, short-array EQ edits, Gate/ML exclusion,
+  FM/NFM settings, CTCSS and value-based manual-notch removal through existing
+  command and persistence paths.
+
+### Verification
+- Add production-adapter coverage for isolated updates, profile commands,
+  short arrays, stale controls, FM persistence and released owners; run it in CI.
+- Pin existing profile-match precedence and guard against broad view observation.
+
 ## [2026.0906_010] — 2026-09-06
 
 ### Fixed
