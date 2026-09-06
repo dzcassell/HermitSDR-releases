@@ -7,6 +7,24 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_007] — 2026-09-06
+
+### Fixed
+- Synchronize RNNoise shared-table initialization across independent RX/TX
+  contexts and prepare tables at creation, before processing audio frames.
+- Return a failed context safely on allocation failure, release partial GRU/FFT
+  allocations, and permit retry. Existing Swift pass-through fallback remains.
+
+### Verification
+- Add fresh-process concurrent initialization and seven-position allocation
+  fault/retry fixtures, including no shared-table allocation during processing.
+- Verify a 120-frame baseline/fixed output is byte-identical; weights and DSP
+  arithmetic are unchanged.
+
+### Documentation
+- Document shared C ownership, failure recovery and remaining analyzer/bench
+  acceptance limits for the noise-reduction integration.
+
 ## [2026.0906_006] — 2026-09-06
 
 ### Fixed

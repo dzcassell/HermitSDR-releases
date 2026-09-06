@@ -27,15 +27,15 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_006
+## New in 2026.0906_007
 
-- TX-chain descriptions correctly cover FM, NFM and DSB and identify SAM as receive-only.
-- The TX-chain window observes its own transmitter/receiver state, reducing unrelated redraws.
-- Split/XIT frequency display shares the receiver's existing calculation.
+- RNNoise safely initializes shared tables across independent RX/TX contexts.
+- Allocation failures clean up partial state, retain pass-through fallback and permit retry.
+- A 120-frame comparison confirms unchanged audio output for the tested input.
 
-The release passed 1,162 software tests (two intentional skips), production
-presentation fixtures and Debug/Release builds. Hardware acceptance remains
-operator-assisted.
+The release passed 1,162 software tests (two intentional skips), 226 tests under
+each sanitizer, concurrent/fault-injection C fixtures and Debug/Release builds.
+Physical audio acceptance remains operator-assisted.
 
 ## Recent feature additions
 
