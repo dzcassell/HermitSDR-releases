@@ -27,15 +27,14 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_009
+## New in 2026.0906_010
 
-- DX-cluster stop/replacement prevents obsolete connections, login sends and buffered spots.
-- Old command completions report failure instead of success after a session ends.
-- PSK reporting coalesces repeated callsigns while preserving distinct stations in the bounded queue.
+- The TX footprint follows the actual split/XIT transmit frequency and is hidden in SAM.
+- Main-window layout, spectrum, FT8 labels and display controls observe focused state.
 
-The release passed 1,169 software tests (two intentional skips), production
-cluster fixtures under both sanitizers and Debug/Release builds. No live
-cluster login or command was used during validation.
+The release passed 1,174 software tests (two intentional skips), production
+presentation fixtures and Debug/Release builds. Radio acceptance remains
+operator-assisted.
 
 ## Recent feature additions
 

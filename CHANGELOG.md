@@ -7,6 +7,29 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_010] — 2026-09-06
+
+### Fixed
+- Position the panadapter TX footprint at the actual split/XIT transmit frequency;
+  RIT continues to affect only receive geometry. Hide the TX footprint in SAM.
+
+### Improved
+- Main-window layout, spectrum geometry, FT8 band-map labels and display-level
+  controls observe focused, deduplicated state. Decoder payloads and unrelated
+  settings no longer invalidate the full main layout through RadioState.
+- Keep display edits and tuning on the existing command/persistence paths.
+
+### Verification
+- Add split/XIT/RIT, sideband/FM/custom-profile and geometry regressions plus
+  compiled-production presentation isolation, forwarding and weak-owner fixtures.
+- Run the presentation fixture in CI and guard against broad view observation.
+
+
+### Documentation
+- Record verified 005–009 publications, exact-source gates, public artifact and
+  signing/notary evidence, website/public guide updates and #103–#108 closure.
+  Preserve retry evidence and bench/live-service limits.
+
 ## [2026.0906_009] — 2026-09-06
 
 ### Fixed
