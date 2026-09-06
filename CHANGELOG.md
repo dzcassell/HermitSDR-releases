@@ -7,6 +7,26 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_012] — 2026-09-06
+
+### Fixed
+- Prevent stopped on-device caption startup from creating a late analyzer or
+  installing an audio tap. Obsolete sessions cannot deliver cues or diagnostics.
+- Deliver final caption cues before transcript collection and flush the final
+  partial input chunk. Concurrent shutdown callers join the same teardown.
+- Bound converted caption audio and queued conversion work as well as input
+  samples; retain source timestamps when optional caption audio is dropped.
+
+### Improved
+- Give caption lifecycle and callbacks one main-actor owner; move conversion
+  to a bounded worker with explicit locked buffer handoffs, removing the
+  transcriber's class-wide unchecked Sendable declaration.
+
+### Verification
+- Add inert production lifecycle fixtures for seven suspended startup stages,
+  cancellation and final-cue ordering, plus generated PCM and queue-pressure
+  coverage. No speech model, audio device or live service is used.
+
 ## [2026.0906_011] — 2026-09-06
 
 ### Improved

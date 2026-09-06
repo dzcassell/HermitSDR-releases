@@ -27,14 +27,16 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_011
+## New in 2026.0906_012
 
-- RX EQ and DSP controls observe their own settings, reducing unrelated redraws.
-- Existing profile, Gate/ML, FM/NFM, CTCSS and manual-notch commands retain their behavior.
+- Stopping caption startup prevents a late analyzer or obsolete audio tap.
+- Final cues arrive before transcript collection, and the final partial audio chunk is retained.
+- Caption conversion and analyzer input stay bounded under backpressure.
 
-The release passed 1,177 software tests (two intentional skips), production
-presentation fixtures and Debug/Release builds. Radio acceptance remains
-operator-assisted.
+The release passed 1,178 software tests (two intentional skips), production
+caption fixtures under Address Sanitizer and Thread Sanitizer, and Debug/Release
+builds. Speech APIs were inert and PCM was generated; live transcription and
+radio acceptance remain operator-assisted.
 
 ## Recent feature additions
 
