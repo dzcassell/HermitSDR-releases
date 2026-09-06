@@ -27,16 +27,16 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_021
+## New in 2026.0906_022
 
-- Old Discord voice discovery replies and timer events cannot act on a replacement session.
-- Duplicate handshakes replace their sockets/timers, with audio paused until discovery completes.
-- Repeated descriptions with the same key preserve nonce progression; current failures retain diagnostics.
+- Each replacement AAC callback receives configuration before raw audio, including callback-triggered resets.
+- Audio feeds coalesce into bounded queue turns while preserving FIFO capacity and overflow timing.
+- Stream metadata reads a cached negotiated bitrate rather than touching the active converter.
 
-The release completed 1,187 software tests with zero failures and two intentional
-skips, production voice lifecycle fixtures, AddressSanitizer and ThreadSanitizer,
-and Debug/Release builds. New voice tests use inert network, timer and codec
-boundaries with real packet types; live Discord acceptance remains separate.
+The release completed 1,188 software tests with zero failures and two intentional
+skips, production AAC fixtures, AddressSanitizer and ThreadSanitizer, and
+Debug/Release builds. New tests use generated audio through the CPU AAC codec;
+audio devices and live streaming acceptance remain separate.
 
 ## Recent feature additions
 

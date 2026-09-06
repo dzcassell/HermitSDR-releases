@@ -7,6 +7,25 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_022] — 2026-09-06
+
+### Fixed
+- Send AAC configuration to each replacement audio callback before its raw audio.
+  A callback that resets the encoder during its header cannot receive the old
+  raw packet afterward; fresh input belongs to the new encoding session.
+- Coalesce audio feeds into one scheduled drain with at most eight conversion
+  attempts per turn. Retain the one-second FIFO limit and overflow timestamp
+  adjustment while avoiding a growing queue of redundant work.
+- Cache the negotiated AAC bitrate during initialization so metadata reads do
+  not access the converter concurrently with encoding.
+
+### Verification
+- Reproduce both callback/reset failures against the previous source and compile
+  the full production encoder with generated audio through AVAudioConverter.
+- Cover callback replacement, reentrant and queued resets, bounded scheduling,
+  overflow timing, concurrent feeds and owner release normally and under
+  AddressSanitizer and ThreadSanitizer in CI; no device or live stream is used.
+
 ## [2026.0906_021] — 2026-09-06
 
 ### Fixed
