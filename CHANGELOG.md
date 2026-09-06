@@ -7,6 +7,26 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_018] — 2026-09-06
+
+### Improved
+- The main toolbar observes focused receiver and control state. Bookmark
+  frequency updates and the calibrated squelch indicator have separate views.
+- Receiver restoration delivers mode, rate, zoom, gain, attenuation, antenna
+  and effective tuning step together, without unrelated VFO/filter payloads.
+- Preserve leading-edge layout, hardware/replay gates, band/bookmark recall,
+  RF gain, audio, zoom and waterfall command paths.
+
+### Verification
+- Compile production adapters and selected facade commands against real
+  domain owners, inert hardware/service boundaries and isolated preferences.
+- Cover projection isolation, coherent restoration, auto/fixed tuning steps,
+  current-value commands, band-memory clamps, bookmark persistence/recall,
+  replay recentering, capability updates, duplicate suppression and owner release.
+- Keep a source guard for toolbar composition and the separate signal leaf;
+  run the fixture in CI. Complex mode/rate application remains covered by its
+  existing engine tests; the new fixture checks its command forwarding.
+
 ## [2026.0906_017] — 2026-09-06
 
 ### Improved
