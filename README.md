@@ -27,22 +27,19 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_002
+## New in 2026.0906_003
 
-- **Remote pairing:** manual addresses validate hosts and ports, support IPv6,
-  and show input or credential-saving errors before connecting.
-- **Remote recovery:** old connection callbacks cannot overwrite a replacement
-  session. Overlapping handshakes still admit only one authenticated client,
-  and stopping or kicking a client invalidates its queued work.
-- **Slow clients:** bounded handshakes and send queues prevent growing backlogs;
-  rapid tuning/gain changes coalesce and the latest state recovers after a stall.
-- **Connect:** the sheet observes its connection, error and appearance owners,
-  reducing redraws caused by unrelated radio updates.
+- **FT8/FT4 isolation:** each decoder owns a synchronized callsign cache,
+  preserving hashes across its slots without races between monitors.
+- **Session changes:** obsolete decode jobs and results are discarded after
+  enable, protocol, replay-clock or callback changes.
+- **Bounded work:** one active and one latest pending decode prevent growing
+  backlogs; presentation updates coalesce while the main queue is busy.
+- **Hashed callsigns:** valid lookups survive holes left by aged cache entries.
 
-The release passed 1,139 software tests (two intentional skips), 122 tests under
-both Address and Thread Sanitizer, Debug/Release builds, and production remote
-and presentation fixtures. Actual two-Mac TLS/Bonjour and radio acceptance
-remain operator-assisted.
+The release passed 1,146 software tests (two intentional skips), 169 tests under
+both Address and Thread Sanitizer, Debug/Release builds and an optimized
+performance smoke test. Hardware and live RF acceptance remain operator-assisted.
 
 ## Recent feature additions
 

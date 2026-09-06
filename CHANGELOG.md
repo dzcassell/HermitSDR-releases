@@ -9,6 +9,28 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.0906_003] — 2026-09-06
+
+### Fixed
+- Give each FT8/FT4 decoder its own synchronized C callsign cache, preserving
+  hashes across its slots without races or contamination from other monitors.
+  Keep the compatibility C entry point safe for concurrent callers. Preserve
+  valid hash lookups across holes left by aged entries.
+- Reject FT8 jobs and results from obsolete enable, protocol, replay-clock or
+  callback sessions. Bound decoding to one active and one latest pending slot,
+  and coalesce stalled main-queue presentation. Deliver accepted results on the
+  main actor without another unguarded application hop.
+
+### Verification
+- Add deterministic FT8 cancellation, backlog, cache lifetime, capture-carrier
+  and callback tests, plus concurrent production C decoding and synthesized
+  hashed-callsign context-isolation/reset fixtures.
+
+### Documentation
+- Record 2026.0906_002 publication, exact-source CI and independent public
+  distribution verification, website and public-download documentation updates,
+  issue #100 completion, and continued ownership work on #60/#61.
+
 ## [2026.0906_002] — 2026-09-06
 
 ### Fixed
