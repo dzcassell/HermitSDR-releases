@@ -27,15 +27,15 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_008
+## New in 2026.0906_009
 
-- PSK Reporter rejects obsolete uploads after DNS and between packets.
-- Invalid metadata cannot crash packet construction or silently alter station identity.
-- IPFIX fields, sequence counts and packet-size bounds are corrected; partial sends retry only unsent reports.
+- DX-cluster stop/replacement prevents obsolete connections, login sends and buffered spots.
+- Old command completions report failure instead of success after a session ends.
+- PSK reporting coalesces repeated callsigns while preserving distinct stations in the bounded queue.
 
-The release passed 1,166 software tests (two intentional skips), 230 tests under
-each sanitizer, nine inert transport cases and Debug/Release builds. No live
-reports were sent during validation.
+The release passed 1,169 software tests (two intentional skips), production
+cluster fixtures under both sanitizers and Debug/Release builds. No live
+cluster login or command was used during validation.
 
 ## Recent feature additions
 

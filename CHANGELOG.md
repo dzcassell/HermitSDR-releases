@@ -7,6 +7,29 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_009] — 2026-09-06
+
+### Fixed
+- Coalesce repeated valid PSK callsigns before the pending/retry queue limit,
+  retaining the newest observation without allowing invalid metadata to replace
+  valid data. Repeated decodes no longer displace distinct stations or upload
+  duplicate callsigns within the same five-minute reporting batch.
+- DX-cluster callbacks that stop or replace a session prevent subsequent
+  connection creation, login sends and buffered spot delivery from that session.
+- Obsolete command completions report failure; receive and reconnect work
+  recheck session identity after callbacks.
+
+### Verification
+- Add three PSK coalescing regressions and an inert queue-pressure case; packet
+  boundary fixtures use distinct callsigns.
+- Add compiled-production inert cluster fixtures reproducing seven callback
+  lifecycle failures and checking normal spot/command behavior under sanitizers.
+
+### Documentation
+- Record verified 005/006 publications, website/public guide updates,
+  #103/#104 closure and #60 progress.
+- Document cluster callback ownership, regression evidence and live-server limits.
+
 ## [2026.0906_008] — 2026-09-06
 
 ### Fixed
