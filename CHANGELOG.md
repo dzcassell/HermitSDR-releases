@@ -7,6 +7,24 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_017] — 2026-09-06
+
+### Improved
+- The main header observes connection and indicator state; recording elapsed
+  time and transmit SWR update only their dedicated views.
+- Settings observe their station, CAT, remote-access and hardware controls.
+  Station restoration delivers callsign, grid and reporting intent together.
+- Preserve existing recording, connection, device, privacy and service commands,
+  error presentation, clipboard actions and auxiliary-window entry points.
+
+### Verification
+- Compile production presentation models and facade commands with real domain
+  owners and inert recording, network, privacy and hardware boundaries.
+- Cover recording success/failure, replay, header/meter/settings isolation,
+  station restoration, CAT actions, remote-port normalization, capability gates,
+  privacy forwarding, duplicate suppression and released owners in CI.
+- Keep source guards for the header layout, separate meters and settings actions.
+
 ## [2026.0906_016] — 2026-09-06
 
 ### Improved
