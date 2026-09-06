@@ -7,6 +7,23 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_015] — 2026-09-06
+
+### Improved
+- Receive filter controls observe only mode, bandwidth and shift as a coherent
+  snapshot; tuning, gain and unrelated receiver updates do not republish it.
+- Keep scroll, click/popover, presets, width and shift commands on the existing
+  facade paths, including main/sub filters, CAT, per-mode memory and persistence.
+
+### Verification
+- Compile the production adapter and extracted facade commands against a real
+  receiver owner, inert engine sinks and a temporary preferences suite.
+- Cover all eight modes, presets, scroll saturation, reset, restoration,
+  publication isolation, command side effects and released-owner behavior.
+- Retain an AppKit event/popover source guard and run the fixture in CI.
+- Scope the existing colormap observation guard to its declaration so moving
+  neighboring controls does not make it inspect unrelated views.
+
 ## [2026.0906_014] — 2026-09-06
 
 ### Improved
