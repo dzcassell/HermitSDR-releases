@@ -27,16 +27,15 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_012
+## New in 2026.0906_013
 
-- Stopping caption startup prevents a late analyzer or obsolete audio tap.
-- Final cues arrive before transcript collection, and the final partial audio chunk is retained.
-- Caption conversion and analyzer input stay bounded under backpressure.
+- The TX header banner and mic/ALC meters observe focused transmitter status.
+- Meter readings keep their separate high-rate owner; banner timing and passive ARM/keyed indications are preserved.
+- Includes the preceding split/XIT display, RX settings isolation and caption lifecycle fixes.
 
-The release passed 1,178 software tests (two intentional skips), production
-caption fixtures under Address Sanitizer and Thread Sanitizer, and Debug/Release
-builds. Speech APIs were inert and PCM was generated; live transcription and
-radio acceptance remain operator-assisted.
+The release passed 1,179 software tests (two intentional skips), the production
+status fixture and Debug/Release builds. No radio/RF session was used; operator
+acceptance remains separate from these software checks.
 
 ## Recent feature additions
 

@@ -7,6 +7,19 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_013] — 2026-09-06
+
+### Improved
+- The TX header banner and mic/ALC level meters observe the existing narrow
+  transmitter-status owner instead of all RadioState updates. Meter readings
+  retain their separate high-rate owner and the banner retains its task timing.
+- Preserve passive ARM/keyed indications and arcade gating without changing
+  any transmitter command, persistence, DSP or RF path.
+
+### Verification
+- Extend the production status fixture for sampled arcade preference and weak
+  owner release; guard against broad observation in the extracted status views.
+
 ## [2026.0906_012] — 2026-09-06
 
 ### Fixed
