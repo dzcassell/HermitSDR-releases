@@ -7,6 +7,24 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_019] — 2026-09-06
+
+### Improved
+- The calibration editor observes only its profile and recovery messages.
+  Detector readings update the dedicated live-measurement button.
+- Capture current split/XIT transmit frequency and output-jack context only
+  when adding a point, without tuning traffic invalidating the editor.
+- Preserve calibration save, import/export, reset, firmware/identity checks,
+  existing draft/fit behavior and policy enforcement commands.
+
+### Verification
+- Compile production adapters and actual calibration command bodies with real
+  station/receiver/transmitter owners and temporary calibration/export files.
+- Cover detector isolation, duplicate suppression, point context, persistence,
+  reset/import/export, incompatible profiles, malformed files, absent sessions
+  and released owners. Hardware application and policy checks use inert sinks.
+- Guard the editor layout, file dialogs and separate live detector leaf in CI.
+
 ## [2026.0906_018] — 2026-09-06
 
 ### Improved

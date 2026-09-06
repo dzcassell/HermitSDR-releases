@@ -27,15 +27,15 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_018
+## New in 2026.0906_019
 
-- Toolbar controls observe focused configuration; bookmark frequency and the squelch indicator update separately.
-- Receiver restoration delivers a complete toolbar snapshot, including the effective tuning step.
-- Existing band/bookmark recall, RF gain, audio and waterfall commands are preserved.
+- Calibration editing observes profile and recovery state independently of detector readings.
+- The live-measurement button receives only detector inputs; captured points retain current split/XIT frequency and jack context.
+- Existing save, reset, import/export and identity/firmware checks are preserved.
 
-The release passed 1,184 software tests (two intentional skips), production
-presentation fixtures and Debug/Release builds. Tests used inert hardware and
-service boundaries with isolated preferences; bench acceptance remains separate.
+The release passed 1,185 software tests (two intentional skips), production
+calibration fixtures and Debug/Release builds. Calibration files were temporary
+and hardware/policy sinks were inert; bench acceptance remains separate.
 
 ## Recent feature additions
 
