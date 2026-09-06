@@ -27,19 +27,20 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_003
+## New in 2026.0906_004
 
-- **FT8/FT4 isolation:** each decoder owns a synchronized callsign cache,
-  preserving hashes across its slots without races between monitors.
-- **Session changes:** obsolete decode jobs and results are discarded after
-  enable, protocol, replay-clock or callback changes.
-- **Bounded work:** one active and one latest pending decode prevent growing
-  backlogs; presentation updates coalesce while the main queue is busy.
-- **Hashed callsigns:** valid lookups survive holes left by aged cache entries.
+- **CAT teardown:** stopped servers discard queued commands, and disconnected
+  clients release their PTT, TUNE, two-tone and Morse ownership.
+- **CAT backpressure:** bounded clients, commands and replies prevent growing
+  backlogs; stalled replies time out and malformed transmit flags are rejected.
+- **Morse completion:** late callbacks remain tied to their original request.
+- **One-shot clients:** acknowledged frequency/mode changes still complete
+  after the client quits.
 
-The release passed 1,146 software tests (two intentional skips), 169 tests under
-both Address and Thread Sanitizer, Debug/Release builds and an optimized
-performance smoke test. Hardware and live RF acceptance remain operator-assisted.
+The release passed 1,156 software tests (two intentional skips), 199 tests under
+both Address and Thread Sanitizer, production listener fixtures, a localhost
+exchange and Debug/Release builds. Physical CAT/radio acceptance remains
+operator-assisted.
 
 ## Recent feature additions
 

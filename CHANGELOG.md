@@ -7,7 +7,30 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
-## [Unreleased]
+## [2026.0906_004] — 2026-09-06
+
+### Fixed
+- Invalidate stopped CAT requests and disconnected transmit intents before
+  delivery and track
+  PTT, TUNE, two-tone and Morse ownership for teardown. Required stop callbacks
+  run before a server is replaced, through the existing coordinator guards.
+- Bound CAT clients, queued commands, line lengths and outstanding replies;
+  stalled replies expire and old listeners/receives cannot revive a session.
+  Reject invalid transmit flags while retaining Hamlib MIC/DATA PTT values;
+  acknowledged one-shot frequency/mode commands still survive client quit.
+- Bind Morse completion to its original request and handler so a late finish
+  cannot clear a replacement request's ownership.
+
+### Verification
+- Add deterministic CAT stop/disconnect, immediate cancellation, overload,
+  reentrancy and stale Morse-completion fixtures with logging-only callbacks.
+- Exercise the production listener with deterministic network substitutes and
+  a real localhost exchange; run CAT fixtures in CI and sanitizer coverage.
+
+### Documentation
+- Record independently verified 003 publication and website/public-doc updates.
+- Document CAT ownership, queue/reply bounds, production and localhost fixtures,
+  sanitizer coverage and remaining operator-assisted acceptance.
 
 ## [2026.0906_003] — 2026-09-06
 
