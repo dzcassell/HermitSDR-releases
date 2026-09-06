@@ -27,20 +27,14 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_004
+## New in 2026.0906_005
 
-- **CAT teardown:** stopped servers discard queued commands, and disconnected
-  clients release their PTT, TUNE, two-tone and Morse ownership.
-- **CAT backpressure:** bounded clients, commands and replies prevent growing
-  backlogs; stalled replies time out and malformed transmit flags are rejected.
-- **Morse completion:** late callbacks remain tied to their original request.
-- **One-shot clients:** acknowledged frequency/mode changes still complete
-  after the client quits.
+- Deferred CW release/watchdog actions retain their original keying session.
+- Obsolete tail completions cannot end a replacement CW session.
 
-The release passed 1,156 software tests (two intentional skips), 199 tests under
-both Address and Thread Sanitizer, production listener fixtures, a localhost
-exchange and Debug/Release builds. Physical CAT/radio acceptance remains
-operator-assisted.
+The release passed 1,160 software tests (two intentional skips), 220 tests
+under each sanitizer, production CW fixtures and Debug/Release builds.
+Physical CW timing remains operator-assisted.
 
 ## Recent feature additions
 

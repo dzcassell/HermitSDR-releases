@@ -7,6 +7,21 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_005] — 2026-09-06
+
+### Fixed
+- Reject queued CW actions after their keyer session ends or is replaced.
+  Complete keyer release only for a tail accepted by the TX coordinator, so an
+  obsolete callback cannot release a newer session owned by the same source.
+
+### Verification
+- Reproduce stale CW action/tail delivery with production control methods and
+  inert radio/audio sinks; retain sample-clock and transmitter interlocks.
+
+### Documentation
+- Record verified CAT release 004, public download metadata and website update.
+- Document deferred CW action ownership, reproduced failures and acceptance limits.
+
 ## [2026.0906_004] — 2026-09-06
 
 ### Fixed
