@@ -7,6 +7,27 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0906_006] — 2026-09-06
+
+### Fixed
+- Correct TX-chain descriptions for FM, NFM and DSB; mark SAM receive-only.
+  Keep the chain display's split/XIT frequency calculation with the receiver
+  owner, shared by the compatibility facade.
+
+### Architecture
+- The TX-chain window observes transmitter, receiver and skin owners plus
+  deduplicated ARM/key facts. Rack edits retain weak commands through the
+  existing engine/persistence path; unrelated facade events do not invalidate it.
+
+### Verification
+- Cover modulation descriptions, split/XIT without RIT, isolated adapter events,
+  rack command forwarding and owner release. Run the production adapter in CI.
+
+### Documentation
+- Record the TX-chain observation boundary and full validation evidence.
+- Track separately reproduced RNNoise initialization/allocation failures from
+  the static-analysis sweep for a subsequent source batch.
+
 ## [2026.0906_005] — 2026-09-06
 
 ### Fixed
