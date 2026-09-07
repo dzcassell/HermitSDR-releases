@@ -27,21 +27,27 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0907_001
+## New in 2026.0907_008
 
-- About → Copy System Information includes current PA correction status and the separately retained trial verdict.
-- Save the evaluated IMD, correlation and sample count without reopening PA Linearity; a later candidate remains distinct from the evaluated trial.
-- Approved ANAN ANT1 dummy-load checks confirmed rejection to bypass, CAT owner-disconnect release, UI disarm and radio-disconnect release at 14.074 MHz USB / 3% drive.
+Seven releases since 001, all landed on the same day:
 
-The release completed 1,190 software tests with zero failures and two intentional
-skips, signed and clean unsigned Debug/Release builds, and the performance
-benchmark. The measured PA trial was rejected (50.0 → 49.9 dBc); positive
-predistortion improvement remains unproven. No DSP or transmitter interlock
-behavior changed. Copy a retained verdict before disconnecting the radio.
+- **Media Deck FX rack** — pitch, speed, echo, reverb, drive and tone sliders live on every playing pad, eighteen one-click profiles (Stadium, Underwater, Chipmunk, Demon, Gum Mouth and more), per-pad FX pins, hold-to-play pads, waveform thumbnails, and click-an-empty-pad-to-add-files.
+- **FT8/FT4 station clock drift** — the panel's CLOCK row learns your slot-clock offset from the stations heard and applies a bounded correction to decode capture and native TX slots; live-converged on 40 m.
+- **CW send_morse fix** — CAT Morse messages no longer release the key at the first word gap, and every refused key request (UI, CAT, paddle, hardware key) now shows in the TX Controls banner.
+- **Ten-band parametric TX EQ** with per-block bypass in the TX Chain Map and gain-matched A/B; the eight-band graphic EQ remains the default.
+- **Wave Editor** (Station ▸ Audio & Streaming) — record RX, microphone or the processed TX monitor to 48 kHz WAV, edit non-destructively with undo/redo, export atomically, and hand the result to the TX file player or a Media Deck pad. Editing never keys.
+- **Adaptive noise reduction** — a clean-room NR2/EMNR-class reducer beside the spectral gate and RNNoise, with strength and artifact controls and a level-matched A/B latch.
+- **Station devices** (Station ▸ Control Devices) — a framework for amplifiers, tuners and band directors over TCP or serial, with a demo amplifier; device faults can only add a TX inhibit, never key the radio.
+
+The release completed 1,305 software tests with zero failures and two intentional
+skips, signed and clean unsigned Debug/Release builds, and the CI smokes. Bench
+work on the ANAN dummy load at 3 % drive confirmed the two-tone and limiter
+scopes, the CW fix and the parametric EQ keying cleanly; audible A/B checks
+remain the operator's. No transmitter interlock behavior was weakened.
 
 ## Recent feature additions
 
-- **Features catalog:** Station → Features… (⌘⇧F) searches 51 tools and lets
+- **Features catalog:** Station → Features… (⌘⇧F) searches 53 tools and lets
   you show or hide entry points. Requirements and dependencies are explained;
   settings, saved data and ongoing activity are preserved. Reset restores
   visibility without enabling services, AI, decoders or transmit.

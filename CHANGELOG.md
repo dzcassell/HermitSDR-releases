@@ -10,6 +10,313 @@ batch of improvements ships as a new version.
 ## [Unreleased]
 
 ### Documentation
+- Record the 2026.0907_008 publication: exact-source CI 34153828140 dry run
+  and tagged signed run 34154086665 on frozen source 25357fe; public ZIP/DMG
+  checksums verified, Developer ID signature (team UG29A6ZW54), Gatekeeper
+  "Notarized Developer ID" acceptance and stapled tickets on app and DMG
+  confirmed independently; GitHub latest is 008. No runtime change.
+
+## [2026.0907_008] — 2026-09-07
+
+### Added
+- External station-device framework (#84, Station ▸ Control Devices ▸
+  Station Devices; feature catalog 53): capability-based device model
+  (amplifier, tuner, band director, generic), drivers as pure codecs with
+  bounded line-frame reassembly, a pure session state machine (connect and
+  silence timeouts, exponential backoff to 60 s, per-attempt generations that
+  reject late frames, latest-wins command coalescing per kind, capability
+  gating, model-mismatch fault that closes the link and refuses commands,
+  stale telemetry at 3× poll), per-device runtime actors on their own serial
+  queues publishing main-actor snapshots at ≤10 Hz, TCP (Network.framework)
+  and serial (POSIX termios, `/dev/cu.*`, standard and IOSSIOSPEED baud)
+  transports plus an in-process loopback, a reference fake amplifier driver
+  and simulator, and a panel with identity, connection state, telemetry with
+  STALE indication, capability-gated device controls, alarms, bounded log and
+  a Demo amplifier with fault/heat/drop-link/wrong-model knobs.
+- Station interlock seam: devices reduce to inhibit reasons and warnings that
+  enter `TXPolicy` additively (`stationInterlock`); a driver can never key or
+  clear a radio-side refusal. An inhibit appearing while keyed unkeys through
+  the coordinator and the reason shows in the TX Controls banner. Settings
+  persist as `stationDevices.v1` (lenient decode); driver secrets live only in
+  Keychain and are read at handshake.
+
+### Verification
+- 27 `StationDevicesTests`: frame reassembly and bounds, handshake/poll/
+  coalescing, capability refusal, connect-timeout backoff cap, late-generation
+  rejection, silence timeout and backoff reset, stop semantics, staleness →
+  warning only, model mismatch → fault/refuse/retry, interlock truth table,
+  additive-only policy property, coordinator never producing a key effect
+  under interlock, context defaults, configuration round trip and migration,
+  log ring bound, secret read only at handshake and never logged, center
+  secret storage and deletion, demo fault inhibits and removal restores
+  policy, disabled device contributes nothing, loopback runtime reconnect and
+  publish throttle, loopback mismatch, refused connection backoff, real
+  127.0.0.1 TCP exchange and peer close, unreachable endpoint, pseudo-terminal
+  serial read/write/hangup, missing serial device. Full suite 1,305 tests, two
+  intentional skips, zero failures after the README catalog count; Debug build
+  clean; no new lock, timer or unchecked declaration (one `DispatchSerialQueue`
+  per enabled device, recorded in `docs/ConcurrencyOwnership.md`).
+- Session smoke in the running Debug app (radio connected, TX SAFE): the demo
+  amplifier connected over loopback with identity and 1 s telemetry; Trip
+  fault turned the strip to INHIBIT and the TX Controls banner read "Station
+  interlock inhibits TX — Demo amplifier: OVERDRIVE protection trip"; Clear
+  fault returned to CLEAR (46 frames, 45 commands, 0 refused). No RF; no real
+  device.
+
+## [2026.0907_007] — 2026-09-07
+
+### Added
+- Adaptive noise reduction (#77), a clean-room NR2/EMNR-class reducer selectable
+  alongside the existing spectral gate and RNNoise (defaults and existing
+  modes unchanged, pinned bit-identical): 256-point 50 % Hann STFT (one-hop
+  latency like the gate), MCRA-style minimum-statistics noise tracker with a
+  speech-presence probability, decision-directed a-priori SNR, Ephraim–Malah
+  log-spectral-amplitude gain with a soft-decision floor that only lifts, and
+  temporal gain smoothing against musical noise. Strength (0–100 %) and
+  Artifact floor (−30…−6 dB) cross the block-boundary mailbox; an A/B latch
+  crossfades to the dry path at matched RMS (2 s window, 20 ms fade). Resets
+  ride the existing paths: TX unkey keeps the noise floor, detector change
+  resets fully under the duck, replay/sub-RX/rate/reconnect rebuild the chain.
+  DSP popover gains the toggle, sliders and latch; the `N` cycle becomes
+  Off → Gate → ML → Adaptive. Persisted as `nrAdaptive`, `nrAdaptiveStrength`,
+  `nrAdaptiveFloorDb`. Release cost 11.7 µs p50 / 14.8 µs p99 per 10 ms block.
+
+### Verification
+- 19 `AdaptiveNoiseReducerTests`: segmental-SNR improvement in white and
+  pink noise at 0/5/10 dB (adaptive +8.8/+7.7/+6.1 and +15.7/+15.1/+14.0 dB
+  vs the gate's +7.5/+6.1/+4.3 and +11.2/+10.4/+9.2), log-spectral distortion
+  bounded (<5 dB and ≤ gate + 1 dB), monotone controls, finite output at
+  extremes, allocation-stable process path, deterministic reset, keep-floor
+  reset, one-hop latency with sample-aligned dry path, A/B gain math and
+  rolling RMS, exponential-integral reference values, and RXChain mode
+  priority, bit-identical existing modes, mailbox slider crossing, level-
+  matched A/B at block boundaries and finite output across unkey/mode-change
+  resets. Full suite 1,278 tests, two intentional skips, zero failures; Debug
+  build clean; rx-audio presentation smoke extended and passing; no new lock,
+  queue, timer or unchecked declaration.
+- Receive-only smoke in the running Debug app on the ANAN (20 m, ANT3
+  dipole): the adaptive toggle engaged on live audio, the spectral gate
+  dropped as designed, and the A/B latch enabled; CPU unchanged. Blind
+  listening and on-air audition remain the operator's; fixtures are
+  synthetic.
+
+### Fixed
+- CI: the decoder/TX-EQ presentation-isolation smoke's fake facade now
+  carries the #78 EQ-lab members (`txEQMode`, `txParametricEQ`,
+  `txBypassMap`, A/B readouts and commands, `noteTXEQEdited`) and asserts
+  the new commands forward through the facade and publish only on change.
+  The 2026.0907_005 CI run failed at this step; the app and `swift test` were
+  green.
+
+## [2026.0907_006] — 2026-09-07
+
+### Added
+- Wave Editor window (#80, Station ▸ Audio & Streaming): record 48 kHz WAV
+  from three explicit sources — RX audio (the final speaker mix, interpolated
+  ×4 from 12 kHz), the microphone (the window's own capture, permission asked
+  on REC), and the TX monitor (the true post-limiter processed voice; audio
+  exists only while ARMED, recording never keys) — each through a bounded
+  fan-out sink that copies and returns, a 10 s FIFO that drops oldest with a
+  visible DROP count, a `.wav.partial` stage and an atomic rename on stop. A
+  red REC lamp names the live source.
+- Non-destructive editing over an immutable source: selection, trim, delete,
+  fade in/out, gain ±3 dB, normalize, undo/redo as an operation stack, a
+  multi-resolution peak pyramid so long files stay responsive, transport
+  play/pause/stop through a main-actor AVAudioEngine, Save As… (16-bit,
+  32-bit or float, atomic, never over the source) with a `.wave-edit.json`
+  sidecar that restores the session when the file is reopened. Hand-offs
+  operate only on the exported file: "Use as TX file" sets the TX Controls
+  file path and nothing else (ARM and PTT still required there); "Send to
+  Media Deck pad…" fills the first empty pad on the current page. Feature
+  catalog grows to 52 entries.
+
+### Verification
+- 14 `WaveEditorTests`: RIFF fields and channel interleave for PCM16/PCM32/
+  float32, decoding existing recorder output and clamping over-declared data,
+  partial-then-atomic finalize, ×4 interpolation, bounded drop-oldest without
+  blocking the producer, cancel removes the partial, source-tagged names,
+  undo/redo and composition order with selection following edits, exact-sample
+  render of trim/fade/gain/normalize, atomic export failure leaving no partial
+  and never touching the original, peak pyramid vs brute force at several
+  zooms, session Codable round trip and sidecar matching. Full suite 1,259
+  tests, two intentional skips, zero failures after the README catalog count;
+  Debug build clean. One new compiler-visible lock (`WaveTapRecorder`), no
+  queue, timer or unchecked declaration.
+- Session smoke in the running Debug app on the ANAN (receive-only): a 6 s
+  RX Audio recording produced `…_rx-14074kHz.wav` (48 kHz, 1 ch, Int16,
+  6.40 s per afinfo) and opened in the editor with the waveform, transport and
+  edit toolbar live. Microphone and TX-monitor capture, playback routing and
+  the hand-offs were not exercised on hardware.
+
+## [2026.0907_005] — 2026-09-07
+
+### Added
+- Ten-band parametric TX EQ (#78) as an alternative occupant of the USER EQ
+  slot: per band enable, type (peaking, low/high shelf), 20 Hz–20 kHz, Q
+  0.1–10, ±18 dB, plus ±12 dB input/output trims; RBJ biquads in transposed
+  direct form II with coefficients recomputed only for changed bands, state
+  carried across edits, denormal flush, and a transparent fast path. The
+  default stays the eight-band graphic EQ, so every existing profile is
+  bit-identical. TX Controls gains an EQ-mode segment, ten band rows, trims
+  and a response curve drawn over the existing octave TX EQ meters.
+- Per-block bypass map in the TX Chain Map: BYP latches on eleven blocks
+  (rotator, gate, AGC, profile EQ, user EQ, de-esser, compressor, rack, FX,
+  mic NR, CESSB) with a 5 ms click-free crossfade for the audio blocks and a
+  hard switch for NR/CESSB. The Digital profile's enforced bypasses, the
+  channel filters, the lookahead limiter and the modulator are not blocks and
+  cannot be bypassed. The map is saved with the deck and inside named custom
+  profiles.
+- Gain-matched A/B: slot A is the reference; switching to B stores a
+  speech-gated 3 s pre-limiter RMS of the leaving slot and applies a ±12 dB
+  match trim only while B is live, read before the trim so matches never
+  compound. Optional "include bypass map"; Copy → A/B. Preview works unkeyed
+  through the existing Monitor and Check ▸ Rec/Play taps.
+
+### Verification
+- 21 `ParametricEQTests`: response at center/far/shelves, bounds finite and
+  stable, disabled bands and zero trims bit-transparent, changed-band-only
+  recompute, normalization, crossfade ramp, loudness meter gating, A/B trim
+  math and slot round trip, bypass map Codable and Digital forcing,
+  transmitter-configuration round trip and pre-#78 blobs decoding neutral,
+  default chain unchanged, bypassed user EQ bit-identical to flat, Digital
+  profile still forcing every block, parametric shaping vs graphic ignoring,
+  mid-stream bypass click-free, and the match trim scaling the pre-limiter
+  signal. Full suite 1,245 tests, two intentional skips, zero failures;
+  Debug build clean; no new lock, queue, timer or unchecked declaration.
+- Live on the ANAN ANT1 dummy load at 3 %: parametric mode with a −14.5 dB
+  1 kHz notch keyed and released cleanly under the Standard profile; the
+  response view drew the octave meters behind the curve. A notch on/off
+  comparison and an audible A/B remain operator checks.
+
+### Known cosmetic issue
+- The A/B strip's Match / Incl. bypass labels wrap in the TX Controls column.
+
+## [2026.0907_004] — 2026-09-07
+
+### Fixed
+- CW automatic messages (CAT `send_morse`, keyboard text) no longer release
+  the coordinator at their first character or word gap (#111). The session
+  judged "done" by the keyer's transmit-request alone, and a gap is longer
+  than the 180 ms hang, so `TEST DE WU1T` keyed for one word and silently
+  dropped the rest. The release now also requires the keyer's message to be
+  complete; paddle keying keeps the hang-based release.
+
+### Added
+- Every refused key request — UI PTT/TUNE/two-tone, CAT, hardware key,
+  keyboard paddle — now appears in the TX Controls notice banner naming the
+  request and the reason. `lastError` was only rendered by the connect sheet,
+  so refusals while connected were invisible. Accepted CAT `send_morse`
+  requests show "CAT send_morse keying: <text>" while they key.
+
+### Verification
+- `testAutomaticMessageHoldsCoordinatorAcrossWordGaps` renders "E E" through
+  the session and requires both characters and exactly one release; it fails
+  on the previous code (one character, then release). A rigctl loopback test
+  proves `send_morse` reaches its callback while the client stays connected
+  and that a second request is refused rather than queued.
+- Live on the ANAN ANT1 dummy load at 14.074 CW, 3 % drive: the coordinator
+  transition log from About → Copy System Information showed
+  `requestKey(cw, cat) → transmitting → release` back-to-back on the old
+  build; after the fix the same message held ON AIR through the full text
+  (~7 s, PA 3.1 A) and released once to ARMED, then SAFE.
+
+### Documentation
+- Record the Claude Code ANAN bench: receive-only FT8 clock-drift validation
+  on the ANT3 dipole and one bounded 3 % two-tone pulse into the ANT1 dummy
+  load with the phosphor wire-scope envelope confirmed (#39 item 1 partial;
+  PWR/SWR ladders and the flat-top limiter line remain unexercised). Evidence
+  under `docs/bench/2026-09-07/claude-*`, report in
+  `docs/ANANBench-2026-09-07-Claude.md`. No runtime change.
+- Record the second bench hour: a 51-minute W3LPL soak without disconnect, 40 m OmniSkimmer check (exact
+  click-to-tune, implausible text at ATT 0/−20), the flat-top limiter line
+  confirmed with a hot file at 3 % (#39 item 1 ticked), an FM PTT+file pulse,
+  and a CAT `send_morse` attempt that produced no key-down (filed as a new
+  issue). Radio finished SAFE.
+
+## [2026.0907_003] — 2026-09-07
+
+### Added
+- FT8/FT4 station clock-drift estimation and compensation (#76). Each decode's
+  start time within the slot (already computed by ft8_lib, previously
+  discarded) is reduced to a per-slot median with MAD outlier rejection; the
+  median of the last twelve slot medians is the station's clock offset. When
+  confidence (decode count × slot count × agreement) passes 0.5 the decode
+  capture boundary and the native TX slot clock subtract the estimate, bounded
+  to ±0.5 s and slewed 0.1 s per slot, keeping the FT8 watchdog's 0.86 s
+  headroom intact. Replay never contributes, stale evidence decays to zero
+  after ten minutes, a ≥2 s disagreement with a confident estimate (NTP step,
+  sleep/wake) resets the history, and the Mac's clock is never changed.
+- FT8 panel **CLOCK** row: offset, spread, evidence, age, applied value, an
+  **AUTO** switch (persisted; off keeps measuring but applies nothing) and
+  **Reset**. Each decode row now shows its DT.
+
+### Verification
+- Fifteen `FT8ClockDriftTests`: fast/slow clocks converge within eight slots
+  under the slew bound, outliers and implausible starts are rejected, sparse
+  or disagreeing evidence applies nothing, the clamp stays inside the watchdog
+  margin, stale evidence decays and clears, disable/reset/clock-step behave as
+  documented, and the decode engine starts capture on the corrected boundary
+  while clamping out-of-range corrections.
+- Live receive-only check on the ANAN-7000DLE MkII (RX ANT3 40 m dipole,
+  7.074 MHz USB, 384 kHz, Debug build): the first run exposed an inverted
+  correction sign (residual DT climbed toward the clamp) and an estimator
+  that stored residuals instead of totals (the loop stalled at half); both
+  are fixed and pinned by `testClosedLoopDrivesObservedDTToZero`. The
+  corrected build converged in eight slots and held +0.28 s ±0.01 over twelve
+  slots and ~200 decodes while fresh rows read DT −0.2…+0.2 around zero. The
+  offset includes the receive pipeline delay; no transmission was made and
+  the TX slot correction is not hardware-validated.
+
+### Documentation
+- Describe the estimator, its bounds and its edge-case behavior in
+  `docs/DigitalModes.md`; the README capability row names the feature.
+
+## [2026.0907_002] — 2026-09-07
+
+### Added
+- Media Deck live FX rack (header **FX**): pitch (±24 semitones, speed
+  untouched), speed (¼×–4×, pitch untouched), echo mix/time/feedback, reverb
+  mix with nine spaces, drive mix with ten flavors, and log-scaled low-pass /
+  high-pass tone sliders. Sliders act on every playing pad immediately, the
+  rack is saved with the deck, and an ON latch bypasses it without losing the
+  setting. Effects are Apple's built-in `AVAudioUnit` effects in series
+  between each pad's player and its mixer, so the stream-mix tap hears them
+  too; a neutral rack bypasses every unit and sounds exactly as before.
+- Eighteen one-click FX profiles — Stadium, Underwater, Chipmunk, Demon,
+  Gum Mouth, Helium, Robot, Telephone, Alien, Haunted, Megaphone, Slow-Mo,
+  Fast Forward, Cathedral, Walkie-Talkie, Canyon, Lo-Fi, Cosmic — plus a
+  **Surprise me** randomizer bounded to the slider ranges and a Reset.
+- Per-pad FX in the pad editor: follow the rack, copy the current rack, or
+  pin a profile so that pad always sounds that way regardless of the rack and
+  its ON/OFF switch. Pinned pads show an **FX** chip on the pad face.
+- Clicking an empty pad now opens the Finder picker in perform *or* edit
+  mode; several files fill the following empty pads in order, and files may
+  also be dropped onto an empty pad in either mode. Right-click an empty pad
+  to choose files or open the full editor for a YouTube/web pad. In edit
+  mode a single new pad opens straight into its editor.
+- **Hold to play** press policy: sound while the mouse button is down, stop
+  (with the pad's fade-out) on release. Keyboard activation toggles because
+  it has no release. Momentary pads show a hand icon.
+- Pad-face waveform thumbnails and duration badges for local files, scanned
+  off the main actor after assignment and stored in the deck document; the
+  played portion lights green while the pad is sounding.
+
+### Verification
+- Pin the FX value model: neutral detection per stage, clamping (including
+  NaN) into every slider range, tolerant decoding of partial and unknown
+  fields, and the human summary. Every profile is unique, audible, in range
+  and recoverable by exact match; the requested profiles carry their
+  signature moves. The randomizer is generator-injected: deterministic,
+  always audible, whole-semitone pitch, bounded.
+- Cover rack/per-pad FX, Hold-to-play and waveform fields through document
+  round-trip while v1 documents stay neutral; unknown press policies decode
+  as Restart. Pin the Hold-to-play down/up/keyboard command machine, the
+  quick-add empty-slot fill (forward, skip occupied, never wrap), waveform
+  bin resampling/normalization and duration labels.
+
+### Documentation
+- Describe the FX rack, profiles, per-pad FX, quick-add, Hold to play and
+  waveform thumbnails in `docs/MediaDeck.md` and the README summary.
 - Record completed 2026.0907_001 CI, independent distribution verification,
   signed/notarized publication, website update, installed public app and final
   ANAN/Claude handoff. No runtime change; the current download remains 001.
