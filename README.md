@@ -27,16 +27,17 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-## New in 2026.0906_023
+## New in 2026.0907_001
 
-- Replacement or newly installed video callbacks wait for configuration and a keyframe before receiving dependent frames.
-- Stopping capture during a configuration callback rejects the following old raw frame.
-- Capture, compression and callback generations are checked together at delivery boundaries.
+- About → Copy System Information includes current PA correction status and the separately retained trial verdict.
+- Save the evaluated IMD, correlation and sample count without reopening PA Linearity; a later candidate remains distinct from the evaluated trial.
+- Approved ANAN ANT1 dummy-load checks confirmed rejection to bypass, CAT owner-disconnect release, UI disarm and radio-disconnect release at 14.074 MHz USB / 3% drive.
 
-The release completed 1,189 software tests with zero failures and two intentional
-skips, production video callback fixtures, AddressSanitizer and ThreadSanitizer,
-and Debug/Release builds. Synthetic encoded frames exercise the actual delivery
-and stop paths without starting screen capture, GPU compression or live streaming.
+The release completed 1,190 software tests with zero failures and two intentional
+skips, signed and clean unsigned Debug/Release builds, and the performance
+benchmark. The measured PA trial was rejected (50.0 → 49.9 dBc); positive
+predistortion improvement remains unproven. No DSP or transmitter interlock
+behavior changed. Copy a retained verdict before disconnecting the radio.
 
 ## Recent feature additions
 

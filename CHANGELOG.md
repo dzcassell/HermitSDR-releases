@@ -10,13 +10,36 @@ batch of improvements ships as a new version.
 ## [Unreleased]
 
 ### Documentation
+- Record completed 2026.0907_001 CI, independent distribution verification,
+  signed/notarized publication, website update, installed public app and final
+  ANAN/Claude handoff. No runtime change; the current download remains 001.
+
+## [2026.0907_001] — 2026-09-07
+
+### Added
+- Include the retained PA trial verdict and current correction status separately
+  in About → Copy System Information. A newer candidate cannot conceal the
+  measurement that accepted or rejected a trial, and copying the report does
+  not require opening PA Linearity or changing transmitter state.
+
+### Verification
+- Cover distinct candidate/trial reporting, multiline measurement preservation
+  and missing diagnostics in the support-report regression suite.
+- On the approved ANAN ANT1 dummy load at 14.074 USB / 3% drive, retrieve a
+  50.0 → 49.9 dBc rejected trial and verify CAT owner-loss, UI disarm and
+  radio-disconnect release. Positive DPD improvement remains unproven.
+- Full suite: 1,190 tests, two intentional skips, zero failures; signed
+  Debug/Release builds and the unchanged performance benchmark pass.
+
+### Documentation
+- Add a followup report with raw support copies, bounded CAT evidence,
+  timing limitations, restored controls and remaining issue acceptance.
 - Record the September 7 operator-authorized ANAN dummy-load session: bounded
   key/release tests, paired PA baselines, visible wire/audio scopes, receive-rate
   transport results and app reconnect checks, with retained measurement logs.
 - Preserve unresolved trial-verdict inspection, low-power calibration limits,
   cumulative performance counters and the remaining operator checks in the
-  Claude handoff. No runtime change; the current signed download remains
-  2026.0906_023.
+  Claude handoff for the measured 2026.0906_023 runtime.
 
 ## [2026.0906_023] — 2026-09-06
 
