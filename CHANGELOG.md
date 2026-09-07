@@ -7,6 +7,17 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [Unreleased]
+
+### Documentation
+- Record the September 7 operator-authorized ANAN dummy-load session: bounded
+  key/release tests, paired PA baselines, visible wire/audio scopes, receive-rate
+  transport results and app reconnect checks, with retained measurement logs.
+- Preserve unresolved trial-verdict inspection, low-power calibration limits,
+  cumulative performance counters and the remaining operator checks in the
+  Claude handoff. No runtime change; the current signed download remains
+  2026.0906_023.
+
 ## [2026.0906_023] — 2026-09-06
 
 ### Fixed
