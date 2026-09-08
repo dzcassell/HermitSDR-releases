@@ -27,6 +27,17 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0908_005
+
+- **Audio Unit hosting.** Station ▸ Audio & Streaming ▸ Audio Units hosts the effect Audio Units installed on your Mac as independent RX and TX insert chains. Units load out-of-process where the component allows (AUv3 and Apple's remote-hosted effects); in-process-only units are badged. Each chain starts with **master bypass on** until you audition it; a unit that errors or overruns its time budget is bypassed on that block and quarantined, and the chain keeps flowing. Latency per insert is shown. RF stays behind the same interlocks and the limiter runs after every insert; the Digital profile bypasses the block. VST3 is not hosted.
+- **PureSignal memory terms (2026.0908_004).** PA Linearity gains a LUT / Memory candidate picker. The memory corrector composes the memoryless table with a bounded memory polynomial and inherits every safety clamp; it is session-only, default off, and behind the same ≥1 dB trial gate. On the ANAN dummy load it was accepted at 30 % (+21.5 dB, versus +20.3 dB for the table alone) and correctly rejected at 50 % by the no-agreement fail-safe. Bench notes record that both correctors bottom at an SFDR of about 52 dBc, pointing at the feedback measurement path as the next thing to check.
+
+The release completed 1,376 software tests with zero failures and two intentional
+skips, signed and clean unsigned Debug/Release builds, and the CI smokes. All
+transmissions were bounded two-tone or file pulses into a 1500 W dummy load at
+≤50 % drive with the SWR guard on; the radio finished disarmed. No transmitter
+interlock behavior changed.
+
 ## New in 2026.0908_003
 
 - **FT8 free-text beacon.** The FT8 panel gains a BEACON row: up to 13 free-text characters, an interval in seconds (default 30 — every other 15 s slot), and a repeat limit (default 5; 0 runs until stopped). It uses the same interlocked native-TX path as CQ — ARM, ENABLE TX, USB and the coordinator are re-checked on every frame — and, being unattended, stops itself with a reason on any refusal. Identification and band-plan compliance remain the operator's responsibility.

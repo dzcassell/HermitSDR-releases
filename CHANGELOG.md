@@ -7,6 +7,109 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [Unreleased]
+
+## [2026.0908_005] — 2026-09-08
+
+### Added
+- Audio Unit hosting (#79): Station ▸ Audio & Streaming ▸ **Audio Units**
+  hosts installed macOS effect Audio Units (aufx/aumf) as independent RX and
+  TX insert chains. Units are instantiated out-of-process where the component
+  allows it (AUv3 and Apple's remote-hosted v2 effects); in-process-only units
+  are flagged. Each chain is rendered manually (`AUAudioUnit.renderBlock`,
+  48 kHz mono, stereo fallback) from the chain's own block callback through
+  one immutable snapshot per block — no scanning, disk I/O, main-thread wait,
+  lock shared with the control plane or allocation growth on the audio thread.
+  RX inserts sit after the native noise reducers and before the tone/AGC
+  stages (×4 resampled around the plugins); TX inserts run through the #78
+  stage crossfade after FX and before the A/B trim and limiter, so the Digital
+  profile hard-bypasses them and the limiter and band cleanup still guard the
+  wire. **Master bypass defaults on** per chain until the operator auditions
+  it (the unkeyed Monitor mic-check path carries the TX inserts). Supervision:
+  a render error, or two consecutive blocks over 80 % of the block period,
+  snaps the insert to bypass, keeps the chain flowing dry, and quarantines the
+  unit; a live-chain marker left behind by a crash quarantines what was
+  engaged. Per-insert latency/tail/format and total added latency are shown
+  (displayed, not compensated). Editors open in managed windows via
+  `requestViewController`, with a generic parameter-slider fallback. Chains,
+  favorites, quarantine and plugin state persist in `audioUnits.v1` (all keys
+  optional, restore-safe). The host holds no coordinator, PTT, ARM or
+  connection reference. VST3 is not hosted; docs/AudioUnits.md records why and
+  the in-process risk of v2 units. Feature catalog count 54; TX Audio Chain
+  map shows the AUDIO UNITS block with its BYP latch.
+
+### Verification
+- 18 `AudioUnitHostingTests` (documents, ordering, quarantine policy, bypass
+  bit-identity, persistence/version tolerance, Digital-profile bypass, unkeyed
+  monitor path) plus a hosting fixture on Apple's built-in effects: AULowpass
+  negotiated 48 kHz mono out-of-process, AUNewTimePitch reports 85.3 ms
+  latency, master and per-insert bypass bit-identical with zero render work,
+  0 bytes heap growth over 2,000 steady-state blocks, peak render 56.6 µs
+  (out-of-process) / 27.4 µs (in-process) per 10 ms block, injected render
+  error trips to dry pass-through with one fault and a quarantine entry, two
+  consecutive 9 ms overruns trip `.renderTimeout`. Full suite 1,376 tests.
+- Not yet exercised live in the running app beyond opening the window; no
+  radio involved. A hung *in-process* plugin can still stall the thread it
+  renders on (documented); out-of-process units cannot.
+
+## [2026.0908_004] — 2026-09-08
+
+### Added
+- PureSignal memory-term corrector (#51): PA Linearity gains a LUT / Memory
+  candidate picker. "Memory" fits `PureSignalMemoryPredistorter` — the
+  memoryless 65-node LUT composed with a gain-type memory polynomial (nine
+  complex coefficients: constant gain, two envelope-slope terms at 192 kHz, and
+  deviation terms from three one-pole envelope states with τ = 60/250/1000 µs)
+  by ridge least squares on the steady bank's aligned pairs, which
+  `PureSignalAnalysis` now retains for steady windows only. The candidate
+  inherits every LUT safety rule (wire-domain mapping, attenuation-only target,
+  gain 0.75…1.35, phase ±20°, 0.98 wire clamp, correlation ≥0.90) and adds its
+  own refusals (ill-conditioned fit, >2 % clamped samples, raised peak,
+  <1 dB predicted gain). The P2 packet path carries a fixed SIMD envelope
+  history reset at key-down and on install; the LUT ignores it. Default stays
+  the memoryless LUT; nothing is persisted; the trial toggle, ≥1 dB gate and
+  auto-unkey/hard-bypass are unchanged and verdicts carry a `memory` tag.
+
+### Verification
+- 12 new `PureSignalMemoryPredistorterTests` (coefficient recovery, constant
+  envelope refused as ill-conditioned, refusals, history continuity/reset,
+  clamps, verdict tag) and loopback fixtures with a first-order thermal PA
+  model: memoryless PA 31.9 → LUT 68.6 → memory 71.4 dBc; memory PA 29.1 →
+  LUT 39.1 (plateau) → memory 52.1 dBc. Release fit cost 1.1 ms per bank.
+- Live on the ANAN ANT1 load (14.074 USB, FB atten 0 dB, authorized ≤50 %):
+  30 % **ACCEPTED · memory · 32.3 → 53.8 dBc (+21.5 dB)** against the LUT's
+  52.3 dBc at the same drive; 50 % **REJECTED · memory · steady banks never
+  agreed** (52.6 → 58.4 dBc drifting upward over 8 s) — the no-agreement
+  fail-safe unkeyed and restored hard bypass, its first live exercise. The
+  fit's on-bank residual (−63 dB) did not transfer to the PA; every corrected
+  trial today, LUT or memory, bottomed at an SFDR of 51.5–53.3 dBc, which
+  points at a floor in the feedback measurement path rather than at PA memory.
+  Bench: docs/ANANBench-2026-09-08-Claude.md.
+
+### Documentation
+- Bench (#11, #12, #39): receive-only ANAN checks at 768/1536 kHz with SUB
+  (clean, 13.7 k pkt/s at 1536 k, no steady-state sequence errors), the RF time
+  machine cap (90 s / 45 s), and antenna per-band memory (verified across
+  27 MHz ↔ 20 m ↔ 10 m; TX jack never moved); #12's two-antenna null test is
+  blocked because the second ADC is fed from RX2 IN, not ANT2. #39 item 1
+  completed with a file-source 40 % pulse into the ANT1 load: PWR √-scale and
+  SWR ladders live beside the flat-topped phosphor envelope and lamps. Evidence
+  in docs/bench/2026-09-08/, notes in docs/ANANBench-2026-09-08-Claude.md.
+- Bench: PureSignal DPD drive sweep on the ANAN-7000DLE MkII into the ANT1
+  1500 W load at 14.074 USB, owner-authorized to 50 %. Bounded two-tone
+  baseline + Trial LUT pulses at 20/30/40/50 % all **ACCEPTED**: 32.3 → 52.7,
+  32.2 → 52.3, 32.6 → 53.3 and 33.1 → 54.6 dBc (+20.3…+21.6 dB); corr 1.000,
+  two agreeing steady banks, no clamp/fail-safe/SWR-guard trip, SAFE after every
+  pulse. Baseline IMD3 is nearly flat 10–50 %, and the ~53 dBc post-correction
+  residual is flat across drive (memory effects the memoryless LUT cannot
+  reach). docs/ANANBench-2026-09-08-Claude.md, docs/bench/2026-09-08/. No
+  runtime change; correction stays session-only and hard-bypassed by default.
+- Record the 2026.0908_003 publication: exact-source CI on ed846e7, dry run
+  34230926322 inspected, tagged signed run 34231338485; public ZIP/DMG
+  checksums, Developer ID signature, Gatekeeper and stapled tickets verified
+  independently; GitHub latest, the public guide/CHANGELOG mirror and
+  hermitsdr.com updated to 003. No runtime change.
+
 ## [2026.0908_003] — 2026-09-08
 
 ### Added
