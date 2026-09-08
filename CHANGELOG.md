@@ -7,14 +7,106 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
-## [Unreleased]
+## [2026.0908_002] — 2026-09-08
+
+### Fixed
+- PureSignal predistortion now linearizes the PA (#51). A synthetic loopback
+  fixture (production two-tone → `TXUpsampler` → LUT at the packet-path point
+  → 24-bit quantization → memoryless PA model → reference/feedback taps at the
+  bench levels → the production analyzer) reproduced the bench exactly:
+  baseline 31.3 dBc and **no change** with the old candidate. Three causes:
+  the LUT was normalized by the captured-reference 99th percentile (~0.29)
+  but indexed by the wire envelope (peak 0.90), so every wire sample above
+  0.29 hit the top node and the correction collapsed to a constant gain; the
+  fit targeted unity above the highest measured output where a two-tone
+  spends ~28 % of its time; and the delay search could lock onto a 160-sample
+  beat-period alias. The connection now reports the post-LUT wire power per
+  PureSignal pair (`PureSignalWireLevel`), the analysis exposes the wire RMS
+  and REF/wire ratio, the LUT domain is the wire scale, the fit is an
+  attenuation-only inverse through the highest measured point (node 64 unity,
+  never extrapolates, PEP unchanged, 0.98 clamp and gain/phase clamps
+  untouched), "already linear" measurements are refused with a reason, and
+  delay candidates within noise of the peak resolve to the one nearest zero.
+  Fixture: Rapp PA 31.9 → 68.7 dBc (+36.8 dB), cubic PA +38.1 dB, linear PA
+  refused, old reference-scale indexing +0.6 dB (regression pin).
+- CI: the CW session smoke's probe now carries a fake PureSignal service so
+  the extracted production key/tail/drop paths compile.
+
+### Added
+- PA Linearity shows a **Wire mapping** row (wire RMS dBFS, REF/wire dB, LUT
+  domain) and the candidate line reports gain range, phase and domain instead
+  of "max boost"; fit refusals print their reason.
+
+### Verification
+- 10 new tests (`PureSignalLoopbackTests`, `PureSignalPredistorterTests`) plus
+  the virtual-radio codec test asserting wire-level delivery; full suite
+  1,325 tests, two intentional skips, zero failures; Debug build clean; CW
+  session smoke passes; no new lock, queue, timer or unchecked declaration.
+- **ANAN-7000DLE MkII, ANT1 → 1500 W dummy load, 14.074 USB two-tone, 10 %
+  drive, FB attenuation 0 dB** (operator-authorized): baseline 32.1 dBc with
+  wire −3.9 dBFS / REF/wire −9.8 dB / domain 0.90 exactly as the fixture
+  predicted, candidate gain −0.8…0.0 dB; the trial verdict was
+  **ACCEPTED · IMD 32.1 → 68.8 dBc (+36.7 dB)** — reference 32.1 dBc @ FB
+  −36.8 dBFS, trial 68.8 dBc @ FB −37.2 dBFS, correlation 1.000, two agreeing
+  steady banks (69.1 / 68.8), SFDR 63.5 dBc, AM-AM straight. The correction
+  remains session-only and hard-bypassed by default; PEP is unchanged. Radio
+  finished SAFE. See `docs/ANANBench-2026-09-08-Claude.md`.
+
+### Documentation
+- Record the 2026.0907_008 publication:
+  the extracted production key/tail/drop paths (which report keyed truth to
+  the steady-window gate since 2026.0908_001) compile; the 2026.0908_001 CI
+  run failed at that step while the app and `swift test` were green.
 
 ### Documentation
 - Record the 2026.0907_008 publication: exact-source CI 34153828140 dry run
   and tagged signed run 34154086665 on frozen source 25357fe; public ZIP/DMG
   checksums verified, Developer ID signature (team UG29A6ZW54), Gatekeeper
   "Notarized Developer ID" acceptance and stapled tickets on app and DMG
-  confirmed independently; GitHub latest is 008. No runtime change.
+  confirmed independently; GitHub latest is 008. hermitsdr.com updated to the
+  008 card (backup index.html.backup-20260907T191529Z) and verified over
+  HTTPS; the public guide and CHANGELOG mirror are at 5531d83. No runtime
+  change.
+
+## [2026.0908_001] — 2026-09-08
+
+### Fixed
+- PureSignal trial verdicts are now judged only on steady, fully keyed
+  analysis windows (#51). A bank is eligible for the candidate or a verdict
+  only when it was captured entirely while TX was keyed, the two-tone
+  qualifies, and both feedback and reference quietest 2.67 ms blocks sit
+  within 12 dB of the window RMS; unkey-tail and ramp windows still feed the
+  readout but are labeled SETTLING / TAIL and never refit the candidate. A
+  trial ignores the first 0.75 s after key-down, requires two consecutive
+  eligible banks within 0.5 dB, and fails safe (unkey, hard bypass) after 3 s
+  without a steady window or 6 s without agreement. The candidate carries the
+  IMD3, correlation, pair count, FB/REF RMS and time of the steady bank that
+  fitted it, and the verdict prints reference and trial levels side by side
+  with a warning when they differ by more than 3 dB. The ≥1 dB gate, the 0.98
+  wire clamp and the automatic unkey/bypass are unchanged.
+
+### Verification
+- 14 new tests (`PureSignalAnalyzerTests`, `PureSignalTrialJudgeTests`):
+  steady window eligible, half-zeroed and unkey-spanning windows ineligible
+  and unable to fit a candidate, settling banks skipped, unsteady banks break
+  the agreement chain, disagreeing banks wait then reject, no-steady-window
+  and no-agreement fail-safes, key-up rearms, verdict text carries both
+  levels and flags a level mismatch, candidate requires a steady reference.
+  Full suite 1,319 tests, two intentional skips, zero failures; Debug build
+  clean; no new lock, queue, timer or unchecked declaration.
+- Operator-authorized ANAN bench (ANT1 → 1500 W load, 14.074 USB two-tone,
+  FB attenuation 0 dB, drive stepped 3 % → 10 %, ceiling 50 % unused):
+  3 % reproduced the 49.7 dBc floor with a unity candidate; 10 % gave a
+  repeatable nonlinear point, IMD3 32.2 / 32.1 / 32.1 dBc across three
+  baselines with visible AM-AM compression and a 0.7 dB candidate boost. The
+  previous build then judged a trial against an unkey-tail reference
+  ("35.4 → 32.2, −3.2 dB"), which motivated this fix. With the fix the
+  window gating and labels behaved as designed and the steady-state verdict
+  was **REJECTED · IMD 32.0 → 31.7 dBc (−0.4 dB)** at matched levels
+  (FB −36.8 vs −37.0 dBFS, correlation 1.000, two agreeing banks): the
+  current memoryless 65-node inverse does not improve this PA at a genuinely
+  nonlinear operating point. #51 stays open for corrector work. Radio
+  finished SAFE. See `docs/ANANBench-2026-09-08-Claude.md`.
 
 ## [2026.0907_008] — 2026-09-07
 

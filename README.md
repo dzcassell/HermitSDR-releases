@@ -27,6 +27,18 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0908_002
+
+- **PureSignal works.** A synthetic loopback fixture found why every earlier predistortion trial was a no-op (the correction table was indexed on the wrong amplitude scale) and two smaller flaws. With the fix, the first level-matched trial on the ANAN-7000DLE MK2 dummy load at 10 % drive was **accepted: IMD3 32.1 → 68.8 dBc (+36.7 dB)**, correlation 1.000, agreeing steady banks. The correction stays session-only, attenuation-only (peak power unchanged) and behind Capture → Trial LUT → the ≥1 dB gate → hard bypass by default.
+- **Trustworthy trial verdicts.** Analysis windows that span an unkey or contain ramp/silence are labeled SETTLING / TAIL and never set the reference or judge a trial; trials skip 0.75 s of settling, need two agreeing steady banks, and fail safe. The PA Linearity window shows window levels, wire mapping and the reference/trial levels side by side.
+
+The release completed 1,325 software tests with zero failures and two intentional
+skips, signed and clean unsigned Debug/Release builds, and the CI smokes. All
+transmissions were 5.5 s two-tone pulses into a 1500 W dummy load at 3–10 %
+drive with the SWR guard on; the radio finished disarmed. No transmitter
+interlock behavior changed.
+
+## New in 2026.0907_008
 ## New in 2026.0907_008
 
 Seven releases since 001, all landed on the same day:
