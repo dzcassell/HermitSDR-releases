@@ -27,6 +27,15 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0908_003
+
+- **FT8 free-text beacon.** The FT8 panel gains a BEACON row: up to 13 free-text characters, an interval in seconds (default 30 — every other 15 s slot), and a repeat limit (default 5; 0 runs until stopped). It uses the same interlocked native-TX path as CQ — ARM, ENABLE TX, USB and the coordinator are re-checked on every frame — and, being unattended, stops itself with a reason on any refusal. Identification and band-plan compliance remain the operator's responsibility.
+
+The release completed 1,346 software tests with zero failures and two intentional
+skips, signed and clean unsigned Debug/Release builds, and the CI smokes. A
+two-frame, 30 s beacon was verified into a dummy load at 3 % drive; the radio
+finished disarmed. No transmitter interlock behavior changed.
+
 ## New in 2026.0908_002
 
 - **PureSignal works.** A synthetic loopback fixture found why every earlier predistortion trial was a no-op (the correction table was indexed on the wrong amplitude scale) and two smaller flaws. With the fix, the first level-matched trial on the ANAN-7000DLE MK2 dummy load at 10 % drive was **accepted: IMD3 32.1 → 68.8 dBc (+36.7 dB)**, correlation 1.000, agreeing steady banks. The correction stays session-only, attenuation-only (peak power unchanged) and behind Capture → Trial LUT → the ≥1 dB gate → hard bypass by default.

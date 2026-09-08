@@ -7,6 +7,51 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0908_003] — 2026-09-08
+
+### Added
+- FT8 free-text beacon (owner request): the FT8 panel's BEACON row takes up
+  to 13 characters from the FT8 free-text set (`A–Z 0–9 space + - . / ?`,
+  uppercased live, invalid characters named), an interval in seconds (15–3600,
+  default 30) and a repeat limit (default 5; 0 = until stopped). Frames go on
+  the first 15 s UTC slot boundary at or after the previous frame's slot start
+  plus the interval (30 = every other slot). The beacon rides the native FT8 TX
+  path unchanged — ARM, ENABLE TX, USB and the TXCoordinator handshake are
+  re-checked at every boundary — and, being unattended, stops itself on any
+  refusal, encode failure, watchdog trip or external unkey with the reason in
+  the status line. Starting a beacon aborts a QSO; CQ/Reply stop the beacon;
+  disarm, ENABLE TX off, mode/protocol change, disconnect and replay stop it.
+  Text, interval and limit persist (`ft8BeaconText`, `ft8BeaconInterval`,
+  `ft8BeaconLimit`); a running beacon is never persisted. Beacon frames force
+  free-text packing: standard-first packing turned "HELLO DE WU1T" into a
+  hashed-callsign message. Operators remain responsible for identification and
+  band-plan compliance; nothing here automates on-air use.
+
+### Verification
+- 21 `FT8BeaconTests`: validation, scheduler intervals 15/30/45/odd, limit 5
+  and unlimited, stop/restart, key request only when enabled and armed, one
+  release per frame against the real coordinator, refusal/encode/watchdog/
+  external-unkey stop rules, abort and CQ exclusion, protocol switch, free-text
+  round trips through the production decoder (including punctuation), forced
+  free-text packing, and persistence of exactly the three keys. Full suite
+  1,346 tests, two intentional skips, zero failures; Debug build clean.
+- ANAN ANT1 → 1500 W dummy load, 14.074 USB, 3 % drive: a two-frame 30 s
+  beacon of `TEST DE WU1T` keyed on the 12:56:45 UTC boundary, again exactly
+  30 s later on 12:57:15, and not again (limit reached; CAT PTT sampled every
+  9 s), the row returned to Start, ENABLE TX was cleared and the radio was
+  disarmed. Off-air decode of the free-text frame is by the production decoder
+  in tests; no external receiver confirmed it.
+
+## [Unreleased]
+
+### Documentation
+- Record the 2026.0908_002 publication: exact-source CI on a009c99, dry run
+  34223537760 inspected, tagged signed run 34224736197; public ZIP/DMG
+  checksums, Developer ID signature (UG29A6ZW54), Gatekeeper "Notarized
+  Developer ID" and stapled tickets verified independently; GitHub latest,
+  the public guide/CHANGELOG mirror and hermitsdr.com updated to 002. No
+  runtime change.
+
 ## [2026.0908_002] — 2026-09-08
 
 ### Fixed
