@@ -9,6 +9,41 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.0909_001] — 2026-09-09
+
+### Fixed
+- Media Deck crash (#113): playing a pad on 2026.0908_003 aborted the app with
+  `EXC_BREAKPOINT` on AVFAudio's `RealtimeMessenger.mServiceQueue`
+  (`closure #1 in MediaClipSession.installLevelTap()` →
+  `_swift_task_checkIsolatedSwift` → `dispatch_assert_queue_fail`).
+  `MediaClipSession` is `@MainActor`; its two `installTap` closures were plain
+  closures written inside main-actor methods, so Swift 6 inferred them
+  main-actor-isolated and verified that at entry — on a queue that is never
+  the main actor. Both closures (level-meter tap and stream tap) are now
+  `@Sendable`; they capture only the already-Sendable, lock-protected
+  `MediaDeckLevelMeter` / `MediaDeckStreamTapProcessor`, so no DSP, ownership,
+  routing or audio behaviour changed. The crab-voice dictation tap in
+  `CrabEars.beginListening()` had the identical shape and is fixed the same
+  way. `TXLatencyAudioLoopbackSession` already built its tap block outside the
+  actor for exactly this reason; the other tap owners (`AudioOutput`,
+  `MicInput`) are not actor-isolated and were unaffected.
+
+### Verification
+- New `tools/media-deck-tap-smoke.sh` (CI step): splices the production meter,
+  stream-tap processor and both `install*Tap` methods verbatim into an offline
+  `AVAudioEngine` fixture (AVFAudio still delivers tap buffers on its messenger
+  queue in manual rendering). Level tap observes the 0.5 peak tone; the stream
+  path observes it and delivers 20 sink blocks; the pre-fix closure shape is
+  run as a control and must die with `SIGTRAP`, so a pass proves the fixture
+  can see the crash. The script also fails if either production tap closure
+  loses `@Sendable`.
+- Full suite 1,376 tests, two intentional skips, zero failures (314 s);
+  unsigned Debug and Release builds clean; repository audit passed;
+  concurrency inventory unchanged (no new locks, queues or unsafe pointers).
+  Not exercised by hand in the running app: the fixture compiles the exact
+  production closures, and the first real pad play on this build is the live
+  confirmation. No radio involved.
+
 ## [2026.0908_005] — 2026-09-08
 
 ### Added

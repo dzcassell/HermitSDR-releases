@@ -27,6 +27,16 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0909_001
+
+- **Media Deck crash fixed.** Playing a Media Deck pad on 2026.0908_003 could abort the app the moment audio started (a Swift 6 actor-isolation trap on the audio engine's tap callback, not a DSP or radio fault). The pad-level meter and stream taps, and the crab's voice-dictation microphone tap, no longer inherit the window's main-actor isolation. Nothing about routing, levels, fades, streaming or transmit changed.
+
+The release completed 1,376 software tests with zero failures and two intentional
+skips, clean unsigned Debug/Release builds, and the CI smokes — including a new
+one that drives the exact production tap code through an offline audio engine
+and proves the old closure shape still traps. No radio was involved and no
+transmitter interlock behavior changed.
+
 ## New in 2026.0908_005
 
 - **Audio Unit hosting.** Station ▸ Audio & Streaming ▸ Audio Units hosts the effect Audio Units installed on your Mac as independent RX and TX insert chains. Units load out-of-process where the component allows (AUv3 and Apple's remote-hosted effects); in-process-only units are badged. Each chain starts with **master bypass on** until you audition it; a unit that errors or overruns its time budget is bypassed on that block and quarantined, and the chain keeps flowing. Latency per insert is shown. RF stays behind the same interlocks and the limiter runs after every insert; the Digital profile bypasses the block. VST3 is not hosted.
