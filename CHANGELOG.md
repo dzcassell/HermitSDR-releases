@@ -9,6 +9,69 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.0911_002] — 2026-09-11
+
+### Added
+- **Native JS8 transmit** (`TX/JS8Modulator.swift`): a clean-room port of
+  JS8Call's transmit path — `Varicode::buildMessageFrames` (heartbeat,
+  compound, compound-directed, directed and huffman data frames; JS8Call's
+  JSC compressed data frames and fast-mode data frames are not ported, the
+  huffman flavour is always decodable), `genjs8` (12-character 72-bit frame +
+  3-bit transmission type, Boost augmented CRC-12 poly 0xC06 `^ 42`, LDPC
+  (174,87) generator + column order, original Costas array in all three
+  sync positions, 79 channel symbols) and the JS8-normal waveform, which is
+  FT8's (6.25 baud, 6.25 Hz spacing, 12.64 s in a 15 s slot, GFSK BT = 2).
+  Verified against a running **JS8Call-improved 3.0.3**: a six-frame
+  `@MAGNET FLASH EMERGENCY TEST FROM HERMITSDR GRID FN42` transmission
+  rendered to a WAV by the encoder and played into BlackHole decoded every
+  frame at +35 dB / DT 0.1 / 1000 Hz with the exact frame strings
+  (`C3Ktb734OiD0 KnAJIbbiW+N8 YSpeDbS0BBul WtPJKa7wqS1M kRJi2A3dQJT+
+  lKI+++++++++`), and DIRECTED.TXT carried the reassembled message
+  `WU1T: @MAGNET FLASH EMERGENCY TEST FROM HERMITSDR GRID FN42`.
+- **Frame programs on the FT8/FT4 TX controller** (`FT8TXProgram`,
+  `startProgram` / `stopProgram`, `FT8TXAction.requestCoordinatorKeyProgram`,
+  `FT8TXStatus.program*`): pre-encoded frames go out one per consecutive
+  slot boundary, each behind the same ENABLE TX + ARM gate, TX coordinator
+  handshake, Digital profile override, feed pacing and watchdog as a native
+  FT8 frame. A closed gate, a coordinator refusal, a watchdog trip or an
+  external unkey stops the program (unattended automation never waits behind
+  an interlock); STOP releases an on-air frame exactly once. Programs, QSOs
+  and beacons are mutually exclusive.
+- **MAGNET HF Emergency → Native JS8 row**: ENABLE TX (the FT8 panel's
+  consent switch, never persisted), the exact frame plan (kinds, slots,
+  seconds, offset) and **SEND NATIVE JS8**, enabled only when connected,
+  ARMED, USB, ENABLE TX on and a message is composed; live frame progress
+  and STOP while a program runs. `RadioState.startJS8Program` /
+  `stopJS8Program` are the only new facade entry points. The JS8Call-app
+  hand-off, CW auto-key and voice script remain as alternatives. The message
+  text is now folded onto JS8's huffman alphabet (commas and colons become
+  spaces) and the airtime is the real frame count × 15 s.
+
+### Verification
+- `JS8ModulatorTests` (8 + opt-in fixture writer): 72-bit packing round
+  trip, callsign/grid/base-call arithmetic, callsign classification (group
+  calls are compound), the `@MAGNET` compound → compound-directed → data
+  frame sequence with bit-level field checks, a standard directed SNR
+  frame, plain-text identification, heartbeat, huffman padding, CRC-12 and
+  LDPC shapes. `FT8TXControllerTests` +5: one frame per consecutive slot
+  and finish, closed gate / refusal stop, STOP / watchdog / external-unkey
+  exit paths with exactly one release, mutual exclusion with QSO and
+  beacon, and the real JS8 encoder driving the program end to end.
+  Targeted suites 129 tests / 0 failures; unsigned Debug build; the window
+  opened in the Dev app. **No RF**: the live check used the encoder's WAV
+  into a BlackHole-fed JS8Call, not the radio; the first keyed native JS8
+  frame into a dummy load is a separately approved step. The scratch
+  JS8Call was granted microphone access for the check (System Settings →
+  Privacy → Microphone → JS8Call) and left `~/Library/Preferences/JS8Call.ini`.
+
+### Documentation
+- Record the 2026.0911_001 publication: exact-source CI 34650143605 and dry run
+  34650181608 on 5286d64 passed and the dry-run ZIP/DMG were inspected; tag
+  v2026.0911_001 → signed run 34651180906 success. Public ZIP/DMG SHA-256
+  verified, `codesign --verify --deep --strict` OK (Team UG29A6ZW54), Gatekeeper
+  "Notarized Developer ID" and stapled tickets on app and DMG, identical app
+  trees, tag on the public anchor. Mirror 758d278; hermitsdr.com updated.
+
 ## [2026.0911_001] — 2026-09-11
 
 ### Added

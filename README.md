@@ -27,6 +27,17 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0911_002
+
+- **Native JS8 transmit.** HermitSDR now has its own JS8 (normal submode) modulator — a clean-room port of JS8Call's transmit path (varicode frames, CRC-12, LDPC 174/87, Costas sync, FT8-parameter GFSK). It was checked against a real JS8Call 3.0.3 decoder: a six-frame @MAGNET distress message rendered by the encoder decoded frame for frame and came back reassembled as `WU1T: @MAGNET FLASH EMERGENCY TEST FROM HERMITSDR GRID FN42`.
+- **MAGNET HF Emergency → SEND NATIVE JS8.** The window shows the exact frame plan (how many 15 s slots) and sends the message itself, one frame per slot, behind the same ENABLE TX, ARM, USB and transmitter-interlock checks as native FT8; STOP releases the frame on the air. The JS8Call-app hand-off, CW auto-key and voice script remain as alternatives.
+
+The release completed 1,398 software tests with zero failures and three intentional
+skips, a clean Debug build and the repository audit. No RF was transmitted: the
+decoder check played the encoder's audio into a virtual sound device feeding
+JS8Call, not the radio. The first keyed native JS8 frame into a dummy load is a
+separately approved step, as native FT8 was.
+
 ## New in 2026.0911_001
 
 - **MAGNET HF Emergency Broadcast.** Transmit ▸ MAGNET HF Emergency… (⌘⌥⇧E) is a distress instrument for the MAGNET HF mutual-assistance network (magnethf.com). It shows live whether a regional Contestia 4/250 net is on the air or only the round-the-clock JS8Call watch (7.115 / 14.115 MHz USB) is available, with the next net in UTC and local time and a receive-only Tune button per channel. Set your callsign, grid, state and region once; pick a precedence (FLASH / IMMEDIATE / PRIORITY / ROUTINE), type the message, and the window composes it three ways — a JS8Call directed text to @MAGNET, a spoken MAYDAY / PAN PAN script with phonetics, and a keyer-ready CW string.
