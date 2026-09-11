@@ -27,6 +27,17 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0911_001
+
+- **MAGNET HF Emergency Broadcast.** Transmit ▸ MAGNET HF Emergency… (⌘⌥⇧E) is a distress instrument for the MAGNET HF mutual-assistance network (magnethf.com). It shows live whether a regional Contestia 4/250 net is on the air or only the round-the-clock JS8Call watch (7.115 / 14.115 MHz USB) is available, with the next net in UTC and local time and a receive-only Tune button per channel. Set your callsign, grid, state and region once; pick a precedence (FLASH / IMMEDIATE / PRIORITY / ROUTINE), type the message, and the window composes it three ways — a JS8Call directed text to @MAGNET, a spoken MAYDAY / PAN PAN script with phonetics, and a keyer-ready CW string.
+- **JS8Call bridge.** HermitSDR has no JS8 modulator, so the window drives a running JS8Call over its local API (Settings ▸ Reporting ▸ API, port 2242): probe it, point it at a watch channel, stage the text, or send it. JS8Call keys the rig itself — normally through HermitSDR's rigctl server, so ARM and every interlock still apply. A CW auto-key option uses the same gated keyer path as CAT `send_morse`.
+
+The release completed 1,384 software tests with zero failures and two intentional
+skips, a clean Debug build, the repository audit, and a hands-on pass through the
+window in the development app. No radio was involved, nothing was transmitted, and
+no transmitter interlock behavior changed. JS8Call was not installed on the build
+Mac, so the bridge's socket path awaits a live check.
+
 ## New in 2026.0909_001
 
 - **Media Deck crash fixed.** Playing a Media Deck pad on 2026.0908_003 could abort the app the moment audio started (a Swift 6 actor-isolation trap on the audio engine's tap callback, not a DSP or radio fault). The pad-level meter and stream taps, and the crab's voice-dictation microphone tap, no longer inherit the window's main-actor isolation. Nothing about routing, levels, fades, streaming or transmit changed.

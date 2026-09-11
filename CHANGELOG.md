@@ -9,6 +9,83 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.0911_001] — 2026-09-11
+
+### Added
+- **MAGNET HF Emergency Broadcast** (Transmit → MAGNET HF Emergency…, ⌘⌥⇧E;
+  window `magnet-hf-emergency`, core feature, always visible). A distress
+  instrument for the MAGNET HF Mutual Assistance Groups Network
+  (magnethf.com): a live "NOW ON MAGNET HF" panel says whether a regional
+  Contestia 4/250 net is on the air (with its end countdown) or only the
+  round-the-clock JS8Call watch is available, shows the next net in UTC and
+  local time, and lists the published channels — JS8Call watch 7.115 MHz and
+  14.115 MHz USB, Contestia nets 7.115 MHz USB at a 900 Hz offset — each with
+  a receive-only **Tune** button and an ON CHANNEL badge. The net schedule
+  (MR01–03 Wed 9 PM ET, MR04 Thu 9 PM ET, MR05/07 Mon 8 PM CT, MR06 Tue
+  8 PM CT, MR08–10 Thu 8 PM MT, DocDrop Sat 7:30 PM CT) is kept in each net's
+  own time zone so it reproduces the site's Z hints in daylight time and
+  stays on the local evening in standard time. Regions follow the AFMARS/FEMA
+  map; a state code fills the region and the `@MAGNET` / `@MRxx` / `@MRxxST`
+  JS8Call groups.
+- Sender identity is configurable (callsign, grid, state, region; blank
+  callsign/grid fall back to the station identity from Settings) and
+  persisted as `magnetHF.v1`. The message takes a MAGNET precedence (FLASH /
+  IMMEDIATE / PRIORITY / ROUTINE), free text and an optional notify contact,
+  and previews three on-air shapes with Copy: a JS8Call directed text to
+  `@MAGNET` (upper-case ASCII, character count, airtime estimate), a spoken
+  MAYDAY / PAN PAN script with ICAO phonetics, and a keyer-ready CW string
+  (SOS / XXX / QRRR / CQ MAGNET prefixes).
+- **Native JS8Call bridge** (`Integration/MAGNET/JS8CallBridge.swift`):
+  HermitSDR has no JS8 modulator, so the window drives a running JS8Call over
+  its local JSON/UDP API (Settings → Reporting → API, default port 2242):
+  Probe (`STATION.GET_STATUS` / `STATION.GET_CALLSIGN`, reachability with a
+  2 s timeout, PING/`STATION.STATUS` parsing), Point JS8Call at a watch
+  channel (`RIG.SET_FREQ` at the operator's offset), Stage (`TX.SET_TEXT`)
+  and SEND (`TX.SEND_MESSAGE`). JS8Call keys its rig itself — normally
+  HermitSDR's hamlib NET rigctl server with audio on a virtual device, the
+  WSJT-X arrangement — so PTT still passes ARM, the coordinator and every
+  interlock.
+- **CW auto-key** through `RadioState.magnetKeyCW`, the same gated engine
+  path as CAT `send_morse` (CW mode + ARM + coordinator grant; refusals are
+  reported in the window and the TX policy notice, never retried; Stop CW
+  lets the keyer finish its envelope). TX chain, coordinator and keyer code
+  are untouched.
+- `docs/MAGNETHF.md` (research summary, window guide, ownership); Menus.md
+  Transmit row; capability table Extras.
+
+### Verification
+- `MAGNETHFTests`: region map covers 58 codes once and matches the site's
+  `MR08CO` example; channel constants; every published UTC hint reproduced
+  for a September reference date and the MR01–03 net moving to Thu 0200Z in
+  December; active/next availability and countdowns; station validation,
+  region auto-fill, groups and JSON round-trip; JS8Call/voice/CW message
+  shapes including sanitising, blank text and non-ASCII input; JS8Call API
+  byte-exact encoding and reply decoding. No radio, no sockets, no RF:
+  JS8Call is not installed on the build Mac, so the bridge was exercised only
+  through its codec fixtures and the socket path is unverified against a
+  live JS8Call.
+
+### Documentation
+- Record the 2026.0909_001 publication: exact-source CI 34410058634 (incl. the
+  new Media Deck tap smoke step) and dry run 34410065725 on b09e287 passed and
+  the dry-run ZIP/DMG were inspected; tag v2026.0909_001 → signed run
+  34411308463 attempt 2 success (attempt 1 wedged 25 min in the DMG notarytool
+  pre-submission phase — ZIP Accepted, DMG never in Apple's history — killed
+  and rerun with fresh bytes). Public ZIP/DMG SHA-256 verified,
+  `codesign --verify --deep --strict` OK (Team UG29A6ZW54), Gatekeeper
+  "Notarized Developer ID" and stapled tickets on app and DMG, identical app
+  trees; tag pinned to the empty anchor; GitHub latest, the public
+  guide/CHANGELOG mirror (1bb8731) and hermitsdr.com updated to 001. No
+  runtime change.
+- Record the 2026.0908_005 publication: exact-source CI 34275623102 and dry
+  run 34275622296 on ce56443 passed and the dry-run ZIP/DMG were inspected;
+  tag v2026.0908_005 → signed run 34276969279 success; public ZIP/DMG SHA-256
+  verified, `codesign --verify --deep --strict` OK (Team UG29A6ZW54), Gatekeeper
+  "Notarized Developer ID" and stapled tickets on app and DMG, identical app
+  trees; tag pinned to the empty anchor; GitHub latest, the public
+  guide/CHANGELOG mirror (7cffcc5) and hermitsdr.com updated to 005. No
+  runtime change.
+
 ## [2026.0909_001] — 2026-09-09
 
 ### Fixed
