@@ -7,7 +7,78 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
-## [Unreleased]
+## [2026.0913_001] — 2026-09-13
+
+### Fixed
+- Give CAL PROFILE a fixed-height scrolling body so the calibration fields
+  and Guided measurement fit cannot collapse out of view. Label the footer
+  actions Import profile / Export profile to distinguish JSON profiles from
+  the measurement assistant's CSV points. Reload measurement points when
+  importing a profile or resetting defaults so a later Save cannot restore
+  stale points or erase imported evidence.
+- Native JS8 now owns a 15-second slot clock and the normal-mode watchdog,
+  independently of the FT4 receive selection (#114). Clock changes rebase
+  boundary detection, and elapsed-time watchdogs use a monotonic clock.
+- Starting CQ or replying cancels an active, pending or completed JS8
+  program (#115). Request IDs reject stale synthesis, main-queue key
+  requests, grants/refusals and feeder completions after STOP/replacement.
+  The FT8 panel's STOP also remains available between JS8 frames.
+
+### Added
+- Persisted, opt-in native digital amplifier timing controls in TX Controls
+  (#116), including a Mercury Lite preset of 60 seconds maximum TX and
+  15 seconds minimum RX. Frame admission reserves the coordinator's entire
+  1.5-second maximum drain tail; existing shorter FT8/FT4 watchdogs remain.
+  Receive time starts at the coordinator's RF-drop acknowledgement and
+  survives STOP, mode/program replacement and preference edits. Frames wait
+  for an eligible UTC slot without consuming the program queue. Controls
+  apply to native FT8/FT4/JS8 only, not manual PTT or external CAT applications.
+- Deterministic fake-clock/port regressions for JS8 handoffs, stale requests,
+  clock changes, tail/cooldown accounting, duration refusal and persistence.
+  No new RF or spaced-JS8 receiver validation is claimed; see
+  `docs/NativeDigitalTX.md` for scope and the pending bench checks.
+
+
+### Documentation
+- Record publication of 2026.0913_001 from 514865c: exact-source CI
+  34759277080 and inspected dry run 34759285481 passed; signed release
+  34759965892 succeeded. Public ZIP/DMG checksums, Developer ID signatures,
+  Gatekeeper and stapled tickets were independently verified, with matching
+  app contents and the empty public tag anchor. hermitsdr.com now links the
+  new 25.9 MB DMG.
+- Record the operator-approved Square/Mercury operate sweep with Input 10W
+  OFF: approximate Bird input 2.2/4.5/7.5 W and Mercury FWD output 224/343/450 W
+  at 50/75/100% drive. Apply the provisional k=1.3880767 physical-radio profile
+  with all three raw points retained. A 75% repeat at 7.100 MHz indicated
+  4.6 W in HermitSDR, agreement on the Bird, and 343 W on the Mercury; release
+  TUNE after 10.004 s and finish disarmed at 20% drive. This is a coarse
+  single-frequency check; native digital timing remains pending.
+- Record the first operator-approved SquareSDR 2 / Mercury Lite standby
+  carrier check at 7.100 MHz / 1% drive: five-count spoken cue through the Mac
+  mini speaker, 2.005-second TUNE command and verified return to disarmed/off.
+  App-indicated 0.7 W / 1.00 SWR remains uncalibrated; the operator heard the
+  cue and saw no amp forward indication. A separately approved 20% / 10.003 s
+  repeat indicated 1.0–1.1 W / 1.00 SWR in the app and returned to disarmed/off;
+  the operator reports zero Mercury FWD and movement of its visual input
+  indicator. The manual does not establish calibrated input watts in standby;
+  no calibration point was saved. After the operator confirmed a Bird meter
+  inline with a Coaxial Dynamics 82003 (2–30 MHz, 25 W) element, another 20%
+  check released TUNE after 10.004 s and returned to disarmed/off. App watts
+  were again 1.0–1.1; the operator reports the Bird near the second tick,
+  estimated around 1 W or slightly less. Record this as a coarse observation,
+  not a calibration point.
+- Record the explicitly approved 100% drive standby check at 7.100 MHz:
+  release after 10.004 s, steady app-indicated 4.6 W / 1.00 SWR, then verified
+  PTT/TUNE/ARM off and drive restored to 20%. The operator reports approximately
+  7 W on a Bird 43, certainly above 5 W, suggesting the legacy app calibration
+  under-reports full-drive power. No fit, spectral-purity or amplified-output
+  claim.
+- Record the 2026.0911_002 publication: exact-source CI 34654002299 and dry run
+  34654021214 on bfb848b passed and the dry-run ZIP/DMG were inspected; tag
+  v2026.0911_002 → signed run 34654962150 success. Public ZIP/DMG SHA-256
+  verified, `codesign --verify --deep --strict` OK (Team UG29A6ZW54), Gatekeeper
+  "Notarized Developer ID" and stapled tickets on app and DMG, identical app
+  trees, tag on the public anchor. Mirror 7c77f63; hermitsdr.com updated.
 
 ## [2026.0911_002] — 2026-09-11
 

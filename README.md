@@ -27,6 +27,19 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0913_001
+
+- **JS8 timing and handoffs.** Native JS8 keeps its normal 15-second clock and full-frame watchdog when FT4 receive mode is selected. Starting CQ or replying cleanly replaces a pending or completed JS8 program; callbacks from an old transmission cannot take over a new one.
+- **Native digital amplifier timing.** TX Controls has optional maximum-TX and minimum-RX settings, including a Mercury Lite preset of 60 seconds TX / 15 seconds RX. Frames must fit with the transmit tail, and the receive interval survives STOP and mode changes. These controls apply to native FT8/FT4/JS8; manual PTT, TUNE and external CAT applications have separate operating limits.
+- **Calibration panel repaired.** CAL PROFILE now displays its fields and Guided measurement fit correctly. JSON profile actions are labeled separately from CSV point imports, and imported measurement evidence is retained when saving.
+
+The full software suite passed 1,413 tests with zero failures and three optional
+skips. A SquareSDR 2 / Mercury Lite dummy-load session demonstrated amplifier
+output and a per-radio calibration repeat: HermitSDR and the Bird meter agreed
+at approximately 4.6 W input, with 343 W on the Mercury output display. Those
+carrier checks do not validate the native digital timing controls or JS8
+reassembly with inserted receive intervals; those checks remain pending.
+
 ## New in 2026.0911_002
 
 - **Native JS8 transmit.** HermitSDR now has its own JS8 (normal submode) modulator — a clean-room port of JS8Call's transmit path (varicode frames, CRC-12, LDPC 174/87, Costas sync, FT8-parameter GFSK). It was checked against a real JS8Call 3.0.3 decoder: a six-frame @MAGNET distress message rendered by the encoder decoded frame for frame and came back reassembled as `WU1T: @MAGNET FLASH EMERGENCY TEST FROM HERMITSDR GRID FN42`.
