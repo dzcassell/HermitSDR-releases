@@ -27,6 +27,13 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0914_003
+
+- **Skimmer stops reading FT8 as Morse.** A tone that never keys off during the probe is now labeled DATA rather than CW, and a candidate that follows FT8's 12.6-second-on, 2.4-second-off cadence twice stays DATA until the pattern breaks. DATA rows carry no text and are re-examined every ten seconds, so a station that opened with a tune-up gets its decoder back.
+- **About window diagnostics reachable by automation.** The Copy System Information button now carries an accessibility label and identifier.
+
+The release completed the full software suite with zero failures and the repository audit. No transmission was involved.
+
 ## New in 2026.0914_002
 
 - **Second on-air QSO, and the sequencer learned from the first.** WU1T ↔ W8NGA (EM89), FT8, 7.074 MHz, 15:53 UTC at 20 % drive: report, R-report, one RR73, their 73, done. The morning's contact had kept repeating RR73 after the other station moved on; the cause was a retry counter that any message addressed to us could reset. RR73 now has a hard two-frame allowance, an exchange closes the moment the partner is heard working someone else, and a new caller is answered straight away once the first RR73 has gone out. Clicking a decode row no longer moves the dial while a contact is running.

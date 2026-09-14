@@ -7,6 +7,19 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0914_003] — 2026-09-14
+
+### Fixed
+- OmniSkimmer no longer decodes FT8/FT4 bursts or steady carriers as CW.
+  A tone that stays up through the whole 1.5 s probe is now DATA (not
+  keyed), and a candidate whose carrier follows FT8's 12.6 s on / 2.4 s
+  off cadence twice is locked as DATA until the pattern breaks. DATA rows
+  show no text and are re-probed every 10 s so a station that opened with
+  a tune-up gets its decoder back.
+- The About window's Copy System Information button now carries an
+  accessibility label and identifier so diagnostics can be pulled by
+  automation.
+
 ## [2026.0914_002] — 2026-09-14
 
 Second on-air QSO, this time validating the sequencer fixes below at 20 %
@@ -40,6 +53,15 @@ left the dial at 7,074,000 Hz. Report: `docs/SquareBench-2026-09-14-Claude.md` �
   not just a 110–320 Hz spread of instantaneous frequencies: two FT8
   signals sharing a 375 Hz channel (the 40 m FT8 segment) kept appearing
   as garbage RTTY rows.
+
+### Documentation
+- Record publication of 2026.0914_002 from 6dbe3a2: exact-source CI
+  34867502027 passed; tagged release 34867504021 (dry run + signed job)
+  succeeded on the first attempt. Public ZIP/DMG checksums, Developer ID
+  signatures (UG29A6ZW54), Gatekeeper Notarized Developer ID and stapled
+  tickets were independently verified, with identical app contents and the
+  empty public tag anchor. Mirror 5064f72 in HermitSDR-releases; hermitsdr.com
+  now links the new 28.2 MB DMG.
 
 ## [2026.0914_001] — 2026-09-14
 
