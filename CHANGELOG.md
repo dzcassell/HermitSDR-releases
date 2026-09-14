@@ -7,6 +7,40 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0914_002] — 2026-09-14
+
+Second on-air QSO, this time validating the sequencer fixes below at 20 %
+drive: **WU1T ↔ W8NGA (EM89), FT8, 7.074 MHz, 15:53 UTC** — report,
+R-report, one RR73, their 73, idle. A decode-row click during the keyed CQ
+left the dial at 7,074,000 Hz. Report: `docs/SquareBench-2026-09-14-Claude.md` §6–8.
+
+### Fixed
+- FT8 sequencer: the RR73 allowance is now a hard bound (#66). On the first
+  on-air QSO every message addressed to us — a repeated report, a third
+  caller — reset the stall budget and with it the RR73 repeat count, so the
+  sequencer kept sending RR73 until STOP. A separate RR73 counter that no
+  incoming traffic resets, a stall budget that only the partner's progress
+  clears, and an immediate close when the partner is decoded calling
+  someone else. After the first RR73 a new caller with a grid or report is
+  answered straight away (run mode) instead of being ignored.
+- Decode-row clicks no longer retune the dial while native FT8/FT4/JS8 is
+  sequencing, beaconing or keying (#66): a click during the first QSO moved
+  the dial 470 Hz mid-exchange. The row reports the frozen dial instead.
+- OmniSkimmer's chatter gate no longer blanks genuine high-speed CW: it
+  now needs pinned-fast marks *and* a last dozen letters made only of
+  dit/dah runs (E T I S H 5 M O 0), which is what threshold noise prints. The 35 dB station at 7020.3 kHz on the 2026-09-14 capture is a
+  real 52 WPM sender (dits 8.7 / dahs 27.5 frames) and copies throughout
+  again; the capture fixture can trace one candidate
+  (`HERMITSDR_SKIM_TRACE=<kHz>`).
+- RF Vision no longer labels threshold flicker as CW: a narrowband track
+  that keys at the 20 rows/s cadence must also stand 12 dB above the mask,
+  otherwise it stays "?". On 9 MHz every CW row had been an 8–9 dB flicker
+  while real 40 m CW ran 15–35 dB (Codex's "implausibly fast CW" note).
+- OmniSkimmer's RTTY verdict now requires two tightly clustered tones,
+  not just a 110–320 Hz spread of instantaneous frequencies: two FT8
+  signals sharing a 375 Hz channel (the 40 m FT8 segment) kept appearing
+  as garbage RTTY rows.
+
 ## [2026.0914_001] — 2026-09-14
 
 First on-air QSO: **WU1T ↔ KA3MAJ, FT8, 7.074 MHz, 14:06 UTC** (#9), native
@@ -58,6 +92,15 @@ under the Mercury Lite timing preset. Session report:
   controls, and garden visitors follow the Wildlife switch.
 - Add bounded encounter scheduling/migration regression checks and exercise
   the new effect switches in the production Metal scene smoke tools.
+
+### Documentation
+- Record publication of 2026.0914_001 from 0d3edde: exact-source CI
+  34854104346 passed; tagged release 34854105431 (dry run + signed job)
+  succeeded on the first attempt. Public ZIP/DMG checksums, Developer ID
+  signatures (UG29A6ZW54), Gatekeeper Notarized Developer ID and stapled
+  tickets were independently verified, with identical app contents and the
+  empty public tag anchor. Mirror 1e3b97c in HermitSDR-releases; hermitsdr.com
+  now links the new 28.2 MB DMG.
 
 ## [2026.0913_001] — 2026-09-13
 

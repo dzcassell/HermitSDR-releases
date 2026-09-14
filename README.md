@@ -22,10 +22,18 @@ For the complete release history, read the [**CHANGELOG**](CHANGELOG.md).
 > an offline check by design (nothing phones home). Слава Україні. 🇺🇦
 
 Receive *and transmit* are live-proven on **both protocols**, and the first
-on-air QSO is in the log (WU1T ↔ KA3MAJ, FT8, 40 m, 2026-09-14): the Hermes-Lite 2 and the
+on-air QSOs are in the log (WU1T ↔ KA3MAJ and W8NGA, FT8, 40 m, 2026-09-14): the Hermes-Lite 2 and the
 ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
+
+## New in 2026.0914_002
+
+- **Second on-air QSO, and the sequencer learned from the first.** WU1T ↔ W8NGA (EM89), FT8, 7.074 MHz, 15:53 UTC at 20 % drive: report, R-report, one RR73, their 73, done. The morning's contact had kept repeating RR73 after the other station moved on; the cause was a retry counter that any message addressed to us could reset. RR73 now has a hard two-frame allowance, an exchange closes the moment the partner is heard working someone else, and a new caller is answered straight away once the first RR73 has gone out. Clicking a decode row no longer moves the dial while a contact is running.
+- **Skimmer keeps the fast senders.** The chatter blanker introduced this morning had silenced a genuine 52 WPM station; it now judges by what a row prints (noise makes only E/T/I/S/H) rather than by speed alone. The RTTY verdict also demands two clean tones, so FT8 signals sharing a channel stop appearing as RTTY.
+- **RF Vision stops calling flicker CW.** Narrow keyed-looking tracks that only poke 8 or 9 dB above the mask stay "?" instead of "CW"; real CW runs far stronger.
+
+The release completed the full software suite with zero failures, the repository audit, and a live re-check of the rebuilt receive-analysis coordinators on the SquareSDR 2. The on-air work was owner-authorized for this session at 20 % on 40 m only; 1.7 to 1.8 W into the amplifier input at SWR 1.16, no external meter, no IMD claim.
 
 ## New in 2026.0914_001
 
