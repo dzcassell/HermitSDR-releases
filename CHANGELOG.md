@@ -7,6 +7,58 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0914_001] — 2026-09-14
+
+First on-air QSO: **WU1T ↔ KA3MAJ, FT8, 7.074 MHz, 14:06 UTC** (#9), native
+FT8 sequencer end to end on the SquareSDR 2 → Mercury Lite → 40 m dipole at
+30 % drive, six frames keyed 12.61–12.73 s with 17.3–17.5 s receive gaps
+under the Mercury Lite timing preset. Session report:
+`docs/SquareBench-2026-09-14-Claude.md`.
+
+### Fixed
+- OmniSkimmer CW rows no longer read 90–150 WPM E/T soup on real
+  traffic (#39 item 3). The per-signal decoder seeded its dit length from
+  the very first accepted mark, took 8 ms envelope glitches as marks and
+  had no upward re-seed, so one glitch at spawn pinned a candidate at the
+  maximum speed for life. It now seeds from the first three plausible
+  marks, rejects sub-16 ms glitches, re-seeds upward on two agreeing
+  over-long marks, holds keying off while the peak sits in the noise
+  between overs, and blanks a row whose marks stay pinned above ~43 WPM.
+  On the 2026-09-14 7.030 MHz / 192 kHz SquareSDR capture this turns four
+  candidates into verbatim copy at 19–41 WPM (one 40 m ragchew reads
+  clean) where every one of 30 rows had been garbage; an opt-in fixture
+  (`HERMITSDR_SKIM_CAPTURE=<file.hiq>`) replays any receive capture.
+- Reject stale OmniSkimmer results after retuning, sample-rate changes,
+  disable/re-enable, callback replacement and disconnect (#61, #39). Apply
+  new channelizer geometry before accepting queued input, and reset decoding
+  across input overload or failed GPU processing so separated IQ cannot be
+  mistaken for continuous Morse/RTTY. Drop counts now belong to the current
+  configured session; queue ownership and lifecycle regressions cover these
+  boundaries without transmitting.
+- Apply the same revision/geometry protection to RF Vision so old detection
+  labels cannot return after retune, restart, callback replacement or
+  disconnect (#61). Preserve wall-clock timestamps for rewound IQ while
+  using monotonic admission/publish intervals. Keep policy shedding and
+  queue/processing drops separate and reset them for each configured session.
+
+### Added
+- Spaced-JS8 reassembly validated (#116): a six-frame native JS8 message
+  sent in alternate 15-second slots — the cadence the Mercury Lite preset
+  produces — was reassembled in order by JS8Call-improved 3.0.3 over an
+  audio loopback. The play tool's device match now prefers an exact or
+  shortest name, and its header documents the ffmpeg AudioToolbox route
+  that works when AVAudioEngine ignores the device selection (macOS 26.6).
+- Enrich Deep Space Observatory with shooting stars, clustered meteor showers,
+  passing nebula filaments, and photographic astronaut, radio probe, asteroid
+  and rare flying-saucer visitors. Encounters start within seconds and vary
+  roughly once a minute, with separate shooting-star and visitor switches.
+- Enrich Night Garden with dragonflies, hedgehogs, hopping rabbits and a slow
+  snail, drifting petals/seeds, and fireflies that gather and disperse in
+  luminous swirls and an occasional glowing heart. New effects retain the independent scene/signal contrast
+  controls, and garden visitors follow the Wildlife switch.
+- Add bounded encounter scheduling/migration regression checks and exercise
+  the new effect switches in the production Metal scene smoke tools.
+
 ## [2026.0913_001] — 2026-09-13
 
 ### Fixed

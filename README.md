@@ -21,11 +21,23 @@ For the complete release history, read the [**CHANGELOG**](CHANGELOG.md).
 > app checks the system region/timezone at startup and declines to run —
 > an offline check by design (nothing phones home). Слава Україні. 🇺🇦
 
-Receive *and transmit* are live-proven on **both protocols** (on a dummy
-load; on-air QSOs are yours to enable): the Hermes-Lite 2 and the
+Receive *and transmit* are live-proven on **both protocols**, and the first
+on-air QSO is in the log (WU1T ↔ KA3MAJ, FT8, 40 m, 2026-09-14): the Hermes-Lite 2 and the
 ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
+
+## New in 2026.0914_001
+
+- **First on-air QSO.** HermitSDR's native FT8 sequencer worked its first contact: **WU1T ↔ KA3MAJ, FT8, 7.074 MHz, 2026-09-14 14:06 UTC**, on a SquareSDR 2 driving a Mercury Lite amplifier into a 40 m dipole at 30 % drive. KA3MAJ answered the first CQ; the exchange ran and logged itself. Six frames keyed 12.6–12.7 s with 17.3–17.5 s receive gaps under the Mercury Lite timing preset, whose "Amp RX wait" state was seen live.
+- **OmniSkimmer copies real CW.** Skimmer rows on a live band used to read 90–150 WPM strings of E and T. The per-signal decoder seeded its dit length from the very first 8 ms envelope blip and could never speed back down, so one glitch pinned a signal at maximum speed for good. It now seeds from three marks, ignores glitches, re-seeds in both directions, stays quiet between overs and blanks chatter. On 40 m it copied `CQ … DE N3CU K` and `73 DE N3CU` at 17–18 WPM within a minute, and a replayed capture reads a full ragchew verbatim.
+- **Spaced JS8 confirmed.** A six-frame native JS8 message sent one frame per alternate 15-second slot — the cadence the Mercury Lite preset produces — was decoded and reassembled in order by JS8Call 3.0.3, closing the last open item on the amplifier timing controls.
+
+The release completed 1,439 software tests with zero failures and four optional
+skips, the repository audit and a receive-only decoder pass on 40 m (FT8, FT4,
+time machine bookmarks, buffer export). The on-air work was owner-authorized
+for this session at 30 % drive on 40 m only; app telemetry read 2.0 W into the
+amplifier input at SWR 1.16, with no external meter and no IMD claim.
 
 ## New in 2026.0913_001
 
