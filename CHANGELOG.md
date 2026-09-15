@@ -9,6 +9,13 @@ batch of improvements ships as a new version.
 
 ## [2026.0915_006] — 2026-09-15
 
+### Documentation
+- Record publication of 2026.0915_006 from 1861337: CI 34990451993 passed;
+  tagged release 34991823752 succeeded on the first attempt. Public ZIP/DMG
+  checksums, Developer ID signatures, notarization and stapling verified
+  independently; mirror and hermitsdr.com updated. Live NMF radiofax
+  evidence recorded on #117.
+
 ### Fixed
 - Ask the Crab's station tuning now survives the on-device model's habits.
   Live on the SquareSDR 2, "Take me to a WEFAX frequency and mode for Boston
