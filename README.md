@@ -27,6 +27,12 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0915_007
+
+- **Twelve new digital decoders in one window.** Decode › Digital Modes hosts PSK31/63, Olivia, MFSK16, THOR, DominoEX, Hellschreiber, 300-baud HF packet/APRS, JS8 receive, WSPR, JT65, JT9 and Q65 — one mode at a time, receive only. Text modes print, weak-signal and packet modes list decodes with S/N and offset, Hellschreiber paints. Ask the Crab can start any of them ("decode WSPR here"). Built from the published protocols; loopback thresholds and every known limitation are listed in the docs. None has been checked on the air yet.
+
+The release completed the full software suite (1,597 tests) with zero failures. No transmission was involved.
+
 ## New in 2026.0915_006
 
 - **Coast Guard fax tuning, checked on the air.** "Take me to a WEFAX frequency for Boston Coast Guard and begin decoding" now lands on NMF's right outlet even when the on-device model invents a frequency or leaves the station blank, and the outlet choice considers how far you are from the transmitter: near Boston the 6340.5 kHz outlet painted the 1538Z surface analysis at S9+27 while 9110 kHz was noise. Verified live on a SquareSDR 2.

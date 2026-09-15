@@ -7,6 +7,25 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0915_007] — 2026-09-15
+
+### Added
+- **Digital Modes window** (Decode › Digital Modes): twelve new native
+  receive-only decoders hosted one at a time behind a shared
+  `DigitalModeDecoding` contract — PSK31/63/125, Olivia (the Contestia MFSK
+  codec generalised to both families), MFSK16 (4/8/16/32), THOR, DominoEX,
+  Feld Hellschreiber (raster panel), 300 Bd HF packet/APRS (AX.25, FCS
+  checked), JS8 receive (normal speed, LDPC(174,87) sum-product decoder,
+  frame reassembly), WSPR (type-1, K=32 Fano), JT65A (RS(63,12)
+  Berlekamp–Massey), JT9A, and Q65-30A/60A (QRA(65,15) belief propagation).
+  Text modes print, weak-signal and packet modes list decodes with S/N, dT
+  and audio offset, Hell paints. Mode and centre persist; Ask the Crab starts
+  any of them ("monitor PSK31", "decode WSPR here"). 140 new tests with
+  modulator fixtures; measured loopback thresholds and every limitation are
+  in `docs/DigitalModes-Window.md`. No on-air reception yet. Built by five
+  parallel workers from the published protocols; constants confirmed
+  against WSJT-X, JS8Call and fldigi sources, implementations our own.
+
 ## [2026.0915_006] — 2026-09-15
 
 ### Documentation
