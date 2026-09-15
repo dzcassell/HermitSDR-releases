@@ -9,6 +9,12 @@ batch of improvements ships as a new version.
 
 ## [2026.0915_007] — 2026-09-15
 
+### Documentation
+- Record publication of 2026.0915_007 from 4eafcc3: CI passed; tagged
+  release 35003991671 succeeded on the first attempt. Public ZIP/DMG
+  checksums, Developer ID signatures, notarization and stapling verified
+  independently; mirror and hermitsdr.com updated.
+
 ### Added
 - **Digital Modes window** (Decode › Digital Modes): twelve new native
   receive-only decoders hosted one at a time behind a shared
