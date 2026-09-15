@@ -27,6 +27,13 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0915_005
+
+- **Ask the Crab can look things up.** Ask "what is MAGNET HF?" and the crab checks HermitSDR's own features first, then — only if you turn on **Web search for unfamiliar terms** under its gear (off by default) — searches the web. On-device it uses DuckDuckGo and Wikipedia; with the Claude API it uses Anthropic's hosted web search and cites its sources. Only the search terms leave your Mac.
+- **The crab knows the Coast Guard radiofax stations.** "Take me to a WEFAX frequency for Boston Coast Guard and begin decoding" tunes NMF's scheduled outlet for the current hour, 1.9 kHz below the assigned frequency in USB, and starts the decoder. New Orleans, Point Reyes, Kodiak and Honolulu are covered too. It no longer calls a ham frequency a Coast Guard one.
+
+The release completed the full software suite (1,498 tests) with zero failures. No transmission was involved.
+
 ## New in 2026.0915_004
 
 - **Contestia decoder.** Decode › Contestia Decoder receives Pawel Jalocha's MFSK mode natively — 4 to 64 tones, 125 to 2000 Hz, Walsh-coded FEC blocks with sync and S/N gating, LOCK / S/N / offset readouts. Written from the published protocol; no on-air reception yet.

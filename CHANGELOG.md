@@ -7,6 +7,32 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0915_005] — 2026-09-15
+
+### Added
+- Ask the Crab can look things up. A new `web_search` tool answers "what is
+  MAGNET HF?"-class questions: HermitSDR's own feature catalog first (no
+  network), then — only with the new **Web search for unfamiliar terms**
+  toggle under the crab's gear, off by default — a bounded web lookup. The
+  on-device crab sends the search terms to DuckDuckGo, then its instant
+  answers, then Wikipedia (8 s each, five results, 1,600 characters); the
+  Claude backend uses Anthropic's hosted `web_search_20260209` tool instead
+  and the reply lists its cited sources. Only the search terms leave the
+  Mac; viewer chat never gets web search.
+- Ask the Crab knows the U.S. Coast Guard / NWS radiofax outlets. "Take me
+  to a WEFAX frequency for Boston Coast Guard and begin decoding" now tunes
+  NMF's scheduled outlet for the current UTC hour (4235 / 6340.5 / 9110 /
+  12750 kHz, dial 1.9 kHz below in USB so black/white land on 1500/2300 Hz),
+  starts the decoder and lists the other outlets and broadcast blocks; NMG
+  New Orleans, NMC Point Reyes, NOJ Kodiak and KVM70 Honolulu likewise
+  (`UtilityStations.swift`, from the NWS rfax schedule). `monitor_mode`
+  gained a `station` argument; a bare "weather fax" request names the
+  stations instead of pretending 7.190 is one.
+
+### Fixed
+- The crab no longer claims a ham frequency is "a Coast Guard frequency":
+  without a matching station it says which ones it knows.
+
 ## [2026.0915_004] — 2026-09-15
 
 ### Documentation
