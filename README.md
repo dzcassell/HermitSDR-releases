@@ -27,6 +27,13 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0915_006
+
+- **Coast Guard fax tuning, checked on the air.** "Take me to a WEFAX frequency for Boston Coast Guard and begin decoding" now lands on NMF's right outlet even when the on-device model invents a frequency or leaves the station blank, and the outlet choice considers how far you are from the transmitter: near Boston the 6340.5 kHz outlet painted the 1538Z surface analysis at S9+27 while 9110 kHz was noise. Verified live on a SquareSDR 2.
+- **The crab no longer apologizes after doing the job.** If Apple's on-device model fails to write its sentence after a tool has already run, the crab answers with the tool's own result.
+
+The release completed the full software suite (1,498 tests) with zero failures. Receive only; no transmission was involved.
+
 ## New in 2026.0915_005
 
 - **Ask the Crab can look things up.** Ask "what is MAGNET HF?" and the crab checks HermitSDR's own features first, then — only if you turn on **Web search for unfamiliar terms** under its gear (off by default) — searches the web. On-device it uses DuckDuckGo and Wikipedia; with the Claude API it uses Anthropic's hosted web search and cites its sources. Only the search terms leave your Mac.

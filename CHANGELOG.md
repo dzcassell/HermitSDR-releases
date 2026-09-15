@@ -7,6 +7,30 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0915_006] — 2026-09-15
+
+### Fixed
+- Ask the Crab's station tuning now survives the on-device model's habits.
+  Live on the SquareSDR 2, "Take me to a WEFAX frequency and mode for Boston
+  Coast Guard and begin decoding" made Apple's model call `monitor_mode`
+  with an invented 13.375 MHz and an empty station argument; the executor
+  now resolves the station from the argument, the mode text or the
+  operator's own question, and a resolved station's schedule overrides any
+  model-supplied frequency. Verified live: the second try landed on NMF's
+  9110 kHz outlet (dial 9.1081 MHz USB) with the fax decoder on.
+- When Apple's on-device model fails to narrate after a tool has already
+  run (GenerationError −1 was seen right after the station reply), the crab
+  now answers with the tool's own result instead of "skittered into a
+  snag" — the radio had moved and the receipt already said so.
+- The station reply is shorter (callsign, place, dial, schedule note, other
+  outlets) so it fits the on-device context.
+- Outlet choice now uses the listener's distance. From FN42, 50 km from
+  NMF's Marshfield transmitter, the day rule picked 9110 kHz and a forced
+  start painted noise; NMF's 6340.5 kHz outlet was S9+27 and painted the
+  1538Z surface analysis (`docs/bench/2026-09-15/claude-nmf-6340-wefax-*.png`).
+  Within ~700 km of a station the crab now takes the lowest open outlet
+  (skipping the 2 MHz-class one by day); farther away the time rule stays.
+
 ## [2026.0915_005] — 2026-09-15
 
 ### Documentation
