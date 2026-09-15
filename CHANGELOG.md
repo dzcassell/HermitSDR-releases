@@ -9,6 +9,12 @@ batch of improvements ships as a new version.
 
 ## [2026.0915_008] — 2026-09-15
 
+### Documentation
+- Record publication of 2026.0915_008 from 8419184: CI 35010566081 passed;
+  tagged release 35012064544 succeeded on the first attempt. Public ZIP/DMG
+  checksums, Developer ID signatures, notarization and stapling verified
+  independently; mirror and hermitsdr.com updated.
+
 ### Added
 - **App audio as a TX source.** TX Controls › Source gains **App audio**:
   ScreenCaptureKit captures HermitSDR's own audio output — the Media Deck's
