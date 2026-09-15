@@ -7,6 +7,19 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0914_004] — 2026-09-15
+
+### Fixed
+- FT8/FT4 panel rows decoded from the time machine or a file replay now
+  carry an orange REPLAY badge (#117), matching the Decoder Activity
+  sessions. Those rows were already kept away from the sequencer and
+  PSKReporter; only the marker was missing.
+
+### Documentation
+- Record 2026-09-15 on-air QSOs #3 (KN1B) and #4 (KJ5DZV) on the installed
+  2026.0914_003 at 20 % on 40 m, and the time-machine replay / `.hiq`
+  re-open checks for #117 (`docs/SquareBench-2026-09-14-Claude.md` §10).
+
 ## [2026.0914_003] — 2026-09-14
 
 ### Fixed
@@ -19,6 +32,15 @@ batch of improvements ships as a new version.
 - The About window's Copy System Information button now carries an
   accessibility label and identifier so diagnostics can be pulled by
   automation.
+
+### Documentation
+- Record publication of 2026.0914_003 from 20268b9: exact-source CI
+  34871602903 passed; tagged release 34871605257 (dry run + signed job)
+  succeeded on the first attempt. Public ZIP/DMG checksums, Developer ID
+  signatures (UG29A6ZW54), Gatekeeper Notarized Developer ID and stapled
+  tickets were independently verified, with identical app contents and the
+  empty public tag anchor. Mirror 7ef520d in HermitSDR-releases; hermitsdr.com
+  now links the new 28.2 MB DMG.
 
 ## [2026.0914_002] — 2026-09-14
 

@@ -22,10 +22,16 @@ For the complete release history, read the [**CHANGELOG**](CHANGELOG.md).
 > an offline check by design (nothing phones home). Слава Україні. 🇺🇦
 
 Receive *and transmit* are live-proven on **both protocols**, and the first
-on-air QSOs are in the log (WU1T ↔ KA3MAJ and W8NGA, FT8, 40 m, 2026-09-14): the Hermes-Lite 2 and the
+on-air QSOs are in the log (WU1T ↔ KA3MAJ, W8NGA, KN1B and KJ5DZV, FT8, 40 m, 2026-09-14/15): the Hermes-Lite 2 and the
 ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
+
+## New in 2026.0914_004
+
+- **Replayed decodes are labeled.** FT8 and FT4 rows that came from the time machine or a file replay now carry an orange REPLAY badge in the panel, the same marker Decoder Activity already used. Those rows were never fed to the sequencer or PSKReporter; only the label was missing.
+
+The release completed the full software suite with zero failures and the repository audit. Two more on-air QSOs (KN1B and KJ5DZV, FT8, 40 m, 2026-09-15) were worked with the previous release on the way to this one.
 
 ## New in 2026.0914_003
 
