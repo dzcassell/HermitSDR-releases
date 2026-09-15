@@ -7,6 +7,81 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0915_004] — 2026-09-15
+
+### Added
+- Contestia decoder (Decode › Contestia Decoder): native receive of Pawel
+  Jalocha's MFSK mode, written from the published protocol — Walsh-Hadamard
+  FEC blocks, `0xEDB88320` scrambling with 5-bit plane rotation, Gray-coded
+  tones, the 6-bit uppercase alphabet, fldigi's carrier placement, and block
+  sync with per-phase S/N gating over ±8 bins. Eleven standard geometries
+  from 4/125 to 64/2000, audio centre and REV controls, live LOCK / S/N /
+  offset readouts, Decoder Activity session reporting. Nine tests including
+  noisy, offset and reversed loopbacks; `docs/Contestia.md`. No on-air
+  reception yet.
+- Ask the Crab now handles digital modes. A new `monitor_mode` tool tunes
+  (if a frequency was given), sets the right demodulator and starts the
+  matching decoder — Contestia, FT8/FT4, CW, RTTY, SSTV, weather fax, ALE —
+  and `set_mode` accepts those names too. "Monitor Contestia on 7.115"
+  therefore tunes 7.115 USB and starts the Contestia decoder instead of
+  refusing. JS8 points to the MAGNET window; modes with no native decoder
+  (Olivia, PSK, MFSK…) get an honest answer and the fldigi audio route.
+  `set_decoder` also learned Contestia, SSTV and fax.
+
+## [2026.0915_003] — 2026-09-15
+
+### Added
+- Speaker Tracker (#27), Decode › Speaker Tracker, off by default. Received
+  voice transmissions are segmented by an adaptive gate, a local
+  spectral-statistics voiceprint (mel cepstra, tilt, pitch) is computed off
+  the audio thread, recurring unknown voices are grouped as `UNKNOWN n`, and
+  a named speaker is matched with a visible similarity and one of
+  match / likely / possible / unknown / ambiguous / insufficient. Rename a
+  cluster, assign, create, mark wrong, merge, exclude and delete; profiles
+  learn only from confirmed evidence and stay provisional until 6 s is
+  enrolled; replayed audio is listed but never enrolled. Everything lives in
+  a versioned local JSON file with a recovery copy on corruption and a
+  "Delete all data" action; no audio is retained and nothing is uploaded.
+  The embedding model is versioned and swappable behind a protocol. 15 tests
+  with synthetic formant voices; `docs/SpeakerTracker.md`.
+
+## [2026.0915_002] — 2026-09-15
+
+### Added
+- Transverter profiles (#66 §3). Named IF→RF station paths with an RF
+  offset, optional inversion, an IF window, RX/TX enables, an explicit
+  per-profile drive ceiling and antenna paths, edited in Settings ›
+  Transverters. The dial (with GHz/100 MHz digits when needed), CAT `f`/`F`
+  and `\dump_state`, Ask the Crab, the logbook, PSK Reporter, DX self-spots
+  and the operator TX policy read RF; the NCO, waterfall, DSP, hardware and
+  calibration limits stay on the IF. RF requests outside the profile are
+  refused with a reason instead of clamped; profile changes are refused
+  while keyed; TX is refused for receive-only profiles, out-of-window IF, or
+  drive above the ceiling. `.hiq` recordings made through a profile carry a
+  v2 header with the mapping and replay with the recorded RF on the dial.
+  Band memory is not written while a profile is active. Nine model tests;
+  `docs/Transverters.md`. No transverter hardware was connected.
+
+## [2026.0915_001] — 2026-09-15
+
+### Added
+- Authenticated CAT over the LAN (#66 §6). With **Allow LAN** on, peers that
+  are not on this Mac may read but must `\pair` before any command that
+  tunes, changes mode/antenna/drive, or keys — those answer `RPRT -9` until
+  then. Pairing accepts the plain 32-character code from Settings or a
+  single-use HMAC-SHA256 challenge/response (`\pair` → `PAIR <nonce>`), so
+  a captured exchange cannot be replayed. The token lives in the Keychain
+  (`cat.lan.token`, minted lazily on first LAN start), Settings shows the
+  code with Copy and **Rotate** (drops every paired peer), three failed
+  attempts from one address start a 60 s cooldown, a flood of more than 200
+  commands/s closes the connection, and every decision is audited to the
+  unified log (`cat-audit`, peer address and command head only). Loopback
+  peers are unchanged. A separate **Legacy** toggle restores the old
+  unauthenticated LAN behaviour for Hamlib NET rigctl clients on another
+  machine, with a red warning and a Digital Mode Check flag. PTT still
+  passes ARM and every interlock. 12 new parser tests plus a TCP gate test;
+  `docs/DigitalModes.md` "CAT over the LAN".
+
 ## [2026.0914_004] — 2026-09-15
 
 ### Fixed
@@ -19,6 +94,15 @@ batch of improvements ships as a new version.
 - Record 2026-09-15 on-air QSOs #3 (KN1B) and #4 (KJ5DZV) on the installed
   2026.0914_003 at 20 % on 40 m, and the time-machine replay / `.hiq`
   re-open checks for #117 (`docs/SquareBench-2026-09-14-Claude.md` §10).
+
+### Documentation
+- Record publication of 2026.0914_004 from 5a95431: exact-source CI
+  34958402650 passed; tagged release 34958404616 (dry run + signed job)
+  succeeded on the first attempt. Public ZIP/DMG checksums, Developer ID
+  signatures (UG29A6ZW54), Gatekeeper Notarized Developer ID and stapled
+  tickets were independently verified, with identical app contents and the
+  empty public tag anchor. Mirror 3e06d8d in HermitSDR-releases; hermitsdr.com
+  now links the new 28.2 MB DMG.
 
 ## [2026.0914_003] — 2026-09-14
 

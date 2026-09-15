@@ -27,6 +27,16 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0915_004
+
+- **Contestia decoder.** Decode › Contestia Decoder receives Pawel Jalocha's MFSK mode natively — 4 to 64 tones, 125 to 2000 Hz, Walsh-coded FEC blocks with sync and S/N gating, LOCK / S/N / offset readouts. Written from the published protocol; no on-air reception yet.
+- **Ask the Crab starts decoders.** "Monitor Contestia on 7.115" now tunes 7.115 USB and starts the decoder; the same works for FT8/FT4, CW, RTTY, SSTV, weather fax and ALE. Modes without a native decoder get an honest answer and the audio route to fldigi.
+- **Speaker Tracker (2026.0915_003).** Decode › Speaker Tracker, off by default: received voice transmissions are grouped by voice as `UNKNOWN n`, and once you name a voice later transmissions are matched with a visible similarity score. Everything stays in a local file; no audio is kept.
+- **Transverter profiles (2026.0915_002).** Settings › Transverters: named IF→RF paths with an explicit drive ceiling. The dial, CAT, logbook, spots and TX policy read RF; the radio stays on its IF; TX is refused for receive-only profiles.
+- **CAT over the LAN now requires pairing (2026.0915_001).** With Allow LAN on, other machines may read but must send `\pair` with the code shown in Settings before they can tune, change mode or key. A legacy toggle keeps raw rigctl for Hamlib clients on another machine, behind a warning.
+
+The release completed the full software suite (1,491 tests) with zero failures and the repository audit. No transmission was involved.
+
 ## New in 2026.0914_004
 
 - **Replayed decodes are labeled.** FT8 and FT4 rows that came from the time machine or a file replay now carry an orange REPLAY badge in the panel, the same marker Decoder Activity already used. Those rows were never fed to the sequencer or PSKReporter; only the label was missing.
