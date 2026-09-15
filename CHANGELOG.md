@@ -9,6 +9,15 @@ batch of improvements ships as a new version.
 
 ## [2026.0915_004] — 2026-09-15
 
+### Documentation
+- Record publication of 2026.0915_004 from 0a99e31: CI 34970087891 passed;
+  tagged release 34971256374 (dry run + signed job) succeeded on the first
+  attempt. Public ZIP/DMG checksums, Developer ID signatures (UG29A6ZW54),
+  Gatekeeper Notarized Developer ID and stapled tickets were independently
+  verified, with identical app contents and the empty public tag anchor.
+  Mirror updated in HermitSDR-releases; hermitsdr.com links the new 28.5 MB
+  DMG.
+
 ### Added
 - Contestia decoder (Decode › Contestia Decoder): native receive of Pawel
   Jalocha's MFSK mode, written from the published protocol — Walsh-Hadamard
