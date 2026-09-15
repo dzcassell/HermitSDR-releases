@@ -9,6 +9,12 @@ batch of improvements ships as a new version.
 
 ## [2026.0915_005] — 2026-09-15
 
+### Documentation
+- Record publication of 2026.0915_005 from adb8b18: CI 34983735803 passed;
+  tagged release 34984993447 succeeded on the first attempt. Public ZIP/DMG
+  checksums, Developer ID signatures, notarization and stapling verified
+  independently; mirror and hermitsdr.com updated.
+
 ### Added
 - Ask the Crab can look things up. A new `web_search` tool answers "what is
   MAGNET HF?"-class questions: HermitSDR's own feature catalog first (no
