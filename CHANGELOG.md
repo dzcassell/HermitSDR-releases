@@ -7,6 +7,26 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0915_008] — 2026-09-15
+
+### Added
+- **App audio as a TX source.** TX Controls › Source gains **App audio**:
+  ScreenCaptureKit captures HermitSDR's own audio output — the Media Deck's
+  YouTube and web pads — and feeds it to the TX chain as 48 kHz stereo blocks
+  with the file player's contract (silence while idle, so keyed carrier modes
+  are unchanged). Only this process is captured; the first arm asks for the
+  macOS Screen Recording permission; ARM, PTT and every interlock apply as
+  for the mic. This reverses the earlier "YouTube audio is never routed to
+  TX" rule at Damon's explicit request; the Media Deck docs and pad text say
+  so.
+- **YouTube sign-in for the Media Deck.** The pad editor and the player
+  sheet show a YouTube account row with Sign in… / Sign out. Google's own
+  page loads inside a persistent per-install web session shared by every
+  YouTube pad (`WKWebsiteDataStore(forIdentifier:)`, Safari-equivalent user
+  agent so Google accepts the embedded sign-in), so a YouTube Premium
+  account plays ad-free. HermitSDR reads only the cookie names that prove a
+  session exists; Sign out wipes the store. Three new tests.
+
 ## [2026.0915_007] — 2026-09-15
 
 ### Documentation

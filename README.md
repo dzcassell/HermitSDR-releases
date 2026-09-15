@@ -27,6 +27,13 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0915_008
+
+- **YouTube on the air.** TX Controls › Source now offers **App audio**: HermitSDR captures its own audio output (the Media Deck's YouTube and web pads) and feeds it to the transmitter behind the usual ARM and PTT. Only this app is captured; macOS asks for Screen Recording permission the first time.
+- **Sign in to YouTube.** The Media Deck's YouTube pads run in a persistent web session. Sign in with your Google account from the pad editor or the player sheet; a YouTube Premium account then plays without ads. Sign out wipes the session.
+
+The release completed the full software suite (1,600 tests) with zero failures. No transmission was involved.
+
 ## New in 2026.0915_007
 
 - **Twelve new digital decoders in one window.** Decode › Digital Modes hosts PSK31/63, Olivia, MFSK16, THOR, DominoEX, Hellschreiber, 300-baud HF packet/APRS, JS8 receive, WSPR, JT65, JT9 and Q65 — one mode at a time, receive only. Text modes print, weak-signal and packet modes list decodes with S/N and offset, Hellschreiber paints. Ask the Crab can start any of them ("decode WSPR here"). Built from the published protocols; loopback thresholds and every known limitation are listed in the docs. None has been checked on the air yet.
