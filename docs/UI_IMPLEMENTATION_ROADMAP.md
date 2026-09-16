@@ -37,9 +37,12 @@ source repository; do not publish it here or repoint release tags to source comm
 ## Source handoff
 
 A separate local source checkout was found with origin `dzcassell/HermitSDR`, at
-`d8458d2991e9c34cd92aa8f8bf7aa241d5c87a27` (2026-09-11). It predates the latest
-release and contains an existing untracked test file; it was not modified.
-It is a useful architectural lead, not the verified current implementation baseline.
+`d8458d2991e9c34cd92aa8f8bf7aa241d5c87a27` (2026-09-11). It initially predated the latest release. At the owner's request it was then
+fast-forwarded by 50 commits to GitHub `main` at
+`c886bc27c9af103fdc6cb59f588a92a0bba131ca`. Tracked files match that revision;
+the pre-existing untracked `Tests/DSPTests/ReviewJS8TimingTests.swift` was preserved
+byte-for-byte. No application source was authored or altered beyond this upstream sync.
+The updated checkout has not been built or fully re-audited in this planning task.
 
 The preliminary map below refers only to that older checkout. Revalidate all paths,
 owners and commands against the current source before editing:
@@ -97,8 +100,9 @@ requested; these milestones are a planning proposal, not newly created issues.
 
 ## Decisions still needed before implementation
 
-1. Confirm the authoritative current source checkout/ref. The discovered local
-   checkout is stale; do not reset, pull over, or adopt its outstanding work blindly.
+1. Use the synchronized source revision above as the candidate baseline, confirming
+   checkout ownership and any newer upstream changes before implementation. Preserve
+   the outstanding untracked test; do not silently adopt or delete it.
 2. Review proposed panel allocation and minimum supported window size at slice 2.
    The waterfall priority, three collapsible panels, palette list, readout style,
    meter direction and fixed TX colors are already decided.
