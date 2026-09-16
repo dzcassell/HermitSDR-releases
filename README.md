@@ -31,6 +31,13 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0916_002
+
+- **Stream Deck, for real.** Station › Control Devices › Stream Deck Setup gains a **Connect** switch that opens an Elgato Stream Deck (MK.2 or the 2019 15-key model) over USB and drives it from your layout. Band, mode, tune-step, NB/NR/ANF/split/sub-RX/mute/record/skimmer toggles, palette, antenna and Media Deck pads all work from the keys, and the faces show live state: the current band lights and shows the dial, the current mode lights, toggles light when on, and PTT/TUNE keys read SAFE, ARMED, ON AIR or CARRIER. PTT on the panel is hold-to-transmit and goes through the same ARM interlocks as the on-screen button; TUNE toggles. A first run gets a ready-made starter page; the setup window mirrors the panel while it shows the page you are editing. macOS asks for Input Monitoring the first time. Quit the Elgato app first — it holds the device.
+- **Fixed:** the Stream Deck editor's key previews had never rendered (a bitmap-format mistake), so they were blank in every earlier build.
+
+The release completed the full software suite (1,618 tests) with zero failures. The panel was exercised on the bench (tiles, brightness, serial and firmware readback); no transmission was involved.
+
 ## New in 2026.0916_001
 
 - **Ask the Crab knows the nets.** "Monitor the MAGNET HF net on 40m" now tunes 7.115 MHz USB, starts the Contestia 4/250 decoder at the published 900 Hz offset and tells you which regional net is on or next; "listen for MAGNET JS8" goes to the JS8Call watch channel. The app resolves the request from its own MAGNET HF schedule before the language model answers, so the assistant can no longer invent a frequency for it.

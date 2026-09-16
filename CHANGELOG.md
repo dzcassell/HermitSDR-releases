@@ -7,6 +7,67 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0916_002] — 2026-09-16
+
+### Added
+- **Physical Stream Deck support (#52).** Station ▸ Control Devices ▸ Stream
+  Deck Setup gains a **Connect** switch (defaults key `streamDeckOn`, off by
+  default) that opens an Elgato panel over USB HID and drives it from the
+  saved layout. New `Integration/StreamDeck/StreamDeckHID.swift` (IOKit
+  transport modelled on the tuning-device manager: manager and input
+  callbacks on the main run loop, tile/feature writes on one serial queue,
+  Input Monitoring detected and explained, exclusive-owner and unsupported-
+  model refusals named, USB write errors counted into the status line) and
+  `StreamDeckDeviceController.swift` (layout mirroring, per-key face diffing
+  so only changed tiles cross USB, `.page`/`.brightness` handled locally,
+  key edges → `DeckAction`s, every held key released when the panel vanishes
+  or the app quits, panel reset to the Elgato logo on close). The model table
+  adds the 2019 "Original V2" panel (PID 0x006d — the bench unit, serial
+  AL26J2C07451, firmware 1.03.000), which shares the MK.2 protocol byte for
+  byte; the 15-key layout document is interchangeable between the two.
+- **Radio executor** (`App/RadioState+StreamDeck.swift`): band, mode, tune
+  steps, band-memory slots, NB/NR/ANF/split/sub-RX/arcade/FT8/skimmer/record/
+  mute toggles, palette cycling, RX/TX antenna selection clamped to the
+  connected radio's jacks (TX swap refused while keyed), Media Deck pads by
+  file/segment/URL, stop-all media and open-URL. **PTT is momentary** (key
+  while held, unkey on release) and TUNE toggles; both go through `setPTT`/
+  `toggleTune` with the hardware source, so ARM, profile, operator policy,
+  protection and the coordinator apply exactly as for the radio's own key
+  jack. A refusal comes back as the key's receipt in the setup window.
+- **Live faces** (`StreamDeckLiveState.swift`, pure, tested): band keys light
+  on the current band and show the dial, mode/antenna/page keys light when
+  current, toggle keys show their state, PTT/TUNE keys read SAFE / ARMED /
+  ON AIR / CARRIER, cycle keys show the current antenna/palette/step, and
+  radio-only actions read "no radio" while disconnected. RadioState's change
+  publisher triggers a coalesced (80 ms) redraw. The setup window's grid
+  mirrors the panel exactly while it shows the edited page, including held
+  keys; a "Show page N on panel" button switches the panel to the page being
+  edited, and the status line shows the last key and its receipt.
+- **Starter page**: a first run (no layout on disk) and the new wand button
+  provide bands / modes / NB / NR / ANF / MUTE / TUNE / PTT laid out for a
+  15-key grid, PTT bottom-right. New presets: PTT (hold to transmit), MOX
+  toggle, ±10-step tuning, Arcade FX.
+
+### Fixed
+- **Stream Deck tiles never rendered.** `StreamDeckRenderer` asked AppKit for
+  a 4-sample bitmap without alpha, which `NSBitmapImageRep` rejects as
+  inconsistent and returns nil — so since 2026.0818_006 every editor preview
+  was blank and a panel would have received nothing. The bitmap is RGBA now
+  (the face paints its full background, so the JPEG is plain opaque RGB).
+
+### Verified
+- On the bench: the panel opens, its serial and firmware read back over
+  feature reports, brightness and all fifteen starter tiles are accepted with
+  zero write errors, and the editor renders the same tiles. Physical key
+  presses were not exercised in this session (nobody at the panel); the
+  input path is the tested `pressedKeys` parser on input report 0x01 and the
+  first report is logged (`log show --predicate 'category == "streamdeck"'`).
+  No radio was connected and nothing was keyed.
+- `StreamDeckProtocolTests` (12) and `StreamDeckLiveStateTests` (5);
+  `DocsConsistencyTests` gains a guard that the device controller and
+  transport hold no radio handle and the executor keys only via `setPTT`
+  with the hardware source.
+
 ## [2026.0916_001] — 2026-09-16
 
 ### Documentation
