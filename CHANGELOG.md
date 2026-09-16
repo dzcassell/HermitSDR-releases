@@ -7,6 +7,53 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0916_001] — 2026-09-16
+
+### Documentation
+- Record publication of 2026.0916_001 from 791c4e7: CI 35081540296 passed;
+  tagged release 35082894589 succeeded on the first attempt. Public ZIP/DMG
+  checksums, Developer ID signatures, notarization and stapling verified
+  independently; mirror and hermitsdr.com updated.
+
+### Fixed
+- **Ask the Crab: nets and band words are resolved by the app, not the
+  model.** Asked to "monitor the Magnet HF net on 40m", the on-device model
+  announced 14.000 MHz (invented) and handed the tune tool 40 MHz (the band
+  word read as a frequency), so the receipt said "40.0000 MHz is outside what
+  this radio tunes". HermitSDR already held the answer in `MAGNETHF.swift`
+  (7.115 MHz USB, Contestia 4/250 at 900 Hz, the JS8Call watch channels and
+  the regional net schedule); the crab now uses it. New pure
+  `Integration/AI/NetDirectory.swift`:
+  - `NetDirectory.resolve` turns the operator's words into a `CrabTarget`
+    (dial, demodulator, decoder, waterfall offset, schedule sentence): MAGNET
+    HF from the bundled schedule — the 40 m Contestia net, the JS8Call watch
+    on 40 m/20 m by band word or time of day, honest notes when the asked
+    band carries nothing — then the crab's own remembered skeds by name. The
+    schedule line names the operator's region's next net when the MAGNET
+    window knows the region, or the net in progress.
+  - Band words are bands: "40m", "40 meters", "forty metres" parse as a band
+    and never as 40 MHz. Both tune tools (on-device and Claude) switch band
+    when the unit is metres, and the executors recognise a model-produced
+    40 MHz backed only by "40m" in the operator's words and switch band
+    instead of refusing.
+  - **Preflight.** `AIAssistant` runs the resolver on the question itself
+    before the model sees it; when the words ask to hear a net the app
+    knows, the radio is tuned, the decoder started and the receipt posted
+    first, and the model is handed that receipt to relay. The `.tune` and
+    `.monitor` executors apply the same resolution to whatever the model
+    passes, so a hosted model that names the net but invents a frequency is
+    redirected to the published dial.
+  - **Reply guard.** `CrabReplyGuard` compares every frequency the model
+    narrates with the turn's receipts (and the telemetry line it saw); a
+    number the receipts never came near is replaced by the last receipt.
+  - `web_search` answers about MAGNET HF from the app's fact sheet
+    (channels, nets, next occurrence) before any catalog or web hit; the
+    router now offers the monitor tool for "magnet", "the net", "listen
+    to", "check in". Tool descriptions and the crab's instructions say a
+    named net or station is passed by name, never with a frequency from
+    memory, and that a band word is a band. Nine new tests
+    (`NetDirectoryTests`), including the exact screenshot prompt.
+
 ## [2026.0915_008] — 2026-09-15
 
 ### Documentation
