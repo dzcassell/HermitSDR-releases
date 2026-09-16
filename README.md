@@ -16,6 +16,10 @@ notarized build from the [**Releases**](../../releases/latest) page.
 
 For the complete release history, read the [**CHANGELOG**](CHANGELOG.md).
 
+The planned console redesign is described in the [UI design brief](docs/UI_DESIGN.md)
+and [implementation roadmap](docs/UI_IMPLEMENTATION_ROADMAP.md). These are planning
+documents, not features in the current download.
+
 > **Availability**: HermitSDR is not made available for use in the
 > Russian Federation while Russia's war against Ukraine continues. The
 > app checks the system region/timezone at startup and declines to run —
