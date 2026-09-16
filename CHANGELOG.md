@@ -7,6 +7,48 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0916_003] — 2026-09-16
+
+### Fixed
+- **Speaker Tracker on the air (#27).** The first live pass (SquareSDR 2,
+  40 m phone, 2026-09-16) found the tracker unusable: every "transmission"
+  ran to the 60 s cap back to back, band noise on a dead 27.385 clustered
+  with itself at 0.98, and one 60 s voiceprint took 26 s to compute while
+  1.1 million samples fell out of the 3 s FIFO. Three causes, all fixed.
+  (1) The gate ran on the final AGC-levelled audio mix, which never drops
+  between overs because a slow AGC pulls band noise back up within a
+  second; `VoiceTransmissionDetector` now gates on the receiver's
+  **pre-AGC S-meter level** (`RadioEngine.rxSignalDbFS`, the same quantity
+  the squelch uses, read atomically by the audio tap) and falls back to
+  audio RMS only without a radio. (2) The noise floor started at −60 dBFS
+  and could only rise while the gate was closed, so a floor seeded far
+  below the band reopened 150 ms after every cap and never converged; the
+  floor now learns from the first 0.5 s after enable, ignores pre-stream
+  placeholder levels, and a capped segment whose level spread is under
+  3 dB (noise or a carrier, never speech) lifts the floor to its quiet
+  decile so the train stops. (3) Segmentation and voiceprint analysis now
+  run on separate serial queues with a three-deep analysis backlog (later
+  segments are dropped and counted as "late"), the FIFO grew to 6 s, and
+  the pitch search uses vDSP dot products — 93 ms per segment in the Debug
+  app on the same net. The window header shows the gate source and level
+  against the floor. Four new tests (level gating against AGC-flat audio,
+  loud-floor calibration, capped-train recovery, backlog bounding);
+  `docs/SpeakerTracker.md` updated.
+
+### Added
+- **#66 audit closure.** FM sideband-orientation tests (a positive audio
+  excursion raises the wire's instantaneous frequency, the phase increment
+  follows the drive sign, the discriminator loopback keeps audio polarity),
+  a wide-FM channel-occupancy assertion, CAT `M FM` / `M FMN` / `m` round
+  trip, `FMSettingsModelTests` for the persisted `fmConfiguration.v1`,
+  `Capabilities.swift` rows for the CW keyer and the operator TX policy
+  (README table regenerated), a Menus.md pointer to both TX Controls
+  sections, `DocsConsistencyTests` coverage of `CWKeyer.md`,
+  `TXOperatingPolicy.md` and `DigitalModes.md`, a "Device changes and
+  latency" subsection in `docs/DigitalModes.md`, and the sidetone-vs-RF
+  bound (≤ ~65 ms) in `docs/CWKeyer.md`. The CW hardware items (break-in,
+  paddle jack into the keyer, keying latency compensation) are #118.
+
 ## [2026.0916_002] — 2026-09-16
 
 ### Added
