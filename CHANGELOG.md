@@ -7,6 +7,50 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0920_001] — 2026-09-20
+
+### Fixed
+- **Discord mention commands now answer immediately and deterministically.**
+  Exact `@HermitSDR status`, `help`, `frequency`, `mode`, `signal`, `uptime`,
+  `recording`, `decoders`, and `waterfall` requests bypass the public AI-chat
+  cooldown and reuse the slash-command status formatter. Open-ended mentions
+  still use the isolated, rate-limited co-host. Privacy-safe diagnostics now
+  show whether a mention was received, accepted, rate-limited, generated, and
+  successfully posted without logging its content.
+- **Discord voice now supports the required DAVE end-to-end encryption.** Voice
+  gateway v8 advertises HermitSDR's supported DAVE version, processes the MLS
+  transition messages with a pinned static build of Discord's official
+  `libdave`, and encrypts each Opus frame before the existing Discord transport
+  encryption. DAVE identities are ephemeral and never written to disk or the
+  Keychain. Voice-control JSON is now sent as text frames after HELLO, binary
+  frames are reserved for DAVE, v8 heartbeats acknowledge the latest gateway
+  sequence, and diagnostics distinguish joining from DAVE readiness and active
+  audio streaming.
+- **Time-machine bookmark errors no longer compare stale and current buffer
+  depths.** A connected-session bookmark error was stored invisibly and then
+  appeared as soon as a deliberate disconnect reopened the connect sheet,
+  making an earlier 49-second snapshot look inconsistent with the 147 seconds
+  just shown by the time machine. Deliberate disconnect now clears stale
+  operational errors, and bookmark checks distinguish ordinary age expiry
+  from an IQ-history generation replaced by disconnect, retune, rate change,
+  or receiver reconfiguration.
+- **Protocol 2 Diversity could freeze receiver DSP and the waterfall when
+  enabled or disabled mid-stream.** The bounded IQ ingress now discards an
+  incomplete packet-coalescing tail when the radio changes callback geometry
+  between ordinary 238-sample frames and Diversity's combined 119-sample
+  frames. Previously that tail could never finish after the DDC switch, so all
+  frames in the new geometry were rejected while packet counters and GPU-only
+  waterfall effects kept moving. Regression coverage exercises both live
+  238→119 and 119→238 transitions.
+
+### Verified
+- **Discord end to end with a live server and radio.** In `#hermitsdr`, exact
+  mention commands answered back to back, `/status` returned the live ANAN
+  state, `/waterfall` posted a current 7.104 MHz LSB image, and disabling
+  status-event notifications suppressed a receive-only tuning event before the
+  preference was restored. The bot also completed a DAVE voice session and
+  delivered radio audio while local speaker monitoring continued.
+
 ## [2026.0916_003] — 2026-09-16
 
 ### Fixed

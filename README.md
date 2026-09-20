@@ -31,6 +31,13 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0920_001
+
+- **Discord is now a practical remote front panel.** In your chosen control channel, direct mentions such as `@HermitSDR status`, `help`, `frequency`, `mode`, `signal`, `uptime`, `recording`, `decoders` and `waterfall` answer immediately without being trapped behind the conversational cooldown. Open-ended mentions still go to the isolated AI co-host. The voice connection now implements Discord's required DAVE end-to-end encryption, so live receiver audio reaches the voice channel again.
+- **Two receive-side regressions fixed.** Switching Protocol 2 Diversity on or off can no longer strand the DSP and freeze the waterfall, and stale time-machine bookmark errors no longer compare buffer depths from different connection generations.
+
+The release completed the full clean software suite with zero failures and clean Debug/Release builds. Direct mentions, slash status, waterfall posting, notification suppression and DAVE voice audio were exercised live with the ANAN; no transmission was involved.
+
 ## New in 2026.0916_003
 
 - **Speaker Tracker works on a real band now.** Its first on-air outing on a 40 m phone net showed it could not tell one over from the next: the transmission detector listened to the AGC-levelled audio, which never goes quiet between overs, so every "transmission" ran to the 60 s limit and the analysis fell a minute behind. The tracker now watches the receiver's own signal-strength reading (the same one the squelch uses) to decide when someone is transmitting, learns the band's noise floor in the first half second, and analyses each over in about a tenth of a second on a queue that can never stall the audio. On the same net after the fix it cut 13 overs of 2 to 60 s cleanly. Whether the built-in voiceprint can tell speakers apart on SSB is still an open question that needs an operator's ears on a net with known voices.
