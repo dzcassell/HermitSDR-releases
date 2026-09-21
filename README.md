@@ -31,6 +31,20 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0921_001
+
+- **Your shack microphone no longer leaks to Discord or a live stream between overs.** With ARM and TX Monitor on, the mic check you hear in the speakers used to ride along with the receiver audio to every remote listener. Remote listeners now hear the monitor voice only while the transmitter is actually keyed — and they hear your transmission even with TX Monitor off.
+- **Control API for lightweight remote clients (receive-only first milestone).** A documented, versioned WebSocket-over-TLS endpoint (`docs/ControlAPI.md` in the source tree) lets a thin client on another computer mirror the radio's state, tune, change mode/filter/gain, and receive the audio and a spectrum stream — the Mac does all the DSP. Same pairing and certificate pinning model as Hermit Remote, off by default, and it cannot transmit: transmit messages are reserved and refused.
+- **The panadapter trims itself and labels peaks.** An Auto latch parks the display floor just under the band noise and follows band changes; a Peaks menu labels the strongest signals in dBm or S-units.
+- **AGC you can tame.** A Max gain slider stops a quiet band roaring up between overs; slope and hang are adjustable and there is a Long speed. CW gets an audio peak filter that only the speaker hears.
+- **Dial lock, a four-register band stack, and spoken status** (frequency, mode, S-meter, power/SWR) for eyes-free operating.
+- **Media Deck Auto PTT.** A header latch keys the transmitter while a pad plays — behind ARM and every existing interlock, off at every launch, with a three-minute time-out.
+- **Speaker Tracker learns the channel.** A channel-normalized voiceprint is the new default, with a tag-and-report tool so a real net can show whether it tells operators apart. Still unproven on real voices.
+- **ANAN: sub-receiver on the RX2 input**, with its own filters — a second antenna or a second band at once.
+- **Every release DMG is now checked with VirusTotal before publication**, and the website shows its SHA-256 with the verdict. This first release predates the API key, so it is marked "not scanned"; the hash and lookup link are published.
+
+The release completed the full software suite (1,784 tests) with zero failures and clean Debug/Release builds. No radio was connected and nothing was transmitted: every feature above is verified by tests and builds only, and the on-air and by-ear checks are still to come.
+
 ## New in 2026.0920_001
 
 - **Discord is now a practical remote front panel.** In your chosen control channel, direct mentions such as `@HermitSDR status`, `help`, `frequency`, `mode`, `signal`, `uptime`, `recording`, `decoders` and `waterfall` answer immediately without being trapped behind the conversational cooldown. Open-ended mentions still go to the isolated AI co-host. The voice connection now implements Discord's required DAVE end-to-end encryption, so live receiver audio reaches the voice channel again.

@@ -7,6 +7,204 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [Unreleased]
+
+## [2026.0921_001] — 2026-09-21
+
+### Added
+
+- **Control API: a documented endpoint for lightweight clients on other
+  computers (#122, milestone 1 — receive only).** Settings gains a Control
+  API section that, once enabled and while a radio is connected, serves a
+  WebSocket over TLS on port 4996 to thin clients that need no SDR code of
+  their own: the shack Mac does all the DSP and sends the receiver audio you
+  hear (12 kHz, 20 ms frames), a decimated spectrum row stream for the span
+  you are looking at (the client picks up to 1024 bins and 10 rows a second)
+  and the radio's state — a full snapshot on connect, then only what
+  changed, with the S-meter at 10 Hz. A client can tune, step, change band,
+  mode, filter, RF gain, attenuator, AGC, NR/NB/ANF, volume, mute, squelch
+  and RIT, swap VFOs and arm split, through the same setters the panel uses.
+  It shares Hermit Remote's certificate fingerprint for pinning but has its
+  own pairing code (Copy / Rotate); each paired client gets Control, Audio
+  and Spectrum permissions you can change while it is connected, plus Kick,
+  Revoke and Forget, and every pairing, failure, cool-down and refusal is
+  written to the `controlapi-audit` log. Three wrong codes from one address
+  start a 60-second cool-down; a client that stops reading only loses frames
+  or is closed, never slowing the radio, audio or waterfall. **It cannot
+  transmit:** the protocol reserves `ptt`, TUNE, drive, TX-profile, mic-gain
+  and microphone-uplink messages for a later milestone, and this build
+  answers each with a typed `tx_disabled` error and does nothing else
+  (test-pinned). The contract is `docs/ControlAPI.md` — transport,
+  handshake, every message with units and ranges, exact binary layouts,
+  error codes, versioning and a byte-level worked example — and
+  `tools/control-api-client.py` (Python standard library only) pairs, prints
+  state, tunes and records receiver audio to a WAV.
+  `tools/control-api-smoke.sh` runs the production server against a fake
+  radio on loopback, including the Python client over real TLS. Off by
+  default; the production Keychain identity path, the Settings section and a
+  second machine on the LAN are not yet tried.
+
+- **The panadapter can now trim itself, and label what it sees (#135).** An
+  **Auto** latch beside the Floor/Ref sliders measures the band noise across
+  whatever is on screen — the level a quarter of the visible bins sit below,
+  so carriers, broadcast slabs and busy segments don't count — and parks the
+  display floor about 8 dB under it while keeping the floor-to-reference
+  width you had. Change bands and it re-trims within a second; otherwise it
+  moves slowly (smoothed, 8 dB/s at most, 1.5 dB of hysteresis) so fading
+  doesn't pump the colors. It holds still while you transmit, for a moment
+  after you unkey, and across time-machine jumps. The sliders show the live
+  values; nudge either one and Auto lets go. A new **Peaks** menu labels the
+  strongest 1–8 signals on the spectrum with frequency and level in dBm or
+  S-units (through the S-meter calibration — a steady carrier agrees with
+  the meter within a few dB; a wide voice signal reads lower because only
+  its tallest bin is measured), with minimum spacing so one signal earns one
+  label, an optional passband-only mode, and hysteresis so labels don't hop
+  between adjacent bins. Labels never take a click, hide while keyed, and
+  are off by default. No work was added to the DSP thread. Not yet seen on a
+  live radio.
+
+- **The AGC now has a Max gain control, so a quiet band stops roaring up
+  between overs (#134).** The +80 dB ceiling that was fixed in the AGC is
+  now a slider under the AGC speed in the DSP popover (−20…+120 dB). Lower
+  it until the noise between transmissions stays where you want it; strong
+  signals sound the same at any setting. Changes glide in over 50 ms, so
+  dragging it makes no zipper noise. The default is exactly the old
+  behaviour, pinned bit-for-bit by test.
+- **AGC slope and hang are adjustable, and there is a Long speed (#134).** A
+  fold-away section adds slope, hang time and hang level. Long holds its
+  gain for 2 s and recovers over 2 more, for nets with long pauses. Picking
+  a speed loads that speed's hang into the sliders. All of it is saved, and
+  the sub receiver now follows the main receiver's AGC settings live (it
+  used to keep the speed it was created with).
+- **CW audio peak filter (#136).** In CW mode the DSP popover gains an APF: a
+  narrow peak at the 700 Hz pitch (30–300 Hz wide, +4…+20 dB) that lifts the
+  station you zero-beat while the rest of the passband stays at normal
+  level. A Double pole option gives steeper sides and a shallow dip either
+  side of the peak. Only the speaker hears it; the CW decoder and the
+  skimmer keep un-peaked audio. Off is bit-identical audio. Not yet judged
+  by ear.
+
+- **Dial lock (#138).** A padlock beside the MHz legend in the dial (also
+  Radio → Dial Lock, the `L` key, a Stream Deck LOCK key and a tuning-knob
+  button) holds the VFO against the things a stray hand does: the wheel and
+  trackpad scroll, click-tune and marker drag, arrow keys, the dial digits
+  and flywheel, the ◀ ▶ step keys, tuning knobs, Stream Deck tune steps,
+  Bandscope clicks and the Sub Receiver window. Anything that names a
+  destination still tunes — a band, bookmark or spot, a typed frequency, the
+  Crab, A⇄B, a remote client — and so does CAT, unless **Also Hold Against
+  CAT** is on (off by default so loggers and WSJT-X keep steering the
+  radio). **Hold While Transmitting** locks the dial for as long as the
+  transmitter is keyed. A refused gesture flashes the padlock and does
+  nothing else. The lock is never saved: every launch starts unlocked. Every
+  tuning path in the app now names itself to one gate, and a test pins the
+  list so a future path cannot slip past it.
+- **Band stack (#138).** Each band now keeps four registers instead of one
+  memory. The live register follows the dial, so leaving a band always
+  leaves where you were; choosing the band you are already on (Band menu,
+  Radio → Band, a Stream Deck band key) steps to the next register, and a
+  fresh register starts on the band's phone, CW or FT8 frequency with your
+  filter, RF gain and antenna intact. Your existing band memories become
+  register 1, older builds still find their one memory per band, and with a
+  transverter active the stack is left alone, as band memory always was.
+- **Spoken status for eyes-free operation (#137).** Radio → Speak, F5–F8
+  (rebindable), Stream Deck keys and tuning-device buttons read out the
+  frequency ("seven point zero seven four megahertz" — the dial's RF, so a
+  transverter reads 144 MHz, not its IF), the mode and filter width, the
+  S-meter in S-units ("S nine plus ten"), or the full status; while a TUNE,
+  two-tone or CW carrier is keyed the S-meter readout becomes power and SWR.
+  It speaks with the system voice on the Mac's own output and never enters
+  network speakers, Discord, recordings or the TX monitor. It is refused,
+  with a toast, while a voice transmission is keyed or while **App audio**
+  is the armed TX source, because that source transmits whatever this app
+  plays. **Announce Band Changes** is optional and off by default. Not yet
+  heard.
+
+- **Speaker Tracker no longer mistakes the receiver for the voice: a
+  channel-normalized voiceprint is the new default, with a tag-and-measure
+  report so a real net can settle whether it tells operators apart (#119).**
+  On the one real net it had heard (7.255 LSB, 2026-09-16) every over from a
+  roundtable landed in a single unknown cluster: what the filter, its ripple
+  and the band noise put into every over dwarfed the difference between two
+  people. A synthetic reproduction of that channel now fails the same way
+  under the old model (36 overs from six talkers → one cluster). The new
+  `hermit-spectral-stats-v2-cmn` model keeps the same 28 statistics with the
+  channel they were heard on (dial kHz + mode + filter passband) and, at
+  comparison time, removes that channel's running, duration-weighted mean
+  and scales each cepstrum by how busy it is. On the fixture the same 36
+  overs form 5–6 clusters, and equal error rate falls from 21 % to 8 % at
+  6 s overs. A channel's mean is trusted only after four overs and 12 s of
+  speech that differ by more than one talker's words explain; until then
+  unknown overs are grouped provisionally and nothing can claim more than
+  *possible* against a named speaker. One person alone on a channel is
+  deliberately left un-normalized. The header shows the channel's state and
+  the model menu offers **Forget this channel's running mean**; v1 stays
+  selectable for an A/B. **Model change:** existing unknown clusters and
+  voiceprints are dropped and named speakers show *re-enroll*; thresholds
+  move to the new scale, all provisional. New **tag** column: mark who *you*
+  heard (A, B, C… or a callsign) — tags never train anything — then
+  **Similarity report…** compares same-talker and different-talker
+  similarity, d′ and equal error rate for v1 and v2 side by side, and copies
+  or saves Markdown and a CSV of tags plus the statistics (never audio). The
+  detector now relearns its noise floor whenever the receiver moves to
+  another kHz, mode, filter, sample rate, session or replay. **Not verified
+  on real voices**; the numbers come from formant toys
+  (`docs/SpeakerTracker.md`), and #119 stays open for the labelled net.
+
+- **Sub-receiver on the ANAN's RX2 input.** Settings ▸ ANAN Hardware gains
+  "Sub-receiver on RX2 input (ADC1)": VFO B's receiver is fed from the RX2
+  jack and the second ADC, with the second filter board following VFO B's
+  band, instead of sharing the main receiver's antenna and filters — a
+  second antenna, or a second band, at the same time. Off (the default) is
+  byte-identical to the previous two-receiver layout; the main receiver
+  never leaves ADC0, and the RX2 input is still grounded and fully
+  attenuated while transmitting. Packet-tested against the virtual radio;
+  not yet tried on the ANAN (#133).
+
+- **Media Deck Auto PTT.** A latch in the deck header keys the transmitter
+  while a pad plays and unkeys 0.4 s after the deck goes quiet, so a pad no
+  longer needs a hand on PTT. It keys through the ordinary PTT path — ARM,
+  TX policy, protection and coordinator ownership all still decide — and a
+  refusal is written to the deck's activity log. The deck never takes over
+  a key it did not raise and never re-keys after a manual unkey, disarm or
+  protection trip; a 180 s time-out timer stops a looping pad from holding
+  the transmitter. The latch is off at every launch and is not part of the
+  deck document. Choose **TX Controls → App audio** (or File) so the pad
+  actually reaches the transmitter.
+
+### Release engineering
+
+- **Every release DMG is scanned by VirusTotal before it is published.** The
+  Release workflow runs the new `tools/virustotal-check.sh` on the stapled
+  DMG (lookup by SHA-256, upload when unknown, poll to completion), fails
+  the release on any engine detection, and publishes the verdict as a
+  `virustotal.json` asset beside `SHA256SUMS`. The website updater now shows
+  the DMG's SHA-256 and the VirusTotal result, linked to the report, and
+  refuses to run if the two records describe different files. The rules for
+  coding agents are in `AGENTS.md`, `CLAUDE.md` and `docs/Release.md`, and a
+  consistency test keeps the scan ahead of publication.
+
+### Fixed
+
+- **An armed shack microphone no longer reaches Discord or a live stream
+  between overs.** With ARM and TX Monitor on, the processed microphone is
+  mixed into the speakers even while unkeyed (the mic-check feature), and
+  the same mix fed Discord voice, YouTube Live and every other fan-out
+  listener — so shack conversation went out with the receiver audio. The
+  speakers keep the mic check; the fan-out now carries the monitor voice
+  only while the transmitter is keyed. Remote listeners also hear the
+  transmitted audio when TX Monitor is off, instead of silence during an
+  over.
+
+- **Time-machine problems are now visible while connected.** Tapping an
+  expired event, exporting an excerpt whose IQ had left the ring, or
+  rewinding an RF Vision detection with the sub-receiver on stored its
+  explanation in the connect sheet's error line, which is not on screen
+  during a session — the tap simply did nothing, and the message could
+  resurface later when a lost connection reopened the sheet. These
+  messages now appear as the waterfall toast at the moment they happen.
+  The expired-event tip also names a rebuilt ring (retune, rate change,
+  reconnect) as a cause, not only age.
+
 ## [2026.0920_001] — 2026-09-20
 
 ### Fixed
