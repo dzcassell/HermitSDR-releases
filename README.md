@@ -31,6 +31,13 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0921_002
+
+- **Any MIDI controller becomes a radio panel.** Station ▸ Control Devices ▸ MIDI Controller reads every CoreMIDI source on the Mac — DJ decks, X-Touch-style knob boxes, CTR2-MIDI, Arduino encoders, a pedal, a Bluetooth keyboard's pads — with no permission prompt, filtered by name and channel so a music keyboard cannot tune the radio. Press **Learn**, move one control, assign it: an endless encoder tunes the VFO one step per detent with speed acceleration (and honours the dial lock); a knob or pitch wheel sets AF volume without jumping (it waits to pass through the current level, then follows); a pad fires any of the Stream Deck's actions — bands, modes, NB/NR/ANF, mute, memories, antennas, spoken status, media pads — through the same executor, so the two panels can never disagree. Three encoder conventions are supported and guessed at Learn time. Unplugging the controller releases anything it was holding.
+- **It cannot key the radio in this build.** PTT, TUNE, MOX and CW-paddle assignments are accepted by the editor but refused at press time with a receipt naming why; the keying wiring is staged for review.
+
+Verified on this Mac with a virtual MIDI source (tuning, acceleration, volume pickup, band pad, PTT refusal, unplug/re-plug); no physical controller yet. Full suite: 1,798 tests, zero failures.
+
 ## New in 2026.0921_001
 
 - **Your shack microphone no longer leaks to Discord or a live stream between overs.** With ARM and TX Monitor on, the mic check you hear in the speakers used to ride along with the receiver audio to every remote listener. Remote listeners now hear the monitor voice only while the transmitter is actually keyed — and they hear your transmission even with TX Monitor off.

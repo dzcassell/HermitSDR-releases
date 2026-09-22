@@ -9,6 +9,52 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.0921_002] — 2026-09-21
+
+### Added
+
+- **MIDI controllers as a radio panel (#127).** Station ▸ Control Devices ▸
+  **MIDI Controller** opens a CoreMIDI client (no permission prompt) and
+  reads every source on the Mac — USB, Bluetooth MIDI, network sessions,
+  DJ decks, CTR2-MIDI, an Arduino knob box — filtered by source name and
+  MIDI channel so a music keyboard on the same machine cannot tune the
+  radio. **Learn** captures the next press, turn or wheel move as a row,
+  guessing whether it is a button, an endless encoder or a knob/fader from
+  the message itself; the row's pickers correct that, choose one of the
+  three relative-encoder conventions (2's complement, binary offset,
+  sign-magnitude — controllers rarely say which), and assign the action.
+  An encoder mapped to **Tune VFO** moves one tune step per detent (fixed
+  step or the control bar's) with speed acceleration — ≥ 8 detents/s ×4,
+  ≥ 20/s ×10, both editable — through the dial lock (`TuningSource
+  .tuningDevice`); a knob or pitch wheel mapped to **AF volume** does not
+  jump when first touched but waits until it passes within 4 % of the
+  current volume, then follows (pickup); a pad, key or pedal fires any of
+  the Stream Deck's actions — bands, modes, NB/NR/ANF, mute, memories,
+  antennas, spoken status, media pads — through the same `performDeckAction`
+  executor, so the two panels can never disagree about what a key does.
+  Mappings persist in `~/Library/Application Support/HermitSDR/MIDI/
+  mappings.json` (versioned; a newer file is refused, not truncated).
+  Unplugging the controller, switching it off or quitting the app releases
+  every held pad first. **It cannot key the radio in this build:** PTT,
+  TUNE, MOX and CW-paddle rows are accepted by the editor but refused at
+  press time with a receipt naming the reason — that keying wiring is on
+  `stage/127-midi-keying` for review, per the issue's TX gate. The pure
+  half (`Integration/MIDI/MIDIMapping.swift`: decoder, document, mapping
+  engine) is package-tested (`MIDIMappingTests`, 13 tests) and
+  `DocsConsistencyTests` pins that the transport, device controller, editor
+  and setup window hold no radio handle. Live on this Mac with a virtual
+  CoreMIDI source: connect on appearance, +500 Hz for five slow detents and
+  −5.7 kHz for a 12-detent spin (3×1 + 6×4 + 3×10 steps), volume pickup
+  engaging at 0.378 and then tracking, a pad switching to 40 m, a PTT pad
+  refused with `t` still 0, and source loss/return detected within a
+  second. Not yet tried on a physical controller. Docs:
+  `docs/MIDIController.md`. Found on the first live run and fixed before
+  landing: the CoreMIDI receive block must be `@Sendable` (the #113 crash
+  class — a closure literal inside a `@MainActor` class is inferred
+  main-isolated and traps on the MIDI thread); the test now pins both
+  blocks. `DeckKeyPhase` moved from the Stream Deck device controller into
+  the shared `DeckAction.swift` so the package can see it.
+
 ## [2026.0921_001] — 2026-09-21
 
 ### Added
