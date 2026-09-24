@@ -9,6 +9,59 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+### Fixed
+
+- CI: the standalone connection-sheet smoke fixture now stubs the NetSDR
+  network-configuration types, so `tools/connection-presentation-smoke.sh`
+  compiles again (it failed on 648956c after 2026.0924_001 was tagged; the
+  release dry run does not run the smokes, so the published build is the
+  same source).
+
+## [2026.0924_001] — 2026-09-24
+
+### Added
+
+- **RFSpace NetSDR receive support (#45).** The connect sheet now finds an
+  RFSpace NetSDR beside the openHPSDR radios: HermitSDR broadcasts the
+  RFSpace discovery request (UDP 48321) every 3 s and listens on 48322, and
+  the row shows firmware, serial and MAC with a **RECEIVE ONLY** tag. A
+  receiver that has no address — it answers discovery from 0.0.0.0 when its
+  DHCP request goes unanswered, which is how the lab unit arrived — gets an
+  **Assign IP…** button that writes a static address, mask and gateway (or
+  DHCP mode) into the unit through the discovery Set datagram; the change
+  applies within seconds, no reboot. Connecting opens the TCP control
+  channel on port 50000 (`NetSDRConnection`, the third `HPSDRLink`), binds
+  the same port for the UDP I/Q stream and pins it with the radio's
+  0x00C5 item, then runs the DDC in 24-bit contiguous mode. The NetSDR's
+  DDC rates are 80 MHz divisors, never 12 kHz·2ⁿ, so the link runs the
+  radio at rate·25/24 (50 k, 100 k, 200 k, 400 k, 800 k) and a new
+  polyphase 24/25 resampler (`RationalResampler`, 64 taps per phase,
+  Blackman) delivers the 48–768 kHz chain rate the rest of the receiver
+  expects; the outer few percent of the span roll off. RF gain maps the
+  slider onto the hardware's four steps (0/−10/−20/−30 dB), the
+  preselector stays automatic, dither is on, and an A/D overload status
+  lights the OVF badge. **Receive-only by construction:** the NetSDR
+  profile reports `supportsTX == false`, so the TX banner, ARM, PTT, TUNE,
+  drive, TX antenna and every keying source (UI, CAT, hardware key, Stream
+  Deck, MIDI) are absent or refused exactly as they are for a Hermit
+  Remote relay — the link's whole TX surface is empty; the TX antenna
+  chip and the panadapter's orange TX footprint now also hide on every
+  receive-only session. Measured on the lab unit (serial MC000359,
+  firmware 1.13): the discovery mode byte is 0 = static, 1 = DHCP, the
+  reverse of the CuteSDR header comment; a static write applies within a
+  second or two with no reboot. **Live-validated 2026-09-24:** the row
+  appeared beside the ANAN and SquareSDR, Connect brought up TCP + UDP on
+  the same port, 1667 pkt/s / 2.41 MB/s at 400 k → 384 k, the sideband
+  sense is correct (FT8 hump above 7.074 in a raw-stream probe, decodes
+  in the app), and 40 m FT8 decoded — CQ AA1V FN42, W1DRC AA1V RR73,
+  VE2QE W1DRC 73, CT7AIU KE2IIG FN30. Found on the way: the engine's IQ
+  ingress drops every frame whose length differs from the first, and
+  240·24/25 alternates 230/231, so the link re-blocks the resampled
+  stream into fixed 240-sample frames (`NetSDRFrameAssembler`, pinned by
+  test). Not yet exercised: the in-app Assign IP… sheet (the identical
+  datagram was sent from a script and is test-pinned byte for byte), the
+  sample-rate picker while streaming, the OVF badge on a real overload.
+
 ## [2026.0921_002] — 2026-09-21
 
 ### Added

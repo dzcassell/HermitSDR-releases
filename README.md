@@ -7,7 +7,8 @@
 
 A native macOS client for openHPSDR software-defined radios —
 **Hermes-Lite 2 / SquareSDR** (Protocol 1) and **Apache Labs ANAN**
-Orion-class radios (Protocol 2). Built for Apple silicon: SwiftUI +
+Orion-class radios (Protocol 2) — plus the receive-only **RFSpace
+NetSDR**. Built for Apple silicon: SwiftUI +
 Metal on the outside, Accelerate/vDSP DSP and a lock-free audio path on
 the inside.
 
@@ -30,6 +31,14 @@ on-air QSOs are in the log (WU1T ↔ KA3MAJ, W8NGA, KN1B and KJ5DZV, FT8, 40 m, 
 ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
+
+## New in 2026.0924_001
+
+- **RFSpace NetSDR receive support.** The connect sheet now finds an RFSpace NetSDR beside the openHPSDR radios (its own LAN discovery), shows firmware, serial and MAC with a **RECEIVE ONLY** tag, and connects over the NetSDR's TCP control + UDP I/Q protocol in 24-bit mode. Spans of 48–768 kHz are offered; the radio streams 50–800 kHz and is resampled 24/25 onto the receiver's grid. RF gain maps onto the hardware's four steps (0/−10/−20/−30 dB), the preselector stays automatic, and an A/D overload lights the OVF badge.
+- **A NetSDR with no address gets one from the app.** A unit whose DHCP request went unanswered answers discovery from 0.0.0.0; its row offers **Assign IP…**, which writes a static address, mask and gateway (or DHCP mode) into the receiver — applied within seconds, no reboot.
+- **Receive-only means receive-only.** On a NetSDR session the TX banner, ARM, PTT, TUNE, drive, TX antenna chip, panadapter TX footprint and the FT8 panel's transmit row are absent, and every keying source (UI, CAT, hardware key, Stream Deck, MIDI) is refused — the same way a Hermit Remote relay is treated.
+
+Live-validated on an RFSpace NetSDR (firmware 1.13) with a 40 m dipole: discovery, static-IP assignment, a clean 400 kHz stream, correct sideband sense, and 40 m FT8 decodes. Nothing was keyed. Full suite: 1,823 tests, zero failures.
 
 ## New in 2026.0921_002
 
