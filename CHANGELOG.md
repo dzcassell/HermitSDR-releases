@@ -9,13 +9,69 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.0925_001] — 2026-09-25
+
 ### Fixed
 
+- **YouTube Live no longer ends the stream when the live link drops.** A
+  2026-09-24 broadcast died after 2,547.9 s on a single remote TCP close
+  ("Connection lost while live") because `YouTubeLiveService` only ever
+  reconnected during startup; once live, any socket failure went straight to
+  teardown and completed the broadcast. A dropped live link now enters a new
+  `reconnecting` state and climbs a bounded ladder (1, 2, 5, 10, 15, 20, 30,
+  30 s — eight attempts, about two minutes of waiting) that rebuilds the
+  capture/encoders on a fresh RTMP session while the broadcast stays up on
+  YouTube (auto-stop only fires about a minute after ingest goes quiet;
+  stream-key mode resumes on the same key). Even attempts alternate onto
+  YouTube's backup ingest (`rtmp://b.rtmp.youtube.com/live2?backup=1`, taken
+  from the Data API response in account mode and derived from the primary
+  URL in stream-key mode). The caption transcriber and chat state survive the
+  gap, so the transcript stays whole; a resumed link logs "Reconnected —
+  media is flowing again". The window shows RECONNECTING with a Stop button,
+  and the Crab's status text reports it. Pure policy in
+  `Integration/YouTube/YouTubeStreamResilience.swift`
+  (`YouTubeReconnectPolicy`), pinned by `YouTubeStreamResilienceTests`.
+- `RTMPURLParser` keeps a URL query inside the RTMP app name
+  (`live2?backup=1`) — that is how YouTube's backup ingest is addressed, and
+  dropping it would have published to the primary app on the backup host.
+- `RTMPClient` fails a refused TCP connect immediately (retryable) instead of
+  sitting in NWConnection's waiting state until the 20 s setup watchdog — on
+  a dead ingest edge every reconnect attempt used to cost 20 s, stretching
+  the ladder to ~4.5 minutes. The watchdog's coaching now distinguishes "TCP
+  never connected" from "connected but no RTMP handshake" (it previously
+  claimed the handshake had finished when zero bytes had arrived), and the
+  stage is reported as `tcp` until the socket is actually up.
+- Verification: the reconnect ladder was driven end to end on the Dev build
+  against a loopback fake ingest (three live sessions dropped by the server
+  and resumed ~1 s later with media flowing, then a dead listener climbing
+  all eight attempts to the "Couldn't re-establish the live link" failure).
+  The window capture needs the Screen Recording grant the Dev build lacks, so
+  `YouTubeVideoEncoder` gained an environment-gated test-pattern source
+  (`HERMITSDR_YT_SYNTHETIC_CAPTURE=1`, never on by default) that feeds the
+  same VideoToolbox/FLV path. Not yet exercised against YouTube itself.
 - CI: the standalone connection-sheet smoke fixture now stubs the NetSDR
   network-configuration types, so `tools/connection-presentation-smoke.sh`
   compiles again (it failed on 648956c after 2026.0924_001 was tagged; the
   release dry run does not run the smokes, so the published build is the
   same source).
+
+### Added
+
+- **Automatic broadcast title: date · frequency · mode.** Leave the YouTube
+  Live Title field blank and account mode creates the broadcast as, e.g.,
+  "2026-09-25 · 7.074 MHz USB" (operator-local date, transverter-aware dial
+  frequency to the kHz, current mode), resolved at the moment you press Go
+  Live; the field's placeholder and a caption preview it, and a typed title
+  still wins. The old stored default "HermitSDR live" is treated as blank so
+  existing installs pick this up. Stream-key mode cannot name the broadcast
+  (YouTube Studio's stream settings do) — the log now says so at Go Live.
+  The transcript file name follows the title actually used.
+- Account mode polls Stream Health and the broadcast lifecycle once a minute
+  while live: BAD/noData/OK/good transitions land in the diagnostics log with
+  the fix (bitrate first), and a broadcast ended from YouTube Studio (or
+  auto-stopped) stops the local capture cleanly instead of streaming into a
+  finished event until the socket happens to drop
+  (`YouTubeLiveHealthPolicy`).
 
 ## [2026.0924_001] — 2026-09-24
 

@@ -32,6 +32,14 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0925_001
+
+- **A dropped YouTube link no longer ends the stream.** When the RTMP connection to YouTube dies mid-broadcast (uplink hiccup, an ingest-edge restart), HermitSDR now reconnects on its own — up to eight attempts over about two minutes, alternating between YouTube's primary and backup ingest — rebuilding the window capture and encoders on a fresh session while the broadcast stays up on YouTube's side. The window shows **RECONNECTING**, the diagnostics log narrates every attempt, and a resumed link reports "Reconnected — media is flowing again". Live captions and the VOD transcript survive the gap. A refused connection is now retried immediately instead of waiting out a 20-second watchdog, and the coaching says "TCP never connected" when that is what happened.
+- **Account mode watches the broadcast while live.** Once a minute HermitSDR asks YouTube for Stream Health and the broadcast state: BAD/no-data transitions land in the log with the fix (bitrate first), and a broadcast ended from YouTube Studio stops the local capture cleanly instead of streaming into a finished event.
+- **Automatic broadcast title.** Leave the Title field blank and account mode names the broadcast after the moment you press Go Live — today's date, the dial frequency and the mode, e.g. "2026-09-25 · 7.074 MHz USB". A typed title still wins. Stream-key mode cannot name a broadcast (YouTube Studio's stream settings do); the log now says so.
+
+Verified end to end on a loopback fake ingest (three server-side drops resumed within a second each with media flowing; a dead listener climbed all eight attempts to the final failure), not yet against a live YouTube broadcast. Full suite: 1,832 tests, zero failures.
+
 ## New in 2026.0924_001
 
 - **RFSpace NetSDR receive support.** The connect sheet now finds an RFSpace NetSDR beside the openHPSDR radios (its own LAN discovery), shows firmware, serial and MAC with a **RECEIVE ONLY** tag, and connects over the NetSDR's TCP control + UDP I/Q protocol in 24-bit mode. Spans of 48–768 kHz are offered; the radio streams 50–800 kHz and is resampled 24/25 onto the receiver's grid. RF gain maps onto the hardware's four steps (0/−10/−20/−30 dB), the preselector stays automatic, and an A/D overload lights the OVF badge.
