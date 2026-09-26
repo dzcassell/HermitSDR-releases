@@ -7,7 +7,184 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
-## [Unreleased]
+## [2026.0926_004] — 2026-09-26
+
+### Changed
+
+- Release workflow: a failed dry-run artifact upload (GitHub artifact-storage
+  quota) no longer blocks signing and publishing; the dry run's build and
+  verification remain the gate.
+
+- Console Preview receiver bank fills its column to the bottom edge; the
+  bottom workspace now sits under the spectrum only; the transmitter bank is a
+  full-height column as well.
+- The receiver bank gained AGC speed and noise-reduction popups, an auto-notch
+  latch, and a Record group: IQ (.hiq) and audio (WAV) start/stop latches with
+  elapsed time, a recordings-folder button and the RF time machine. These use
+  the existing recording and DSP presentation owners. While Console Preview is
+  on, the header's recording cluster and the File menu's start/stop recording
+  items are removed because the bank owns them; the legacy layout, the KeyMap
+  record binding and Open IQ Recording / Show Recordings Folder are unchanged.
+
+## [2026.0926_003] — 2026-09-26
+
+### Changed
+
+- Console Preview transmitter bank now uses the sample-based instrument
+  treatment piloted on the receiver bank: a lit "Transmitter" tab with the
+  fixed-color SAFE/ARMED/ON AIR chip, a boxed monospaced TX frequency readout,
+  a two-row rectangular ARM/PTT and TUNE/2 TONE cluster, Drive and Mic gain
+  as aligned label/track/boxed-value rows, adjoining Source/Processing/Keyer
+  tabs, boxed popups, lamp-style toggles and compact wrapped shortcut buttons.
+  Every gate, action, refusal notice, accessibility label and hover tip of the
+  shared operating row is unchanged; the full TX window keeps its original row.
+- The transmitter bank is a narrow instrument column: 240–400 points (default
+  260) instead of 470–650. Widths saved by the earlier wide panel restore the
+  default, and the receiver bank no longer shrinks to 298 points at 1280 wide.
+  Reset Layout restores 220 / 260 / 160.
+- Console header TX status button and the footer status chip share the
+  instrument metrics and the fixed safety colors.
+- Shared `InstrumentRow`, `InstrumentPopup` and `InstrumentBankHeader`
+  components join the instrument design system; the receiver bank uses them.
+  Still opt-in and awaiting operator visual acceptance; no radio behavior,
+  DSP, protocol or TX interlock code changed.
+
+## [2026.0926_002] — 2026-09-26
+
+### Added
+
+- Claude continuation handoff with recovered visual references and receiver pilot
+  screenshots. The console remains experimental and opt-in pending visual acceptance.
+
+- Sample-based receiver-bank pilot in Console Preview: aligned compact rows,
+  boxed values, thin filled slider tracks and rectangular handles. Native slider
+  tracking/accessibility and explicit click focus retain keyboard adjustment.
+  Existing receiver commands and popup tools remain in use.
+
+- Accessible UTC clock time and descriptive settings, display, waterfall,
+  recenter, sub-receiver, decoder activity and RF time-machine control labels,
+  including live/replay status and display floor/reference values in dB.
+
+- Optional **View → Appearance → Console Preview**: compact tuning bar,
+  collapsible receiver, transmitter and bottom workspace surfaces, persistent
+  visibility and keyboard toggles (Command-Option-1/2/3), and Reset Layout.
+  Existing renderer, tuning actions and decoder owners remain in use. The
+  original layout is still the default.
+- Resizable console panels with saved sizes, bounded spectrum space, accessible
+  adjustment actions and reset. Compact TX tab includes status, drive, mic gain
+  and shortcuts; footer status and Stop & Disarm stay accessible when collapsed.
+  ARM/PTT/Tune/Two-Tone now share the full TX window's existing operating row,
+  with focused policy updates, pinned controls and visible TX refusals. Arming
+  failures also appear in the existing TX notice. Console minimum is 1280×800 with bounded panel space;
+  legacy minimum remains unchanged.
+- Bottom workspace tabs for Activity, Decoders, Log and Media. Decoder actions
+  reopen their selected tab in one click; old right-side Analysis preferences
+  migrate to the bottom. Compact FT8 places TX controls beside decodes, Log
+  retains searches across tabs/collapse, and Media exposes playback/queue controls.
+  Full logbook and media editors remain available. Hidden surfaces are removed
+  from accessibility navigation; changing tabs does not enable decoder engines.
+- Compact TX Source, Processing and Keyer tabs: source/device/channel, voice
+  profile/effect/monitor, RNNoise, gate, de-esser, compressor, AGC and CESSB;
+  CW mode/speed/weight/hang/paddle swap/sidetone settings and live key bindings.
+  Controls use the existing transmitter owner and facade setters, synchronize
+  with TX Controls, and preserve pinned ARM/PTT and scrolling at small sizes.
+  File/capture transport, EQ, rack and advanced editors remain in TX Controls.
+- Console header now uses a compact, explicitly labeled TX status/window button
+  with fixed safety colors. Processing offers the shared graphic/parametric TX
+  EQ in a sized popover plus direct rack/chain and Audio Units links.
+- Accessibility: descriptive decoder/recording button names, explicit console
+  frequency entry with six-decimal prefill (existing 10 Hz tuning preserved),
+  adjustable graphic EQ gains and labeled parametric controls with physical
+  values. The tenth parametric band label no longer wraps. Updated the inert
+  header/settings smoke fixture for the existing NetSDR presentation fields.
+- Six interface palettes: Cold Cyan, Arena Teal, Instrument Amber, Phosphor
+  Green, Ion Blue and Ultraviolet. Fresh settings default to Cold Cyan; saved
+  Hermit/Flux Radio choices remain valid. Waterfall palette is independent.
+  Console frequency digits retain amber with the last three red, the RX meter
+  graduates through amber to red, and the Crab button has original vector art.
+  Safety colors remain fixed across the six palettes.
+
+### Changed
+
+- hermitsdr.com: the VirusTotal verdict and the DMG's SHA-256 now sit inside
+  the *Current release* card, in green for a clean scan (amber when a
+  release was published unscanned), both linking to the VirusTotal report
+  for that exact file. Website script only; no app change.
+
+## [2026.0926_001] — 2026-09-26
+
+### Fixed
+
+- The header RX chip on a NetSDR session now reads **RX RF 1** (or RF 2)
+  instead of "ANT1 — this radio has a single RX input", and its tooltip
+  names all three rear-panel jacks: RF 1 (main A/D), RF 2 (the X2 option
+  board's input, inactive when the radio reports no X2 board) and REF (the
+  reflock board's 10 MHz reference). With an X2 board the chip becomes the
+  RF 1 / RF 2 switch, mirroring Settings ▸ RFSpace NetSDR.
+- CI: the Control API smoke's Thread Sanitizer pass now allows 12 s per
+  reply (plain pass stays at 3 s) — it timed out twice on the runner while a
+  release signing job shared the CPU. Test harness only; no app change.
+
+## [2026.0925_004] — 2026-09-25
+
+### Changed
+
+- Debug builds (the "HermitSDR Dev" app and the test bundle) now keep their
+  secrets under their own Keychain service (`com.hermitsdr.app.debug`), so a
+  test or a throwaway Dev-app sign-in can never overwrite the installed app's
+  real YouTube stream key, Discord token or pairing tokens again. Public
+  builds are unchanged; the Dev app starts with an empty secret store.
+
+
+### Added
+
+- **RFSpace NetSDR front end in Settings** (new *RFSpace NetSDR* section while
+  a NetSDR is connected): RF input selector (RF 1 / RF 2 — RF 2 is the X2
+  option board's input and stays greyed out until the radio's options reply
+  reports that board, so a unit without one can never be switched onto a dead
+  jack), the four hardware RF gain steps (0 / −10 / −20 / −30 dB; the RF gain
+  slider snaps to the same steps), a preselector menu (Automatic, the ten fixed
+  bandpass filters, Bypass, Mute, and the down-converter path when fitted), and
+  A/D dither / A/D gain 1.5× toggles. Choices persist and are re-applied on
+  connect; per-channel items carry the selected input's channel ID.
+- The link now asks the radio for its installed options (control item 0x000A)
+  on every connect and shows them in the section ("No X2 board — the RF 2 jack
+  has no A/D behind it · no reflock board (REF jack unused) · sound on" on the
+  lab unit); discovery rows badge X2 / REF LOCK / DOWN CONV / UP CONV.
+
+### Changed
+
+- RF 2 requests made before the options reply are held until the radio
+  confirms an X2 board; the switch pauses the stream, changes channel mode,
+  re-sends filter / A/D modes / frequency / gain on channel 2 and resumes
+  (§4.2.2 of the interface spec). Loopback tests pin the sequence and the
+  no-X2 refusal.
+
+
+### Fixed
+
+- NetSDR control writes now retain partial messages in a bounded queue and
+  resume on socket readiness, preserving command order under backpressure.
+  Socket failures end the session; missing control replies or I/Q for five
+  seconds return to the connection screen with an explanation.
+- NetSDR connection setup and teardown share the owning queue, reject stale
+  socket callbacks, close TCP after failed UDP setup, and cancel socket sources
+  when a connected link is released without an explicit disconnect.
+- Duplicate/late NetSDR I/Q packets are discarded; a forward gap or capture
+  restart clears the resampler and partial output frame instead of blending
+  unrelated samples. Packet sequence wrap continues to skip zero.
+- NetSDR static-IP validation checks the actual subnet mask, network/broadcast
+  addresses and gateway. Valid host addresses ending in .0/.255 on larger
+  subnets are accepted; malformed masks and unreachable gateways are refused.
+- RF-gain quantization handles extreme integer inputs without overflow. The
+  rational resampler safely handles downsampling steps larger than a small
+  input block and keeps its stream indices bounded.
+- Added deterministic TCP backpressure, packet-order, watchdog, subnet and
+  resampler regressions plus production loopback connection/rate/reconnect/
+  release tests. These fixtures do not access a physical radio.
+- Live-checked on the lab NetSDR (fw 1.13): 40 min without a watchdog trip,
+  zero sequence errors; an Ethernet pull returns to the connection sheet
+  within 5 s with the reason shown, and the next Connect succeeds.
 
 ## [2026.0925_001] — 2026-09-25
 

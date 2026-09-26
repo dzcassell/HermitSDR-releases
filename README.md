@@ -17,9 +17,12 @@ notarized build from the [**Releases**](../../releases/latest) page.
 
 For the complete release history, read the [**CHANGELOG**](CHANGELOG.md).
 
-The planned console redesign is described in the [UI design brief](docs/UI_DESIGN.md)
-and [implementation roadmap](docs/UI_IMPLEMENTATION_ROADMAP.md). These are planning
-documents, not features in the current download.
+An opt-in **Console Preview** (View → Appearance → Console Preview) ships in
+the current download: dense instrument-style receiver and transmitter banks
+beside a dominant waterfall, six interface palettes, and a bottom workspace.
+It is still under operator review and the original layout remains the default.
+The [UI design brief](docs/UI_DESIGN.md) and
+[implementation roadmap](docs/UI_IMPLEMENTATION_ROADMAP.md) describe the goal.
 
 > **Availability**: HermitSDR is not made available for use in the
 > Russian Federation while Russia's war against Ukraine continues. The
@@ -31,6 +34,24 @@ on-air QSOs are in the log (WU1T ↔ KA3MAJ, W8NGA, KN1B and KJ5DZV, FT8, 40 m, 
 ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
+
+## New in 2026.0926_004
+
+- **Console Preview: the transmitter bank joins the receiver bank in the instrument style.** View → Appearance → Console Preview is an opt-in layout under review, not the default. Its right bank is now a narrow 240–400-point column: a lit "Transmitter" tab with the fixed-color SAFE / ARMED / ON AIR chip, a boxed TX frequency readout, a two-row rectangular ARM/PTT and TUNE/2 TONE cluster, Drive and Mic gain as aligned label / thin track / boxed-value rows, and adjoining Source / Processing / Keyer tabs with boxed popups, lamp-style toggles and the same value tracks. Every transmit gate, refusal, label and tooltip is the same code as the full TX Controls window, which keeps its original row.
+- **Receiver and transmitter banks run the full window height**, with the bottom Activity / Decoders / Log / Media workspace sitting under the spectrum only.
+- **The receiver bank gained AGC speed and noise-reduction popups, an auto-notch latch and a Record group** — IQ (.hiq) and audio (WAV) start/stop latches with elapsed time, a recordings-folder button and the RF time machine. While Console Preview is on, the header's recording buttons and the File menu's start/stop recording items step aside because the bank owns them; the original layout is unchanged.
+
+Software-only release: no radio protocol, DSP or transmit interlock code changed. Checked in a synthetic Demo session; the armed and keyed faces of the new cluster still await a live-radio look. Full suite: 1,857 tests, zero failures.
+
+## New in 2026.0926_001
+
+- **NetSDR header chip names the real jacks.** On an RFSpace NetSDR session the RX chip reads **RX RF 1** (or RF 2) instead of a single-input placeholder, and its tooltip names all three rear-panel connectors: RF 1 (main A/D), RF 2 (the X2 option board's input, inactive when the radio reports no X2 board) and REF (the reflock board's 10 MHz reference). With an X2 board the chip becomes the RF 1 / RF 2 switch.
+
+## New in 2026.0925_004
+
+- **RFSpace NetSDR front end in Settings.** A new *RFSpace NetSDR* section appears while a NetSDR is connected: RF input selector (RF 1 / RF 2 — RF 2 stays greyed out until the radio reports an X2 board, so a unit without one can never be switched onto a dead jack), the four hardware RF gain steps (0 / −10 / −20 / −30 dB), a preselector menu (Automatic, the ten fixed bandpass filters, Bypass, Mute and the down-converter path when fitted), and A/D dither / A/D gain 1.5× toggles. Choices persist and re-apply on connect. The link asks the radio for its installed options on every connect and shows them; discovery rows badge X2 / REF LOCK / DOWN CONV / UP CONV.
+- **NetSDR link hardening.** Control writes keep their order under backpressure, missing control replies or I/Q for five seconds return you to the connection screen with the reason shown, late and duplicate I/Q packets are dropped instead of blended, and static-IP assignment validates the actual subnet mask, network/broadcast addresses and gateway. Live-checked on a NetSDR (firmware 1.13): 40 minutes without a watchdog trip, zero sequence errors, and an Ethernet pull recovered on the next Connect.
+- **The Dev build keeps its own secrets.** Debug builds use a separate Keychain service, so a test sign-in can never overwrite the installed app's YouTube stream key, Discord token or pairing tokens.
 
 ## New in 2026.0925_001
 
@@ -314,19 +335,23 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 <!-- Mirrors the app's built-in capability table (DSP/Capabilities.swift). -->
 | Capability | Support |
 | --- | --- |
-| Radios | Hermes-Lite 2 / SquareSDR (openHPSDR Protocol 1) · Apache Labs ANAN Orion-class, e.g. 7000DLE MK2 (Protocol 2) |
-| RX / TX | Receive + transmit live-validated on both protocols (dummy load; on-air QSOs user-gated) |
-| Sample rates | 48–384 kHz (P1) · up to 1536 kHz (P2) |
+| Radios | Hermes-Lite 2 / SquareSDR (openHPSDR Protocol 1) · Apache Labs ANAN Orion-class, e.g. 7000DLE MK2 (Protocol 2) · RFSpace NetSDR (receive-only direct-sampling HF receiver: TCP control + UDP I/Q on port 50000, its own LAN discovery, in-app static-IP/DHCP assignment) |
+| RX / TX | Receive + transmit live-validated on both openHPSDR protocols (dummy load; on-air QSOs user-gated) · the NetSDR is receive-only, so its sessions carry no TX banner, ARM, PTT, TUNE or drive controls at all |
+| Sample rates | 48–384 kHz (P1) · up to 1536 kHz (P2) · 48–768 kHz on the NetSDR (the radio streams 50–800 kHz, resampled 24/25 to the chain rate) |
 | Demod modes | USB, LSB, CW, AM, SAM, FM, NFM, DSB · separate wide/narrow FM deviation · CTCSS encode/decode |
-| FT8 / FT4 | Receive: waterfall spots, decode panel, stations-heard ADIF (FT4 exported as MFSK/FT4), PSKReporter uploads, 15 s / 7.5 s UTC slots, time-machine replay. Transmit: native slot-clocked modulator + auto-sequencer behind ARM/TXCoordinator (native FT8 dummy-load validated; on-air validation pending), or WSJT-X via CAT PTT + audio routing |
+| FT8 / FT4 | Receive: waterfall spots, decode panel, stations-heard ADIF (FT4 exported as MFSK/FT4), PSKReporter uploads, 15 s / 7.5 s UTC slots, automatic station clock-drift estimation with bounded slot correction, time-machine replay. Transmit: native slot-clocked modulator + auto-sequencer behind ARM/TXCoordinator (native FT8 dummy-load validated; on-air validation pending), or WSJT-X via CAT PTT + audio routing · **native JS8 (normal) encoder** — clean-room port of JS8Call's varicode/CRC-12/LDPC(174,87) path, frame programs one slot at a time, decoded by JS8Call 3.0.3 |
 | SSTV | Martin M1, Martin M2, Scottie S1, Scottie S2, Scottie DX, Robot 36, Robot 72, PD50, PD90, PD120, PD160, PD180, PD240, PD290 — auto VIS + manual mode/start, slant/phase correction, PNG export |
 | WEFAX | IOC 576 · 120 LPM, IOC 576 · 90 LPM, IOC 576 · 60 LPM, IOC 288 · 120 LPM — polarity, slant/phase, crop/rotate, PNG with metadata |
 | RTTY | 45.45/50/75/100 Bd · 170/200/425/850 Hz shifts · normal/reverse polarity · bounded AFC |
+| Contestia | 4–64 tones · 125–2000 Hz · Walsh-FEC block sync with S/N gating · normal/reverse · receive only |
+| Digital Modes | PSK31/63 · Olivia · MFSK16 · THOR · DominoEX · Hellschreiber · 300 Bd packet/APRS · JS8 · WSPR · JT65 · JT9 · Q65 — one hosted decoder at a time, receive only |
 | CW | Adaptive 8–60 WPM decoder at the 700 Hz pitch · **OmniSkimmer**: GPU polyphase channelizer skims every CW signal across the whole span at once (~375 Hz bins, per-signal decoders, waterfall labels + panel) |
+| CW keyer | Sample-clock keyer, straight / iambic A / iambic B · 5–80 WPM · 25–75 % weighting · paddle swap · 0–2000 ms TX hang · 200–1200 Hz sidetone riding the exact RF envelope · stuck-key watchdog (≤300 s, physical release to rearm) · keyboard paddles or hamlib CAT b / send_morse (≤256 bytes, CW mode only) — every key request goes through ARM + TXCoordinator |
+| TX policy | Operator policy checked in TXCoordinator for every request source (UI, CAT, hardware PTT, keyboard, system) and kind (voice, CW, TUNE, two-tone, digital): IARU Region 1/2/3 or Custom tag as context only, one or more confirmed allowed ranges (inclusive bounds), Off / Warn / Inhibit enforcement, confirmation reset whenever region or ranges change, judged on the actual TX frequency (split/XIT, transverter RF) |
 | Spotting | DX cluster telnet client (multiple nodes at once, RBN-ready, waterfall labels + Times Square ticker) · LoTW user badges + TQSL sign-and-upload · PSKReporter uploads · live planetary K-index |
 | Logbook | ADIF import/export with preserved fields · editing, bulk changes, saved filters and backups · precise LoTW contact matching · DXCC/WAS/grid coverage · interactive worked-world globe, gray line and local DX radar · 100,000-contact performance fixture |
-| Feature catalog | Searchable inventory of 51 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
-| Extras | Sub-RX (VFO B) · diversity RX (P2) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) |
+| Feature catalog | Searchable inventory of 59 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
+| Extras | Sub-RX (VFO B) · diversity RX (P2) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT (LAN peers pair before tuning or keying) · transverter profiles (IF→RF dial/CAT/log mapping with per-profile drive ceiling) · Speaker Tracker (local voiceprint clustering and naming of received voices, off by default) · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · MIDI controllers (any CoreMIDI source: learn-mapped encoders with speed acceleration, pickup knobs, pads on the Stream Deck action model; off by default, keying assignments refused pending review) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) · **MAGNET HF Emergency** (magnethf.com watch/net availability, native JS8 transmit verified against JS8Call 3.0.3, JS8Call API hand-off, CW auto-key, voice script) |
 | Platform | macOS 15+, Apple silicon only |
 
 ## The story so far
