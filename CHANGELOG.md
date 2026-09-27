@@ -7,6 +7,21 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0927_009] — 2026-09-27
+
+### Added
+- **AGC threshold line on the panadapter (#134).** DSP ▸ AGC ▸ *Threshold
+  line on the panadapter* draws the AGC threshold — the input level below
+  which the AGC has no gain left, derived from the gain law
+  (target −4.6 dBFS − slope − max gain, ≈ −88 dBFS at the defaults) — as a
+  dashed line with its level and the max gain that puts it there. Drag the
+  line to set max gain; only the line's grab strip takes the pointer, so
+  click-tuning and wheel tuning are untouched. Off by default; draws
+  nothing with AGC Off. Pure math and round trip are package-tested.
+- **VOX detector on main (#129, keying staged).** The pure voice-operated
+  transmit state machine ships in the package with its tests; the keying
+  glue and controls wait on `stage/129-vox` for review.
+
 ## [2026.0927_008] — 2026-09-27
 
 ### Changed

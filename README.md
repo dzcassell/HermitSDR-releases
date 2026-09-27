@@ -35,6 +35,10 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0927_009
+
+- **AGC threshold line on the panadapter.** DSP ▸ AGC ▸ *Threshold line on the panadapter* draws the AGC threshold — the level below which the AGC has no gain left (about −88 dBFS at the defaults) — as a dashed line labelled with its level and the max gain. Drag the line to set max gain; only the line's grab strip takes the pointer, so click and wheel tuning are untouched. Off by default; nothing is drawn with AGC Off.
+
 ## New in 2026.0927_008
 
 - **Console header on one instrument row.** In the console layout every header control now sits on the same 24 pt row with the same rectangular face — Connect/Disconnect, the Full/VPN latch, Ask the Crab, the TX button, the UTC clock and the Settings gear. The legacy header is unchanged.
