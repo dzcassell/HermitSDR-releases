@@ -7,6 +7,21 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0927_008] — 2026-09-27
+
+### Changed
+- **Console header on one instrument row.** In the console layout every
+  header control now sits on the same 24 pt row with the same rectangular
+  face: Connect/Disconnect, the Full/VPN latch, Ask the Crab (a compact
+  bordered face instead of the tall pill), the TX button, the UTC clock
+  (shorter digits in a 2 pt-radius LCD cell) and the Settings gear (now a
+  bordered button). The legacy header is unchanged.
+- **TX fault face.** A protection trip (SWR guard, rear-panel inhibit) that
+  force-unkeyed the radio now shows as a red FAULT chip in the Transmitter
+  bank with a Clear button and the reason as its tooltip, and the header's
+  TX button reads TX FAULT until it is cleared — the same acknowledgement
+  the TX window's alert performs.
+
 ## [2026.0927_007] — 2026-09-27
 
 ### Added

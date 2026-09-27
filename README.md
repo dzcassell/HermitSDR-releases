@@ -35,6 +35,11 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0927_008
+
+- **Console header on one instrument row.** In the console layout every header control now sits on the same 24 pt row with the same rectangular face — Connect/Disconnect, the Full/VPN latch, Ask the Crab, the TX button, the UTC clock and the Settings gear. The legacy header is unchanged.
+- **TX fault face.** A protection trip (SWR guard, rear-panel inhibit) that force-unkeyed the radio now shows as a red FAULT chip in the Transmitter bank with a Clear button and the reason as its tooltip, and the header's TX button reads TX FAULT until it is cleared.
+
 ## New in 2026.0927_007
 
 - **Audio-only listeners: HLS, a live AAC stream and Icecast.** The OBS Studio window's new *Audio listeners* section serves the receiver audio from the built-in overlay server: `/listen` is a phone-sized page with a play button, `/stream.aac` a live AAC stream any player opens, and `/hls/live.m3u8` an HLS playlist for Safari, VLC and car radios that take a URL — same port and LAN switch as the overlay. *Voice only* mutes the audio between overs using the Speaker Tracker's gate, so a phone across the house hears voices, not hiss. The same audio can feed an Icecast 2 server (HTTP PUT or the legacy SOURCE verb, TLS optional, password in the Keychain) with automatic reconnects and plain-English refusals. Off by default; nothing here can arm, key or tune. Not yet exercised against a real Icecast server.
