@@ -7,6 +7,22 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0927_005] — 2026-09-27
+
+### Changed
+
+- **Usage ping, round two** (Damon: "proceed with all of the additional
+  telemetry"). Heartbeats now also carry the radio firmware, audio output
+  class, display size, console panel widths, hidden-feature count, update
+  state, the install's first-run date, whether the previous exit was clean,
+  and per-interval counts — FT8/FT4 decodes, completed decoder sessions,
+  QSOs logged, seconds streaming, seconds keyed (with band/mode), average
+  CPU %, average renderer frame time and dropped packets. Counts only, never
+  decoded text, callsigns or frequencies. Server side (`tools/server/`): the
+  store is now SQLite (typed columns, unique key, indexes, WAL) with a
+  gzip-rotated raw JSON-lines archive and a CSV/JSONL export tool; the
+  dashboard gains Activity and Performance tabs.
+
 ## [2026.0927_004] — 2026-09-27
 
 ### Added

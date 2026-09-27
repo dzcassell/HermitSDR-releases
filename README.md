@@ -35,6 +35,10 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0927_005
+
+- **Usage ping, round two.** With the anonymous usage ping on, heartbeats now also carry the radio firmware, audio output class, display size, console panel widths, hidden-feature count, update state, the install's first-run date, whether the previous exit was clean, and per-interval counts — FT8/FT4 decodes, completed decoder sessions, QSOs logged, seconds streaming, seconds keyed (with band/mode), average CPU %, average renderer frame time and dropped packets. Counts only: never decoded text, callsigns or frequencies, and the whole thing switches off in Settings ▸ Privacy. The public dashboard at hermitsdr.com/dashboard gains Activity and Performance tabs, and its store is now a documented SQLite database with an export tool for long-term analytics.
+
 ## New in 2026.0927_004
 
 The streaming wave. Everything below is new in Station ▸ Audio & Streaming, off by default, and none of it can arm or key the radio.
