@@ -7,6 +7,25 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0927_003] — 2026-09-27
+
+### Added
+
+- **Meeting Share** (Station ▸ Audio & Streaming ▸ Meeting Share): put the
+  HermitSDR window and its audio into a Zoom, Google Meet or Webex meeting
+  through the meeting client you already run. Paste the invitation link, a
+  bare Zoom meeting ID (with passcode) or a Meet code; **Join** opens it in
+  the Zoom or Webex app when installed (Zoom deep link with the passcode) or
+  in the browser otherwise. A per-provider checklist walks the window-share
+  step — Zoom and Webex carry the Mac's sound inside the share, so the radio
+  stays on your speakers; Google Meet's browser share carries no audio on
+  macOS, so the window offers one-click routing of the radio audio to any
+  virtual loopback device it finds (BlackHole and friends) for use as the
+  meeting's microphone, plus **Back to speakers**. Any other https meeting
+  link (Teams, Jitsi, …) works as "Other". HermitSDR never joins a meeting
+  itself and embeds no meeting SDK: the meeting client shares the window.
+  Feature catalog entry; hidden like any other tool.
+
 ## [2026.0927_002] — 2026-09-27
 
 ### Changed

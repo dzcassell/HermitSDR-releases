@@ -35,6 +35,12 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0927_003
+
+- **Meeting Share** (Station ▸ Audio & Streaming ▸ Meeting Share) puts the HermitSDR window and its audio into a **Zoom, Google Meet or Webex** meeting through the meeting client you already run. Paste the invitation link, a bare Zoom meeting ID with its passcode, or a Meet code; **Join** opens the meeting in the Zoom or Webex app when installed (Zoom deep link, passcode included) or in your browser. A per-provider checklist walks the window-share step: Zoom and Webex carry the Mac's sound inside the share, so the radio stays on your speakers; Google Meet's browser share carries no audio on macOS, so the window routes the radio audio to any virtual loopback device it finds (BlackHole and friends) for use as the meeting's microphone, with one click back to your speakers afterwards. Any other https meeting link (Teams, Jitsi, …) works as "Other". HermitSDR never joins a meeting itself and embeds no meeting SDK.
+
+Full suite: 1,863 tests, zero failures.
+
 ## New in 2026.0927_002
 
 - **Zoom in to ×32.** The panadapter zoom ceiling rises from ×8 to ×32; the 8192-bin analyzer still puts 256 bins across the window at ×32, so a single SSB or CW signal fills the display without turning blocky (a 12 kHz window at 384 kHz, 3 kHz at 96 kHz). Ask the Crab's zoom accepts 1–32.
