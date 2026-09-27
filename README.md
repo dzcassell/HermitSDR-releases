@@ -35,6 +35,10 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0928_002
+
+- **Drag-to-pan keeps the waterfall.** Swiping the waterfall or spectrum past the edge of the sampled span (every swipe at ×1 zoom) retunes the radio's centre, and that used to clear the waterfall to black. The history now slides sideways by exactly the move, so every row stays under the relabelled scale and keeps scrolling; peak-hold and the ghost slide with it. The pan also keeps the whole receive passband inside the span.
+
 ## New in 2026.0928_001
 
 - **Tuning controls.** A step cluster sits right of the frequency readout: ◀ ▶ move one step, ◀◀ ▶▶ ten, ⌥ ×10, ⇧ a fifth, and press-and-hold repeats (×10 after two seconds). The step menu runs 1 Hz to 1 MHz including the 9/10 kHz broadcast and 12.5/25 kHz channel rasters, or Auto; *Snap to step grid* makes each press land on the grid. The same step drives the wheel, the arrow keys and the flywheel.

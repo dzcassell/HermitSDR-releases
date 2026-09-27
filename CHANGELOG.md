@@ -7,6 +7,21 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0928_002] — 2026-09-28
+
+### Fixed
+- **Drag-to-pan no longer wipes the waterfall.** At ×1 zoom (and whenever
+  a swipe reaches the edge of the sampled span) the pan retunes the
+  radio's centre, and that retune used to clear the waterfall to black and
+  restart it from the top. The history now slides sideways by exactly the
+  move — every row stays under the relabelled scale and keeps scrolling,
+  the way SmartSDR and GQRX behave — with only the strip that scrolled in
+  from beyond the old span dark until new rows fill it. Peak-hold and the
+  long-exposure ghost slide with it. Other retunes (band change, typed
+  frequency, recenter) still clear, because their rows really are stale.
+  The pan also keeps the whole receive passband inside the span, not just
+  the carrier.
+
 ## [2026.0928_001] — 2026-09-28
 
 ### Added
