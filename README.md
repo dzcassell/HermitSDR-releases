@@ -35,6 +35,14 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0927_002
+
+- **Zoom in to ×32.** The panadapter zoom ceiling rises from ×8 to ×32; the 8192-bin analyzer still puts 256 bins across the window at ×32, so a single SSB or CW signal fills the display without turning blocky (a 12 kHz window at 384 kHz, 3 kHz at 96 kHz). Ask the Crab's zoom accepts 1–32.
+- **Zoom out past the sampled span.** At ×1, the zoom-out button, the View menu and the Crab step the radio to its next higher sample rate when it offers one on a live session; at the radio's top rate, or during replay, the button disables as before.
+- **Fixes found on the way:** a quick second zoom click no longer lands on an in-between value (steps compound from the animation's target), the frequency scale prints as many decimals as its tick step needs, and a long-standing scale bug is gone — whenever the visible span was narrower than the RX passband or TX footprint (a 9.5 kHz AM profile at ×16 on 96 kHz), those fills grew the overlay past the window and every tick was drawn stretched while the cursor readout stayed right.
+
+Verified in a synthetic session at 96 kHz: cursor readout and scale agree at ×16 and ×32. Zoom-out rate stepping awaits a live radio. Full suite: 1,857 tests, zero failures.
+
 ## New in 2026.0927_001
 
 - **The console layout is now the default.** Receiver bank, transmitter bank and workspace around a full-height spectrum, six palettes and the compact header greet every launch. The original layout stays available: untick **View → Appearance → Console Layout**. A choice you already saved either way is respected.

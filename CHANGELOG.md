@@ -7,6 +7,36 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0927_002] — 2026-09-27
+
+### Changed
+
+- **Panadapter zoom reaches ×32** (was ×8). The 8192-bin analyzer still puts
+  256 bins across the window at ×32, so a single SSB or CW signal can fill the
+  display without going blocky: at 384 kHz that is a 12 kHz window, at 96 kHz
+  3 kHz. Zoom stays a pure GPU texture transform; history, click-tuning and
+  the frequency scale follow as before. The Crab's `set_zoom` accepts 1–32.
+- **Zooming out at ×1 widens the sampled span.** When the radio offers a
+  higher sample rate on a live session, the zoom-out button, the View menu
+  and the Crab step to the next rate instead of doing nothing; at the radio's
+  top rate (or during replay) the button disables as it did before. Zoom
+  buttons in the console bank, the classic bar and the View menu share the
+  same enable rules.
+- Zoom steps compound from the animation's target, so a quick second click
+  lands on exactly ×16 instead of an in-between value, and the frequency
+  scale prints as many decimals as its tick step needs (500 Hz ticks read
+  14.1975 / 14.1980, not "14.198" twice).
+
+### Fixed
+
+- The frequency scale drew its ticks stretched whenever the visible span was
+  narrower than the RX passband or the transmit footprint (a 9.5 kHz AM
+  profile at ×16 on a 96 kHz span): those fills were sized in pixels from
+  their bandwidth, a fixed-width child wider than the window grows the whole
+  overlay stack, and the scale's canvas filled that wider stack while the
+  cursor readout stayed right. Both fills are now clipped to the visible
+  width before layout, and the overlay is pinned to the spectrum's size.
+
 ## [2026.0927_001] — 2026-09-27
 
 ### Changed
