@@ -7,6 +7,45 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0927_007] — 2026-09-27
+
+### Added
+- **Audio-only listeners: HLS, a live AAC stream and Icecast (#155).** The
+  OBS Studio window's new *Audio listeners* section serves the receiver
+  audio (the speaker mix, 44.1 kHz mono AAC-LC) from the overlay HTTP
+  server: `/listen` is a phone-sized page with a play button,
+  `/stream.aac` a live ADTS stream any player opens, and `/hls/live.m3u8`
+  an HLS playlist of ~2 s packed-audio segments for Safari, VLC and car
+  radios that take a URL. Same port and LAN switch as the overlay. An
+  optional *Voice only* mode zeroes the audio between overs using the
+  Speaker Tracker's pre-AGC gate, so a phone across the house hears voices,
+  not hiss. The same frames can also feed an Icecast 2 server (HTTP PUT or
+  the legacy SOURCE verb, TLS optional, source password in the Keychain)
+  with a bounded reconnect ladder and plain-English refusals (401 password,
+  403 mount in use, 404 mount). Everything is off by default; nothing here
+  can arm, key or tune. The framing, segmenter/playlist, Icecast head and
+  response parsing, listen page and HTTP routing are pure and
+  package-tested (`AudioBroadcastTests`, `OverlayAudioRoutingTests`).
+  Not exercised: a real Icecast server or a phone on the LAN.
+
+## [2026.0927_006] — 2026-09-27
+
+### Added
+- **Shack cam picture-in-picture on the stream (#150).** The Live Streaming
+  window has a *Shack cam* section: pick a camera (built-in, USB, Continuity
+  or Desk View), a corner, a size (10–50 % of the frame width) and Mirror.
+  While live, the newest camera frame is composited onto every outgoing
+  video frame before encoding, so every destination (YouTube, Twitch, Kick,
+  Facebook, custom RTMP) and any recording of the stream carries the picture.
+  Camera permission is requested the first time the switch is turned on;
+  the camera runs only while the stream is live and stops with it. The
+  window itself, local monitoring and the Meeting Share path are untouched.
+  Settings persist; changes apply immediately on a live stream. If the
+  camera cannot be opened the stream continues without the picture and the
+  section says why. Geometry is pure and package-tested
+  (`ShackCamLayoutTests`); the compositor is checked by an offline smoke that
+  composites synthetic frames (`tools/shackcam-smoke.sh`).
+
 ## [2026.0927_005] — 2026-09-27
 
 ### Changed

@@ -35,6 +35,10 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0927_006
+
+- **Shack cam picture-in-picture on the stream.** Live Streaming gains a *Shack cam* section: pick a camera (built-in, USB, Continuity or Desk View), a corner, a size (10–50 % of the frame) and Mirror, and the newest camera frame is composited onto every outgoing video frame before encoding — so YouTube, Twitch, Kick, Facebook and custom RTMP all carry the picture. Camera permission is asked the first time you switch it on; the camera runs only while you are live. The window itself, local monitoring and Meeting Share are untouched, and a camera that cannot be opened leaves the stream running without the picture.
+
 ## New in 2026.0927_005
 
 - **Usage ping, round two.** With the anonymous usage ping on, heartbeats now also carry the radio firmware, audio output class, display size, console panel widths, hidden-feature count, update state, the install's first-run date, whether the previous exit was clean, and per-interval counts — FT8/FT4 decodes, completed decoder sessions, QSOs logged, seconds streaming, seconds keyed (with band/mode), average CPU %, average renderer frame time and dropped packets. Counts only: never decoded text, callsigns or frequencies, and the whole thing switches off in Settings ▸ Privacy. The public dashboard at hermitsdr.com/dashboard gains Activity and Performance tabs, and its store is now a documented SQLite database with an export tool for long-term analytics.
