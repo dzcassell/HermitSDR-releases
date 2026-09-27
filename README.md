@@ -35,6 +35,10 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0927_007
+
+- **Audio-only listeners: HLS, a live AAC stream and Icecast.** The OBS Studio window's new *Audio listeners* section serves the receiver audio from the built-in overlay server: `/listen` is a phone-sized page with a play button, `/stream.aac` a live AAC stream any player opens, and `/hls/live.m3u8` an HLS playlist for Safari, VLC and car radios that take a URL — same port and LAN switch as the overlay. *Voice only* mutes the audio between overs using the Speaker Tracker's gate, so a phone across the house hears voices, not hiss. The same audio can feed an Icecast 2 server (HTTP PUT or the legacy SOURCE verb, TLS optional, password in the Keychain) with automatic reconnects and plain-English refusals. Off by default; nothing here can arm, key or tune. Not yet exercised against a real Icecast server.
+
 ## New in 2026.0927_006
 
 - **Shack cam picture-in-picture on the stream.** Live Streaming gains a *Shack cam* section: pick a camera (built-in, USB, Continuity or Desk View), a corner, a size (10–50 % of the frame) and Mirror, and the newest camera frame is composited onto every outgoing video frame before encoding — so YouTube, Twitch, Kick, Facebook and custom RTMP all carry the picture. Camera permission is asked the first time you switch it on; the camera runs only while you are live. The window itself, local monitoring and Meeting Share are untouched, and a camera that cannot be opened leaves the stream running without the picture.
