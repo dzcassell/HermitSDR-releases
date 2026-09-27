@@ -7,6 +7,148 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0927_004] — 2026-09-27
+
+### Added
+
+
+- **Auto-Clips** (Station ▸ Audio & Streaming ▸ Auto-Clips, #152): a short
+  MP4 highlight after each logged QSO or completed decoder session — a 2 s
+  title card (call or decoder kind, band · mode, UTC, your callsign on the
+  instrument palette) and then the scrolling waterfall with the receive
+  audio, 20 s before the event to 5 s after by default (clamped to what is
+  buffered, never shorter than 8 s), 960×540 H.264 + AAC, written to
+  `~/Documents/HermitSDR Recordings/Clips/Clip-YYYYMMDD-HHMMSS-<CALL>.mp4`.
+  Off by default: while the switch is on the app keeps the last 60 s of the
+  final receive mix and of peak-decimated analyzer rows in two bounded rings
+  (about 3.8 MB), fed from the existing `audioFanout` / `spectrumFanout`
+  taps; nothing is buffered or written while it is off. Policy: scope
+  (always / only while a YouTube Live broadcast is up), per-trigger
+  switches, clips per rolling hour, pre/post-roll. The window lists clips
+  with title-card thumbnails, Reveal in Finder, Post to Discord (thumbnail +
+  caption through the snapshot path), a Share to YouTube Shorts placeholder
+  (reveals the file — the API layer has no `videos.insert` yet), Remove,
+  Render test clip, and an activity log naming every queued / saved /
+  skipped decision. Feature catalog entry; hidden like any other tool.
+  Nothing in it can arm or key. See `docs/Clips.md`.
+- **Live Streaming to several destinations at once** (#144): the YouTube Live
+  window is now *Live Streaming* (Station ▸ Audio & Streaming; window and
+  feature ids unchanged). One capture of the HermitSDR window + receiver/TX
+  audio is encoded once and published to every enabled destination —
+  YouTube (stream key or account), Twitch, Kick, Facebook Live, and custom
+  `rtmp://` / `rtmps://` servers — each with its own stream key in the
+  Keychain (`stream.key.<uuid>`), its own startup/live reconnect ladder, its
+  own row lamp (IDLE / OFF / CONNECTING / LIVE / RECONNECTING / FAILED) and
+  its own `[Name]`-prefixed log rows. Add/remove rows, reveal/paste keys, Test
+  per row or all at once; the header reads `LIVE 2/3`. A destination that
+  drops is rebuilt alone while the others keep streaming; the session only
+  ends when no destination is left.
+- **RTMPS** (`rtmps://`, TLS on 443 — what Kick and Facebook Live require)
+  through Network.framework's TLS on the existing `RTMPClient`; the URL
+  parser accepts both schemes. Implemented, not yet verified against a real
+  Kick/Facebook edge.
+- `docs/Streaming.md`; `tools/fake-rtmp-server.py` (loopback fake ingest,
+  `--port/--log/--drop-after`) and a Dev-only `HERMITSDR_STREAM_FIXTURE`
+  in-memory destination list for the two-destination loopback check.
+- **OBS Studio window (#148, #149)** — Station ▸ Audio & Streaming ▸ OBS
+  Studio. A built-in HTTP server (port 4997, 127.0.0.1 unless "Allow LAN"
+  is on, off by default) serves a transparent **browser-source overlay** —
+  callsign, grid, dial, mode, band, S-meter with S-units, SAFE/ARMED/ON AIR,
+  the newest decodes, the last logged QSO and the stream state — as one
+  self-contained page (`GET /`) plus `GET /snapshot.json` and a Server-Sent
+  Events stream (`GET /events`, snapshot on change + 1 Hz heartbeat). The
+  snapshot is built from RadioState facts on a 5 Hz coalescing tick and
+  pushed only when it changes; every field is bounded. Colours follow the
+  skin as CSS variables, every field carries a `data-hs` attribute for OBS's
+  custom CSS, and `?accent=`/`?scale=`/`?align=`/`?hide=` restyle a source
+  without touching the page. An **obs-websocket 5 client** (host/port in
+  defaults, password in the Keychain as `obs.password`) identifies with the
+  SHA-256 challenge, keeps OBS's scene list, applies a band-or-mode → scene
+  table through SetCurrentProgramScene one second after the dial settles
+  (band rules beat mode rules; one request per change), and offers Start /
+  Stop stream buttons for OBS's own output. Reconnects with backoff; a
+  refused password stops and says so. Nothing in the window can arm, key or
+  tune the radio. Docs: `docs/OBS.md`.
+- **Viewer chat commands (#151).** YouTube and Twitch viewers can tune the
+  receiver from chat — `!freq 7.074 [lsb]`, `!mode LSB|USB|CW|AM|SAM|FM|NFM|DSB`,
+  `!band 20m`, `!zoom 1–32`, `!help` — inside the bands, extra frequency
+  windows, per-viewer / room cooldowns, allow / block lists and
+  moderators-only switch the operator sets in the new **Station ▸ Audio &
+  Streaming ▸ Viewer Chat** window (master switch off by default; 40 m and
+  20 m open once it is on). Receive-only by construction: the command
+  vocabulary has no transmit verb, accepted actions run through
+  `setVFO(_, source: .remoteClient)`, `mode`, `goToBand` and the zoom
+  buttons only, and a command that arrives while keyed is refused. The pure
+  `ViewerCommandGate` (`Integration/Chat/ViewerCommands.swift`) is
+  deterministic and package-tested; replies read "Tuned to 7.074 MHz LSB",
+  "Outside the allowed 40 m range", "Wait 20 s". Twitch chat arrives over a
+  new TLS IRC client (`irc.chat.twitch.tv:6697`, IRCv3 tags for
+  display-name / moderator badges, PING/PONG, reconnect with backoff, token
+  in Keychain `twitch.token`, anonymous read-only login without one); the
+  codec is the pure, tested `TwitchIRCProtocol`. Activity log and a test box
+  in the window; `docs/ViewerChat.md`.
+- **Social Announcements** (Station ▸ Audio & Streaming ▸ Social
+  Announcements, #153): "now live" and logged-QSO posts to **Mastodon** and
+  **Bluesky** with the waterfall snapshot as the image. Mastodon takes an
+  instance plus a personal access token (`write:media`, `write:statuses`)
+  and a visibility; Bluesky a handle plus an app password — both secrets
+  in Keychain, Bluesky session tokens in memory only, refreshed ahead of
+  expiry. Two editable templates with `{band} {freq} {mode} {call} {grid}
+  {link} {utc}` and optional `[…]` segments that vanish when empty; text is
+  clamped to 500 characters / 300 graphemes without ever splitting a link,
+  and every link becomes a Bluesky facet (UTF-8 byte offsets). Triggers —
+  Post when going live, Post each logged QSO — start off; automatic posts
+  are ≥ 10 min apart and one per contact; the first post ever is held for a
+  preview (text + image), and **Post now** always previews. Activity log
+  with the post URLs. The Discord waterfall post is unchanged. Pure
+  builders and the two client flows are pinned by tests on a fake
+  transport; no post has been made to a real account.
+- **Decoder text as live captions (#145).** YouTube Live ▸ *Decoder captions
+  (FT8 / CW / RTTY / digital)* (account mode, default off, persisted
+  `ytDecoderCaptions`) posts what the decoders copy as caption lines prefixed
+  `DEC:` — FT8/FT4 spots with SNR (`DEC: FT8 CQ AA1V FN42 −12 dB`), CW
+  skimmer rows with their kHz (`DEC: CW 7028.5 kHz CQ CQ DE W1AW`), and the
+  CW, RTTY, Contestia and Digital Modes transcripts assembled into lines
+  (newline, 72 characters, or 2.5 s idle) — on the same live-CC HTTP POST and
+  VOD-transcript path as the spoken captions, with or without the speech
+  transcriber. Pure `Integration/Streaming/DecoderCaptionFeed.swift`
+  (`DecoderCaptionFeed`: per-source enable flags, a 6-per-10 s token bucket,
+  30 s exact-line dedupe, 96-character cap, `merge` that orders speech before
+  decoder cues at the same instant; `DecoderLineAssembler`; `DecoderTextDiff`
+  for the rolling transcripts) with 31 `DecoderCaptionFeedTests`;
+  `App/DecoderCaptionAdapter.swift` observes `$ft8Spots`, `$skimmerSpots` and
+  DecoderCenter's `$cwText` / `$rttyText` / `$contestiaText` /
+  `$digitalText` / `$digitalSpots` one publisher at a time (no broad
+  RadioState observation). The YouTube Live window shows the last merged
+  caption line under the toggles. Not exercised against a live broadcast.
+
+### Changed
+
+- Destinations persist as JSON in UserDefaults `streamDestinations.v1`
+  without any secret; the previous single YouTube target
+  (`ytIngestURL` + Keychain `youtubeStreamKey`) migrates into the first
+  destination on launch (the legacy Keychain item is left in place).
+- YouTube account (API) mode is unchanged in behaviour — broadcast creation,
+  automatic title, captions/transcript, co-host chat, health poll — and now
+  also streams the other enabled non-YouTube destinations alongside; YouTube
+  stream-key rows are skipped in that mode.
+- Capture and encoders are no longer rebuilt per reconnect attempt: the
+  fan-out replays the metadata + sequence headers to a re-attached publisher,
+  waits for the next keyframe and re-bases its timestamps.
+- Mode segment reads "Stream keys" / "YouTube account (API)".
+- **Usage ping heartbeat.** With the anonymous usage ping on, HermitSDR now
+  reports at launch and every 15 minutes while running (it was once a
+  day), so hermitsdr.com/dashboard can show how many installs are running
+  right now and where. Heartbeats add uptime, Mac model, locale/time zone
+  and coarse operating facts: radio family, mode, band (never the
+  frequency), sample rate, layout, palette and which decoders or streams
+  are on. A new Settings ▸ Privacy switch, off by default, adds the first
+  four characters of your grid square. Server side (`tools/server/`): DB-IP
+  city-level geolocation resolved locally, an active-now model, and a
+  rebuilt dashboard with Overview / Where (country → state/province drill
+  down, world map) / Live now / Versions / Radios & features / Sessions &
+  retention tabs.
+
 ## [2026.0927_003] — 2026-09-27
 
 ### Added
@@ -1522,895 +1664,6 @@ under the Mercury Lite timing preset. Session report:
   9 s), the row returned to Start, ENABLE TX was cleared and the radio was
   disarmed. Off-air decode of the free-text frame is by the production decoder
   in tests; no external receiver confirmed it.
-
-## [Unreleased]
-
-### Documentation
-- Record the 2026.0908_002 publication: exact-source CI on a009c99, dry run
-  34223537760 inspected, tagged signed run 34224736197; public ZIP/DMG
-  checksums, Developer ID signature (UG29A6ZW54), Gatekeeper "Notarized
-  Developer ID" and stapled tickets verified independently; GitHub latest,
-  the public guide/CHANGELOG mirror and hermitsdr.com updated to 002. No
-  runtime change.
-
-## [2026.0908_002] — 2026-09-08
-
-### Fixed
-- PureSignal predistortion now linearizes the PA (#51). A synthetic loopback
-  fixture (production two-tone → `TXUpsampler` → LUT at the packet-path point
-  → 24-bit quantization → memoryless PA model → reference/feedback taps at the
-  bench levels → the production analyzer) reproduced the bench exactly:
-  baseline 31.3 dBc and **no change** with the old candidate. Three causes:
-  the LUT was normalized by the captured-reference 99th percentile (~0.29)
-  but indexed by the wire envelope (peak 0.90), so every wire sample above
-  0.29 hit the top node and the correction collapsed to a constant gain; the
-  fit targeted unity above the highest measured output where a two-tone
-  spends ~28 % of its time; and the delay search could lock onto a 160-sample
-  beat-period alias. The connection now reports the post-LUT wire power per
-  PureSignal pair (`PureSignalWireLevel`), the analysis exposes the wire RMS
-  and REF/wire ratio, the LUT domain is the wire scale, the fit is an
-  attenuation-only inverse through the highest measured point (node 64 unity,
-  never extrapolates, PEP unchanged, 0.98 clamp and gain/phase clamps
-  untouched), "already linear" measurements are refused with a reason, and
-  delay candidates within noise of the peak resolve to the one nearest zero.
-  Fixture: Rapp PA 31.9 → 68.7 dBc (+36.8 dB), cubic PA +38.1 dB, linear PA
-  refused, old reference-scale indexing +0.6 dB (regression pin).
-- CI: the CW session smoke's probe now carries a fake PureSignal service so
-  the extracted production key/tail/drop paths compile.
-
-### Added
-- PA Linearity shows a **Wire mapping** row (wire RMS dBFS, REF/wire dB, LUT
-  domain) and the candidate line reports gain range, phase and domain instead
-  of "max boost"; fit refusals print their reason.
-
-### Verification
-- 10 new tests (`PureSignalLoopbackTests`, `PureSignalPredistorterTests`) plus
-  the virtual-radio codec test asserting wire-level delivery; full suite
-  1,325 tests, two intentional skips, zero failures; Debug build clean; CW
-  session smoke passes; no new lock, queue, timer or unchecked declaration.
-- **ANAN-7000DLE MkII, ANT1 → 1500 W dummy load, 14.074 USB two-tone, 10 %
-  drive, FB attenuation 0 dB** (operator-authorized): baseline 32.1 dBc with
-  wire −3.9 dBFS / REF/wire −9.8 dB / domain 0.90 exactly as the fixture
-  predicted, candidate gain −0.8…0.0 dB; the trial verdict was
-  **ACCEPTED · IMD 32.1 → 68.8 dBc (+36.7 dB)** — reference 32.1 dBc @ FB
-  −36.8 dBFS, trial 68.8 dBc @ FB −37.2 dBFS, correlation 1.000, two agreeing
-  steady banks (69.1 / 68.8), SFDR 63.5 dBc, AM-AM straight. The correction
-  remains session-only and hard-bypassed by default; PEP is unchanged. Radio
-  finished SAFE. See `docs/ANANBench-2026-09-08-Claude.md`.
-
-### Documentation
-- Record the 2026.0907_008 publication:
-  the extracted production key/tail/drop paths (which report keyed truth to
-  the steady-window gate since 2026.0908_001) compile; the 2026.0908_001 CI
-  run failed at that step while the app and `swift test` were green.
-
-### Documentation
-- Record the 2026.0907_008 publication: exact-source CI 34153828140 dry run
-  and tagged signed run 34154086665 on frozen source 25357fe; public ZIP/DMG
-  checksums verified, Developer ID signature (team UG29A6ZW54), Gatekeeper
-  "Notarized Developer ID" acceptance and stapled tickets on app and DMG
-  confirmed independently; GitHub latest is 008. hermitsdr.com updated to the
-  008 card (backup index.html.backup-20260907T191529Z) and verified over
-  HTTPS; the public guide and CHANGELOG mirror are at 5531d83. No runtime
-  change.
-
-## [2026.0908_001] — 2026-09-08
-
-### Fixed
-- PureSignal trial verdicts are now judged only on steady, fully keyed
-  analysis windows (#51). A bank is eligible for the candidate or a verdict
-  only when it was captured entirely while TX was keyed, the two-tone
-  qualifies, and both feedback and reference quietest 2.67 ms blocks sit
-  within 12 dB of the window RMS; unkey-tail and ramp windows still feed the
-  readout but are labeled SETTLING / TAIL and never refit the candidate. A
-  trial ignores the first 0.75 s after key-down, requires two consecutive
-  eligible banks within 0.5 dB, and fails safe (unkey, hard bypass) after 3 s
-  without a steady window or 6 s without agreement. The candidate carries the
-  IMD3, correlation, pair count, FB/REF RMS and time of the steady bank that
-  fitted it, and the verdict prints reference and trial levels side by side
-  with a warning when they differ by more than 3 dB. The ≥1 dB gate, the 0.98
-  wire clamp and the automatic unkey/bypass are unchanged.
-
-### Verification
-- 14 new tests (`PureSignalAnalyzerTests`, `PureSignalTrialJudgeTests`):
-  steady window eligible, half-zeroed and unkey-spanning windows ineligible
-  and unable to fit a candidate, settling banks skipped, unsteady banks break
-  the agreement chain, disagreeing banks wait then reject, no-steady-window
-  and no-agreement fail-safes, key-up rearms, verdict text carries both
-  levels and flags a level mismatch, candidate requires a steady reference.
-  Full suite 1,319 tests, two intentional skips, zero failures; Debug build
-  clean; no new lock, queue, timer or unchecked declaration.
-- Operator-authorized ANAN bench (ANT1 → 1500 W load, 14.074 USB two-tone,
-  FB attenuation 0 dB, drive stepped 3 % → 10 %, ceiling 50 % unused):
-  3 % reproduced the 49.7 dBc floor with a unity candidate; 10 % gave a
-  repeatable nonlinear point, IMD3 32.2 / 32.1 / 32.1 dBc across three
-  baselines with visible AM-AM compression and a 0.7 dB candidate boost. The
-  previous build then judged a trial against an unkey-tail reference
-  ("35.4 → 32.2, −3.2 dB"), which motivated this fix. With the fix the
-  window gating and labels behaved as designed and the steady-state verdict
-  was **REJECTED · IMD 32.0 → 31.7 dBc (−0.4 dB)** at matched levels
-  (FB −36.8 vs −37.0 dBFS, correlation 1.000, two agreeing banks): the
-  current memoryless 65-node inverse does not improve this PA at a genuinely
-  nonlinear operating point. #51 stays open for corrector work. Radio
-  finished SAFE. See `docs/ANANBench-2026-09-08-Claude.md`.
-
-## [2026.0907_008] — 2026-09-07
-
-### Added
-- External station-device framework (#84, Station ▸ Control Devices ▸
-  Station Devices; feature catalog 53): capability-based device model
-  (amplifier, tuner, band director, generic), drivers as pure codecs with
-  bounded line-frame reassembly, a pure session state machine (connect and
-  silence timeouts, exponential backoff to 60 s, per-attempt generations that
-  reject late frames, latest-wins command coalescing per kind, capability
-  gating, model-mismatch fault that closes the link and refuses commands,
-  stale telemetry at 3× poll), per-device runtime actors on their own serial
-  queues publishing main-actor snapshots at ≤10 Hz, TCP (Network.framework)
-  and serial (POSIX termios, `/dev/cu.*`, standard and IOSSIOSPEED baud)
-  transports plus an in-process loopback, a reference fake amplifier driver
-  and simulator, and a panel with identity, connection state, telemetry with
-  STALE indication, capability-gated device controls, alarms, bounded log and
-  a Demo amplifier with fault/heat/drop-link/wrong-model knobs.
-- Station interlock seam: devices reduce to inhibit reasons and warnings that
-  enter `TXPolicy` additively (`stationInterlock`); a driver can never key or
-  clear a radio-side refusal. An inhibit appearing while keyed unkeys through
-  the coordinator and the reason shows in the TX Controls banner. Settings
-  persist as `stationDevices.v1` (lenient decode); driver secrets live only in
-  Keychain and are read at handshake.
-
-### Verification
-- 27 `StationDevicesTests`: frame reassembly and bounds, handshake/poll/
-  coalescing, capability refusal, connect-timeout backoff cap, late-generation
-  rejection, silence timeout and backoff reset, stop semantics, staleness →
-  warning only, model mismatch → fault/refuse/retry, interlock truth table,
-  additive-only policy property, coordinator never producing a key effect
-  under interlock, context defaults, configuration round trip and migration,
-  log ring bound, secret read only at handshake and never logged, center
-  secret storage and deletion, demo fault inhibits and removal restores
-  policy, disabled device contributes nothing, loopback runtime reconnect and
-  publish throttle, loopback mismatch, refused connection backoff, real
-  127.0.0.1 TCP exchange and peer close, unreachable endpoint, pseudo-terminal
-  serial read/write/hangup, missing serial device. Full suite 1,305 tests, two
-  intentional skips, zero failures after the README catalog count; Debug build
-  clean; no new lock, timer or unchecked declaration (one `DispatchSerialQueue`
-  per enabled device, recorded in `docs/ConcurrencyOwnership.md`).
-- Session smoke in the running Debug app (radio connected, TX SAFE): the demo
-  amplifier connected over loopback with identity and 1 s telemetry; Trip
-  fault turned the strip to INHIBIT and the TX Controls banner read "Station
-  interlock inhibits TX — Demo amplifier: OVERDRIVE protection trip"; Clear
-  fault returned to CLEAR (46 frames, 45 commands, 0 refused). No RF; no real
-  device.
-
-## [2026.0907_007] — 2026-09-07
-
-### Added
-- Adaptive noise reduction (#77), a clean-room NR2/EMNR-class reducer selectable
-  alongside the existing spectral gate and RNNoise (defaults and existing
-  modes unchanged, pinned bit-identical): 256-point 50 % Hann STFT (one-hop
-  latency like the gate), MCRA-style minimum-statistics noise tracker with a
-  speech-presence probability, decision-directed a-priori SNR, Ephraim–Malah
-  log-spectral-amplitude gain with a soft-decision floor that only lifts, and
-  temporal gain smoothing against musical noise. Strength (0–100 %) and
-  Artifact floor (−30…−6 dB) cross the block-boundary mailbox; an A/B latch
-  crossfades to the dry path at matched RMS (2 s window, 20 ms fade). Resets
-  ride the existing paths: TX unkey keeps the noise floor, detector change
-  resets fully under the duck, replay/sub-RX/rate/reconnect rebuild the chain.
-  DSP popover gains the toggle, sliders and latch; the `N` cycle becomes
-  Off → Gate → ML → Adaptive. Persisted as `nrAdaptive`, `nrAdaptiveStrength`,
-  `nrAdaptiveFloorDb`. Release cost 11.7 µs p50 / 14.8 µs p99 per 10 ms block.
-
-### Verification
-- 19 `AdaptiveNoiseReducerTests`: segmental-SNR improvement in white and
-  pink noise at 0/5/10 dB (adaptive +8.8/+7.7/+6.1 and +15.7/+15.1/+14.0 dB
-  vs the gate's +7.5/+6.1/+4.3 and +11.2/+10.4/+9.2), log-spectral distortion
-  bounded (<5 dB and ≤ gate + 1 dB), monotone controls, finite output at
-  extremes, allocation-stable process path, deterministic reset, keep-floor
-  reset, one-hop latency with sample-aligned dry path, A/B gain math and
-  rolling RMS, exponential-integral reference values, and RXChain mode
-  priority, bit-identical existing modes, mailbox slider crossing, level-
-  matched A/B at block boundaries and finite output across unkey/mode-change
-  resets. Full suite 1,278 tests, two intentional skips, zero failures; Debug
-  build clean; rx-audio presentation smoke extended and passing; no new lock,
-  queue, timer or unchecked declaration.
-- Receive-only smoke in the running Debug app on the ANAN (20 m, ANT3
-  dipole): the adaptive toggle engaged on live audio, the spectral gate
-  dropped as designed, and the A/B latch enabled; CPU unchanged. Blind
-  listening and on-air audition remain the operator's; fixtures are
-  synthetic.
-
-### Fixed
-- CI: the decoder/TX-EQ presentation-isolation smoke's fake facade now
-  carries the #78 EQ-lab members (`txEQMode`, `txParametricEQ`,
-  `txBypassMap`, A/B readouts and commands, `noteTXEQEdited`) and asserts
-  the new commands forward through the facade and publish only on change.
-  The 2026.0907_005 CI run failed at this step; the app and `swift test` were
-  green.
-
-## [2026.0907_006] — 2026-09-07
-
-### Added
-- Wave Editor window (#80, Station ▸ Audio & Streaming): record 48 kHz WAV
-  from three explicit sources — RX audio (the final speaker mix, interpolated
-  ×4 from 12 kHz), the microphone (the window's own capture, permission asked
-  on REC), and the TX monitor (the true post-limiter processed voice; audio
-  exists only while ARMED, recording never keys) — each through a bounded
-  fan-out sink that copies and returns, a 10 s FIFO that drops oldest with a
-  visible DROP count, a `.wav.partial` stage and an atomic rename on stop. A
-  red REC lamp names the live source.
-- Non-destructive editing over an immutable source: selection, trim, delete,
-  fade in/out, gain ±3 dB, normalize, undo/redo as an operation stack, a
-  multi-resolution peak pyramid so long files stay responsive, transport
-  play/pause/stop through a main-actor AVAudioEngine, Save As… (16-bit,
-  32-bit or float, atomic, never over the source) with a `.wave-edit.json`
-  sidecar that restores the session when the file is reopened. Hand-offs
-  operate only on the exported file: "Use as TX file" sets the TX Controls
-  file path and nothing else (ARM and PTT still required there); "Send to
-  Media Deck pad…" fills the first empty pad on the current page. Feature
-  catalog grows to 52 entries.
-
-### Verification
-- 14 `WaveEditorTests`: RIFF fields and channel interleave for PCM16/PCM32/
-  float32, decoding existing recorder output and clamping over-declared data,
-  partial-then-atomic finalize, ×4 interpolation, bounded drop-oldest without
-  blocking the producer, cancel removes the partial, source-tagged names,
-  undo/redo and composition order with selection following edits, exact-sample
-  render of trim/fade/gain/normalize, atomic export failure leaving no partial
-  and never touching the original, peak pyramid vs brute force at several
-  zooms, session Codable round trip and sidecar matching. Full suite 1,259
-  tests, two intentional skips, zero failures after the README catalog count;
-  Debug build clean. One new compiler-visible lock (`WaveTapRecorder`), no
-  queue, timer or unchecked declaration.
-- Session smoke in the running Debug app on the ANAN (receive-only): a 6 s
-  RX Audio recording produced `…_rx-14074kHz.wav` (48 kHz, 1 ch, Int16,
-  6.40 s per afinfo) and opened in the editor with the waveform, transport and
-  edit toolbar live. Microphone and TX-monitor capture, playback routing and
-  the hand-offs were not exercised on hardware.
-
-## [2026.0907_005] — 2026-09-07
-
-### Added
-- Ten-band parametric TX EQ (#78) as an alternative occupant of the USER EQ
-  slot: per band enable, type (peaking, low/high shelf), 20 Hz–20 kHz, Q
-  0.1–10, ±18 dB, plus ±12 dB input/output trims; RBJ biquads in transposed
-  direct form II with coefficients recomputed only for changed bands, state
-  carried across edits, denormal flush, and a transparent fast path. The
-  default stays the eight-band graphic EQ, so every existing profile is
-  bit-identical. TX Controls gains an EQ-mode segment, ten band rows, trims
-  and a response curve drawn over the existing octave TX EQ meters.
-- Per-block bypass map in the TX Chain Map: BYP latches on eleven blocks
-  (rotator, gate, AGC, profile EQ, user EQ, de-esser, compressor, rack, FX,
-  mic NR, CESSB) with a 5 ms click-free crossfade for the audio blocks and a
-  hard switch for NR/CESSB. The Digital profile's enforced bypasses, the
-  channel filters, the lookahead limiter and the modulator are not blocks and
-  cannot be bypassed. The map is saved with the deck and inside named custom
-  profiles.
-- Gain-matched A/B: slot A is the reference; switching to B stores a
-  speech-gated 3 s pre-limiter RMS of the leaving slot and applies a ±12 dB
-  match trim only while B is live, read before the trim so matches never
-  compound. Optional "include bypass map"; Copy → A/B. Preview works unkeyed
-  through the existing Monitor and Check ▸ Rec/Play taps.
-
-### Verification
-- 21 `ParametricEQTests`: response at center/far/shelves, bounds finite and
-  stable, disabled bands and zero trims bit-transparent, changed-band-only
-  recompute, normalization, crossfade ramp, loudness meter gating, A/B trim
-  math and slot round trip, bypass map Codable and Digital forcing,
-  transmitter-configuration round trip and pre-#78 blobs decoding neutral,
-  default chain unchanged, bypassed user EQ bit-identical to flat, Digital
-  profile still forcing every block, parametric shaping vs graphic ignoring,
-  mid-stream bypass click-free, and the match trim scaling the pre-limiter
-  signal. Full suite 1,245 tests, two intentional skips, zero failures;
-  Debug build clean; no new lock, queue, timer or unchecked declaration.
-- Live on the ANAN ANT1 dummy load at 3 %: parametric mode with a −14.5 dB
-  1 kHz notch keyed and released cleanly under the Standard profile; the
-  response view drew the octave meters behind the curve. A notch on/off
-  comparison and an audible A/B remain operator checks.
-
-### Known cosmetic issue
-- The A/B strip's Match / Incl. bypass labels wrap in the TX Controls column.
-
-## [2026.0907_004] — 2026-09-07
-
-### Fixed
-- CW automatic messages (CAT `send_morse`, keyboard text) no longer release
-  the coordinator at their first character or word gap (#111). The session
-  judged "done" by the keyer's transmit-request alone, and a gap is longer
-  than the 180 ms hang, so `TEST DE WU1T` keyed for one word and silently
-  dropped the rest. The release now also requires the keyer's message to be
-  complete; paddle keying keeps the hang-based release.
-
-### Added
-- Every refused key request — UI PTT/TUNE/two-tone, CAT, hardware key,
-  keyboard paddle — now appears in the TX Controls notice banner naming the
-  request and the reason. `lastError` was only rendered by the connect sheet,
-  so refusals while connected were invisible. Accepted CAT `send_morse`
-  requests show "CAT send_morse keying: <text>" while they key.
-
-### Verification
-- `testAutomaticMessageHoldsCoordinatorAcrossWordGaps` renders "E E" through
-  the session and requires both characters and exactly one release; it fails
-  on the previous code (one character, then release). A rigctl loopback test
-  proves `send_morse` reaches its callback while the client stays connected
-  and that a second request is refused rather than queued.
-- Live on the ANAN ANT1 dummy load at 14.074 CW, 3 % drive: the coordinator
-  transition log from About → Copy System Information showed
-  `requestKey(cw, cat) → transmitting → release` back-to-back on the old
-  build; after the fix the same message held ON AIR through the full text
-  (~7 s, PA 3.1 A) and released once to ARMED, then SAFE.
-
-### Documentation
-- Record the Claude Code ANAN bench: receive-only FT8 clock-drift validation
-  on the ANT3 dipole and one bounded 3 % two-tone pulse into the ANT1 dummy
-  load with the phosphor wire-scope envelope confirmed (#39 item 1 partial;
-  PWR/SWR ladders and the flat-top limiter line remain unexercised). Evidence
-  under `docs/bench/2026-09-07/claude-*`, report in
-  `docs/ANANBench-2026-09-07-Claude.md`. No runtime change.
-- Record the second bench hour: a 51-minute W3LPL soak without disconnect, 40 m OmniSkimmer check (exact
-  click-to-tune, implausible text at ATT 0/−20), the flat-top limiter line
-  confirmed with a hot file at 3 % (#39 item 1 ticked), an FM PTT+file pulse,
-  and a CAT `send_morse` attempt that produced no key-down (filed as a new
-  issue). Radio finished SAFE.
-
-## [2026.0907_003] — 2026-09-07
-
-### Added
-- FT8/FT4 station clock-drift estimation and compensation (#76). Each decode's
-  start time within the slot (already computed by ft8_lib, previously
-  discarded) is reduced to a per-slot median with MAD outlier rejection; the
-  median of the last twelve slot medians is the station's clock offset. When
-  confidence (decode count × slot count × agreement) passes 0.5 the decode
-  capture boundary and the native TX slot clock subtract the estimate, bounded
-  to ±0.5 s and slewed 0.1 s per slot, keeping the FT8 watchdog's 0.86 s
-  headroom intact. Replay never contributes, stale evidence decays to zero
-  after ten minutes, a ≥2 s disagreement with a confident estimate (NTP step,
-  sleep/wake) resets the history, and the Mac's clock is never changed.
-- FT8 panel **CLOCK** row: offset, spread, evidence, age, applied value, an
-  **AUTO** switch (persisted; off keeps measuring but applies nothing) and
-  **Reset**. Each decode row now shows its DT.
-
-### Verification
-- Fifteen `FT8ClockDriftTests`: fast/slow clocks converge within eight slots
-  under the slew bound, outliers and implausible starts are rejected, sparse
-  or disagreeing evidence applies nothing, the clamp stays inside the watchdog
-  margin, stale evidence decays and clears, disable/reset/clock-step behave as
-  documented, and the decode engine starts capture on the corrected boundary
-  while clamping out-of-range corrections.
-- Live receive-only check on the ANAN-7000DLE MkII (RX ANT3 40 m dipole,
-  7.074 MHz USB, 384 kHz, Debug build): the first run exposed an inverted
-  correction sign (residual DT climbed toward the clamp) and an estimator
-  that stored residuals instead of totals (the loop stalled at half); both
-  are fixed and pinned by `testClosedLoopDrivesObservedDTToZero`. The
-  corrected build converged in eight slots and held +0.28 s ±0.01 over twelve
-  slots and ~200 decodes while fresh rows read DT −0.2…+0.2 around zero. The
-  offset includes the receive pipeline delay; no transmission was made and
-  the TX slot correction is not hardware-validated.
-
-### Documentation
-- Describe the estimator, its bounds and its edge-case behavior in
-  `docs/DigitalModes.md`; the README capability row names the feature.
-
-## [2026.0907_002] — 2026-09-07
-
-### Added
-- Media Deck live FX rack (header **FX**): pitch (±24 semitones, speed
-  untouched), speed (¼×–4×, pitch untouched), echo mix/time/feedback, reverb
-  mix with nine spaces, drive mix with ten flavors, and log-scaled low-pass /
-  high-pass tone sliders. Sliders act on every playing pad immediately, the
-  rack is saved with the deck, and an ON latch bypasses it without losing the
-  setting. Effects are Apple's built-in `AVAudioUnit` effects in series
-  between each pad's player and its mixer, so the stream-mix tap hears them
-  too; a neutral rack bypasses every unit and sounds exactly as before.
-- Eighteen one-click FX profiles — Stadium, Underwater, Chipmunk, Demon,
-  Gum Mouth, Helium, Robot, Telephone, Alien, Haunted, Megaphone, Slow-Mo,
-  Fast Forward, Cathedral, Walkie-Talkie, Canyon, Lo-Fi, Cosmic — plus a
-  **Surprise me** randomizer bounded to the slider ranges and a Reset.
-- Per-pad FX in the pad editor: follow the rack, copy the current rack, or
-  pin a profile so that pad always sounds that way regardless of the rack and
-  its ON/OFF switch. Pinned pads show an **FX** chip on the pad face.
-- Clicking an empty pad now opens the Finder picker in perform *or* edit
-  mode; several files fill the following empty pads in order, and files may
-  also be dropped onto an empty pad in either mode. Right-click an empty pad
-  to choose files or open the full editor for a YouTube/web pad. In edit
-  mode a single new pad opens straight into its editor.
-- **Hold to play** press policy: sound while the mouse button is down, stop
-  (with the pad's fade-out) on release. Keyboard activation toggles because
-  it has no release. Momentary pads show a hand icon.
-- Pad-face waveform thumbnails and duration badges for local files, scanned
-  off the main actor after assignment and stored in the deck document; the
-  played portion lights green while the pad is sounding.
-
-### Verification
-- Pin the FX value model: neutral detection per stage, clamping (including
-  NaN) into every slider range, tolerant decoding of partial and unknown
-  fields, and the human summary. Every profile is unique, audible, in range
-  and recoverable by exact match; the requested profiles carry their
-  signature moves. The randomizer is generator-injected: deterministic,
-  always audible, whole-semitone pitch, bounded.
-- Cover rack/per-pad FX, Hold-to-play and waveform fields through document
-  round-trip while v1 documents stay neutral; unknown press policies decode
-  as Restart. Pin the Hold-to-play down/up/keyboard command machine, the
-  quick-add empty-slot fill (forward, skip occupied, never wrap), waveform
-  bin resampling/normalization and duration labels.
-
-### Documentation
-- Describe the FX rack, profiles, per-pad FX, quick-add, Hold to play and
-  waveform thumbnails in `docs/MediaDeck.md` and the README summary.
-- Record completed 2026.0907_001 CI, independent distribution verification,
-  signed/notarized publication, website update, installed public app and final
-  ANAN/Claude handoff. No runtime change; the current download remains 001.
-
-## [2026.0907_001] — 2026-09-07
-
-### Added
-- Include the retained PA trial verdict and current correction status separately
-  in About → Copy System Information. A newer candidate cannot conceal the
-  measurement that accepted or rejected a trial, and copying the report does
-  not require opening PA Linearity or changing transmitter state.
-
-### Verification
-- Cover distinct candidate/trial reporting, multiline measurement preservation
-  and missing diagnostics in the support-report regression suite.
-- On the approved ANAN ANT1 dummy load at 14.074 USB / 3% drive, retrieve a
-  50.0 → 49.9 dBc rejected trial and verify CAT owner-loss, UI disarm and
-  radio-disconnect release. Positive DPD improvement remains unproven.
-- Full suite: 1,190 tests, two intentional skips, zero failures; signed
-  Debug/Release builds and the unchanged performance benchmark pass.
-
-### Documentation
-- Add a followup report with raw support copies, bounded CAT evidence,
-  timing limitations, restored controls and remaining issue acceptance.
-- Record the September 7 operator-authorized ANAN dummy-load session: bounded
-  key/release tests, paired PA baselines, visible wire/audio scopes, receive-rate
-  transport results and app reconnect checks, with retained measurement logs.
-- Preserve unresolved trial-verdict inspection, low-power calibration limits,
-  cumulative performance counters and the remaining operator checks in the
-  Claude handoff for the measured 2026.0906_023 runtime.
-
-## [2026.0906_023] — 2026-09-06
-
-### Fixed
-- Give replacement video callbacks a configuration header and keyframe before
-  delivering dependent frames. Installing a late callback or restoring a cleared
-  callback now gets a complete decodable start.
-- Recheck capture, compression and callback generations after delivering the
-  AVC configuration header. Stopping capture or replacing the callback while
-  that header runs prevents the old raw frame from being delivered afterward.
-
-### Verification
-- Reproduce missing configuration on callback replacement and raw delivery after
-  stop against the prior video encoder source.
-- Compile the full production video owner and drive synthetic encoded frames
-  through its delivery path, including the actual stop method. Cover keyframe
-  ordering, stale generations, 500 concurrent callback changes and owner release
-  normally and under AddressSanitizer and ThreadSanitizer in CI. Screen capture,
-  GPU compression, live streaming and credentials are not used by these tests.
-
-## [2026.0906_022] — 2026-09-06
-
-### Fixed
-- Send AAC configuration to each replacement audio callback before its raw audio.
-  A callback that resets the encoder during its header cannot receive the old
-  raw packet afterward; fresh input belongs to the new encoding session.
-- Coalesce audio feeds into one scheduled drain with at most eight conversion
-  attempts per turn. Retain the one-second FIFO limit and overflow timestamp
-  adjustment while avoiding a growing queue of redundant work.
-- Cache the negotiated AAC bitrate during initialization so metadata reads do
-  not access the converter concurrently with encoding.
-
-### Verification
-- Reproduce both callback/reset failures against the previous source and compile
-  the full production encoder with generated audio through AVAudioConverter.
-- Cover callback replacement, reentrant and queued resets, bounded scheduling,
-  overflow timing, concurrent feeds and owner release normally and under
-  AddressSanitizer and ThreadSanitizer in CI; no device or live stream is used.
-
-## [2026.0906_021] — 2026-09-06
-
-### Fixed
-- Bind Discord voice UDP discovery, heartbeat, audio timer and UI callbacks to
-  their original session. Late work from a stopped connection cannot mark a
-  replacement discovered, stop it or send its audio.
-- Replace duplicate HELLO timers and READY sockets explicitly; suspend audio
-  during UDP rediscovery and require discovery before accepting session details.
-- Preserve nonce progression for repeated session descriptions with the same key,
-  including UDP replacement within that session. Reset old buffered audio and
-  silence tails when starting a new session.
-- Keep current failure diagnostics after teardown, avoid rearming cancelled
-  WebSocket receives, and leave codec/endpoint failures fully stopped.
-
-### Verification
-- Reproduce an old discovery reply steering a new session and a cancelled
-  heartbeat stopping its replacement against the prior source.
-- Compile the actual voice owner with inert WebSocket, UDP, timer and codec
-  boundaries. Cover replacements, duplicate handshakes, retry limits, failures,
-  RTP counter continuity, bounded catch-up, concurrent lifecycle calls and release.
-- Run the fixture normally and under AddressSanitizer and ThreadSanitizer in CI;
-  retain the prior Discord service and facade regressions.
-
-## [2026.0906_020] — 2026-09-06
-
-### Fixed
-- Reject late Discord gateway events and HTTP replies after stopping or replacing
-  a session. Cancel obsolete requests before they can continue test ladders,
-  webhook lookups, directory refreshes or slash-command replies.
-- Keep polling and token-change debounce bound to their original session;
-  repeated starts are idempotent and stopped settings edits cannot reconnect.
-- Bind waterfall captures and UI callbacks to the original Discord service and
-  settings, so delayed results cannot post through a replacement destination.
-- Serialize voice callback replacement on the voice queue and deliver callbacks
-  on the main actor. Preserve explicit connection tests and the intended offline
-  notification while discarding obsolete background work.
-
-### Verification
-- Reproduce late READY creating two HTTP requests after stop in the prior source.
-- Run production service, voice callback and facade bodies against inert gateway,
-  HTTP, audio and renderer boundaries, including concurrent stale callbacks,
-  cancelled replies, setting changes, current operations and owner release.
-- Run the fixture normally and with AddressSanitizer and ThreadSanitizer in CI.
-
-## [2026.0906_019] — 2026-09-06
-
-### Improved
-- The calibration editor observes only its profile and recovery messages.
-  Detector readings update the dedicated live-measurement button.
-- Capture current split/XIT transmit frequency and output-jack context only
-  when adding a point, without tuning traffic invalidating the editor.
-- Preserve calibration save, import/export, reset, firmware/identity checks,
-  existing draft/fit behavior and policy enforcement commands.
-
-### Verification
-- Compile production adapters and actual calibration command bodies with real
-  station/receiver/transmitter owners and temporary calibration/export files.
-- Cover detector isolation, duplicate suppression, point context, persistence,
-  reset/import/export, incompatible profiles, malformed files, absent sessions
-  and released owners. Hardware application and policy checks use inert sinks.
-- Guard the editor layout, file dialogs and separate live detector leaf in CI.
-
-## [2026.0906_018] — 2026-09-06
-
-### Improved
-- The main toolbar observes focused receiver and control state. Bookmark
-  frequency updates and the calibrated squelch indicator have separate views.
-- Receiver restoration delivers mode, rate, zoom, gain, attenuation, antenna
-  and effective tuning step together, without unrelated VFO/filter payloads.
-- Preserve leading-edge layout, hardware/replay gates, band/bookmark recall,
-  RF gain, audio, zoom and waterfall command paths.
-
-### Verification
-- Compile production adapters and selected facade commands against real
-  domain owners, inert hardware/service boundaries and isolated preferences.
-- Cover projection isolation, coherent restoration, auto/fixed tuning steps,
-  current-value commands, band-memory clamps, bookmark persistence/recall,
-  replay recentering, capability updates, duplicate suppression and owner release.
-- Keep a source guard for toolbar composition and the separate signal leaf;
-  run the fixture in CI. Complex mode/rate application remains covered by its
-  existing engine tests; the new fixture checks its command forwarding.
-
-## [2026.0906_017] — 2026-09-06
-
-### Improved
-- The main header observes connection and indicator state; recording elapsed
-  time and transmit SWR update only their dedicated views.
-- Settings observe their station, CAT, remote-access and hardware controls.
-  Station restoration delivers callsign, grid and reporting intent together.
-- Preserve existing recording, connection, device, privacy and service commands,
-  error presentation, clipboard actions and auxiliary-window entry points.
-
-### Verification
-- Compile production presentation models and facade commands with real domain
-  owners and inert recording, network, privacy and hardware boundaries.
-- Cover recording success/failure, replay, header/meter/settings isolation,
-  station restoration, CAT actions, remote-port normalization, capability gates,
-  privacy forwarding, duplicate suppression and released owners in CI.
-- Keep source guards for the header layout, separate meters and settings actions.
-
-## [2026.0906_016] — 2026-09-06
-
-### Improved
-- VFO B, split, RIT/XIT, antenna routing, display settings and audio-output
-  controls observe their own deduplicated presentation state. Receiver
-  restoration delivers one complete VFO/offset snapshot.
-- The S-meter observes calibration/gain separately from raw meter readings;
-  unrelated receiver, decoder, transmitter and integration updates no longer
-  invalidate these five controls.
-- Preserve existing VFO/sub-receiver commands, antenna hot-switch guards,
-  calibration arithmetic, device refresh, window actions and persistence paths.
-
-### Verification
-- Exercise production presentation models and facade commands against real
-  domain owners, inert engine sinks and isolated preferences/calibration storage.
-- Cover restoration, replay/connection transitions, command side effects,
-  diversity ordering, all four TX antenna guards, meter calibration, display
-  settings, default audio routing, duplicate isolation and released owners.
-- Run the fixture in CI and retain a source guard for the operator UI hooks.
-
-## [2026.0906_015] — 2026-09-06
-
-### Improved
-- Receive filter controls observe only mode, bandwidth and shift as a coherent
-  snapshot; tuning, gain and unrelated receiver updates do not republish it.
-- Keep scroll, click/popover, presets, width and shift commands on the existing
-  facade paths, including main/sub filters, CAT, per-mode memory and persistence.
-
-### Verification
-- Compile the production adapter and extracted facade commands against a real
-  receiver owner, inert engine sinks and a temporary preferences suite.
-- Cover all eight modes, presets, scroll saturation, reset, restoration,
-  publication isolation, command side effects and released-owner behavior.
-- Retain an AppKit event/popover source guard and run the fixture in CI.
-- Scope the existing colormap observation guard to its declaration so moving
-  neighboring controls does not make it inspect unrelated views.
-
-## [2026.0906_014] — 2026-09-06
-
-### Improved
-- Decoder controls observe only their enable/panel settings and activity presence;
-  decode progress, transcripts, spots and unrelated radio updates no longer
-  publish through their presentation owner.
-- The TX EQ bank observes only gains and profile information, with meters and
-  skin changes kept on their existing separate owners.
-- Preserve FT8/FT4 exclusion, CW mode gating, decoder/window/panel behavior,
-  TX EQ normalization, profile resolution and existing persistence/engine commands.
-
-### Verification
-- Compile production adapters and actual facade property bodies against real
-  decoder/transmitter owners and inert engine sinks. Cover external restoration,
-  payload isolation, command side effects, current-value edits and owner release.
-- Guard the extracted views and run the production fixture in CI.
-
-### Documentation
-- Record verified 010–013 releases, website/public-guide updates and #109/#110
-  closures, including the source and workflow references and acceptance limits.
-
-## [2026.0906_013] — 2026-09-06
-
-### Improved
-- The TX header banner and mic/ALC level meters observe the existing narrow
-  transmitter-status owner instead of all RadioState updates. Meter readings
-  retain their separate high-rate owner and the banner retains its task timing.
-- Preserve passive ARM/keyed indications and arcade gating without changing
-  any transmitter command, persistence, DSP or RF path.
-
-### Verification
-- Extend the production status fixture for sampled arcade preference and weak
-  owner release; guard against broad observation in the extracted status views.
-
-## [2026.0906_012] — 2026-09-06
-
-### Fixed
-- Prevent stopped on-device caption startup from creating a late analyzer or
-  installing an audio tap. Obsolete sessions cannot deliver cues or diagnostics.
-- Deliver final caption cues before transcript collection and flush the final
-  partial input chunk. Concurrent shutdown callers join the same teardown.
-- Bound converted caption audio and queued conversion work as well as input
-  samples; retain source timestamps when optional caption audio is dropped.
-
-### Improved
-- Give caption lifecycle and callbacks one main-actor owner; move conversion
-  to a bounded worker with explicit locked buffer handoffs, removing the
-  transcriber's class-wide unchecked Sendable declaration.
-
-### Verification
-- Add inert production lifecycle fixtures for seven suspended startup stages,
-  cancellation and final-cue ordering, plus generated PCM and queue-pressure
-  coverage. No speech model, audio device or live service is used.
-
-## [2026.0906_011] — 2026-09-06
-
-### Improved
-- Receive EQ and DSP controls observe focused settings and skin owners, keeping
-  unrelated radio, decoder, meter and integration traffic out of their views.
-- Preserve profile selection/saving, short-array EQ edits, Gate/ML exclusion,
-  FM/NFM settings, CTCSS and value-based manual-notch removal through existing
-  command and persistence paths.
-
-### Verification
-- Add production-adapter coverage for isolated updates, profile commands,
-  short arrays, stale controls, FM persistence and released owners; run it in CI.
-- Pin existing profile-match precedence and guard against broad view observation.
-
-## [2026.0906_010] — 2026-09-06
-
-### Fixed
-- Position the panadapter TX footprint at the actual split/XIT transmit frequency;
-  RIT continues to affect only receive geometry. Hide the TX footprint in SAM.
-
-### Improved
-- Main-window layout, spectrum geometry, FT8 band-map labels and display-level
-  controls observe focused, deduplicated state. Decoder payloads and unrelated
-  settings no longer invalidate the full main layout through RadioState.
-- Keep display edits and tuning on the existing command/persistence paths.
-
-### Verification
-- Add split/XIT/RIT, sideband/FM/custom-profile and geometry regressions plus
-  compiled-production presentation isolation, forwarding and weak-owner fixtures.
-- Run the presentation fixture in CI and guard against broad view observation.
-
-
-### Documentation
-- Record verified 005–009 publications, exact-source gates, public artifact and
-  signing/notary evidence, website/public guide updates and #103–#108 closure.
-  Preserve retry evidence and bench/live-service limits.
-
-## [2026.0906_009] — 2026-09-06
-
-### Fixed
-- Coalesce repeated valid PSK callsigns before the pending/retry queue limit,
-  retaining the newest observation without allowing invalid metadata to replace
-  valid data. Repeated decodes no longer displace distinct stations or upload
-  duplicate callsigns within the same five-minute reporting batch.
-- DX-cluster callbacks that stop or replace a session prevent subsequent
-  connection creation, login sends and buffered spot delivery from that session.
-- Obsolete command completions report failure; receive and reconnect work
-  recheck session identity after callbacks.
-
-### Verification
-- Add three PSK coalescing regressions and an inert queue-pressure case; packet
-  boundary fixtures use distinct callsigns.
-- Add compiled-production inert cluster fixtures reproducing seven callback
-  lifecycle failures and checking normal spot/command behavior under sanitizers.
-
-### Documentation
-- Record verified 005/006 publications, website/public guide updates,
-  #103/#104 closure and #60 progress.
-- Document cluster callback ownership, regression evidence and live-server limits.
-
-## [2026.0906_008] — 2026-09-06
-
-### Fixed
-- Reject obsolete PSK Reporter work after DNS and between datagrams; clear
-  queued reports when station identity changes and preserve no-op configuration.
-- Correct IPFIX receiver scope and Data Record sequence counts, variable-length
-  string encoding, and byte-based packet bounds. Invalid numeric/station metadata
-  is rejected safely; partial sends retry only unsent valid reports and report
-  the actual sent count.
-
-### Verification
-- Add independent packet decoding, numeric/string boundary tests and inert
-  production transport fixtures for cancellation, identity changes and retries.
-  No reports are sent by the test fixtures.
-
-### Documentation
-- Record PSK Reporter protocol and lifecycle evidence with live-service limits.
-
-## [2026.0906_007] — 2026-09-06
-
-### Fixed
-- Synchronize RNNoise shared-table initialization across independent RX/TX
-  contexts and prepare tables at creation, before processing audio frames.
-- Return a failed context safely on allocation failure, release partial GRU/FFT
-  allocations, and permit retry. Existing Swift pass-through fallback remains.
-
-### Verification
-- Add fresh-process concurrent initialization and seven-position allocation
-  fault/retry fixtures, including no shared-table allocation during processing.
-- Verify a 120-frame baseline/fixed output is byte-identical; weights and DSP
-  arithmetic are unchanged.
-
-### Documentation
-- Document shared C ownership, failure recovery and remaining analyzer/bench
-  acceptance limits for the noise-reduction integration.
-
-## [2026.0906_006] — 2026-09-06
-
-### Fixed
-- Correct TX-chain descriptions for FM, NFM and DSB; mark SAM receive-only.
-  Keep the chain display's split/XIT frequency calculation with the receiver
-  owner, shared by the compatibility facade.
-
-### Architecture
-- The TX-chain window observes transmitter, receiver and skin owners plus
-  deduplicated ARM/key facts. Rack edits retain weak commands through the
-  existing engine/persistence path; unrelated facade events do not invalidate it.
-
-### Verification
-- Cover modulation descriptions, split/XIT without RIT, isolated adapter events,
-  rack command forwarding and owner release. Run the production adapter in CI.
-
-### Documentation
-- Record the TX-chain observation boundary and full validation evidence.
-- Track separately reproduced RNNoise initialization/allocation failures from
-  the static-analysis sweep for a subsequent source batch.
-
-## [2026.0906_005] — 2026-09-06
-
-### Fixed
-- Reject queued CW actions after their keyer session ends or is replaced.
-  Complete keyer release only for a tail accepted by the TX coordinator, so an
-  obsolete callback cannot release a newer session owned by the same source.
-
-### Verification
-- Reproduce stale CW action/tail delivery with production control methods and
-  inert radio/audio sinks; retain sample-clock and transmitter interlocks.
-
-### Documentation
-- Record verified CAT release 004, public download metadata and website update.
-- Document deferred CW action ownership, reproduced failures and acceptance limits.
-
-## [2026.0906_004] — 2026-09-06
-
-### Fixed
-- Invalidate stopped CAT requests and disconnected transmit intents before
-  delivery and track
-  PTT, TUNE, two-tone and Morse ownership for teardown. Required stop callbacks
-  run before a server is replaced, through the existing coordinator guards.
-- Bound CAT clients, queued commands, line lengths and outstanding replies;
-  stalled replies expire and old listeners/receives cannot revive a session.
-  Reject invalid transmit flags while retaining Hamlib MIC/DATA PTT values;
-  acknowledged one-shot frequency/mode commands still survive client quit.
-- Bind Morse completion to its original request and handler so a late finish
-  cannot clear a replacement request's ownership.
-
-### Verification
-- Add deterministic CAT stop/disconnect, immediate cancellation, overload,
-  reentrancy and stale Morse-completion fixtures with logging-only callbacks.
-- Exercise the production listener with deterministic network substitutes and
-  a real localhost exchange; run CAT fixtures in CI and sanitizer coverage.
-
-### Documentation
-- Record independently verified 003 publication and website/public-doc updates.
-- Document CAT ownership, queue/reply bounds, production and localhost fixtures,
-  sanitizer coverage and remaining operator-assisted acceptance.
-
-## [2026.0906_003] — 2026-09-06
-
-### Fixed
-- Give each FT8/FT4 decoder its own synchronized C callsign cache, preserving
-  hashes across its slots without races or contamination from other monitors.
-  Keep the compatibility C entry point safe for concurrent callers. Preserve
-  valid hash lookups across holes left by aged entries.
-- Reject FT8 jobs and results from obsolete enable, protocol, replay-clock or
-  callback sessions. Bound decoding to one active and one latest pending slot,
-  and coalesce stalled main-queue presentation. Deliver accepted results on the
-  main actor without another unguarded application hop.
-
-### Verification
-- Add deterministic FT8 cancellation, backlog, cache lifetime, capture-carrier
-  and callback tests, plus concurrent production C decoding and synthesized
-  hashed-callsign context-isolation/reset fixtures.
-
-### Documentation
-- Record 2026.0906_002 publication, exact-source CI and independent public
-  distribution verification, website and public-download documentation updates,
-  issue #100 completion, and continued ownership work on #60/#61.
-
-## [2026.0906_002] — 2026-09-06
-
-### Fixed
-- Validate manual Hermit Remote destinations before pairing or connection:
-  empty hosts and malformed ports produce an inline error, while IPv6 and
-  bracketed IPv6 ports are parsed without crashes or silent port substitution.
-- Remote client callbacks reject replaced connections, reset disconnected
-  state and synchronize handler replacement. The server admits only one
-  authenticated client, bounds pending handshakes, and invalidates queued
-  commands, IQ work and send completions when a client is kicked or replaced.
-  Listener/UI callbacks likewise require their current owner after delivery.
-- Remote payloads reject trailing bytes, invalid UTF-8, non-finite or invalid
-  state metadata, and overlong pairing codes. Long outgoing names retain whole
-  UTF-8 characters. Pairing and listener setup surface Keychain write failures.
-- Remote tuning/gain bursts coalesce before main-queue delivery; stalled
-  clients retain at most two state/meter sends. Latest state retries on the
-  next meter tick, and WELCOME is queued before the client can receive IQ.
-
-### Changed
-- Connect and its pairing/network-configuration sheets use a narrow
-  presentation adapter, the session owner and SkinCenter instead of observing
-  all radio state. Existing action gates and persistence remain centralized.
-
-### Verification
-- Add deterministic production remote-client/server lifecycle fixtures using
-  in-process network and credential substitutes, plus manual-address cases.
-  Run them in CI and both extended sanitizer jobs, including concurrent handler
-  replacement, stalled handshakes and send-backpressure generation checks.
-- Add a production Connect adapter fixture for event isolation, duplicate
-  suppression, command forwarding and weak ownership, and run it in CI.
-
-### Documentation
-- Record the completed 2026.0906_001 GitHub issue sweep and publication,
-  exact-source CI, independent public ZIP/DMG checksum, signature, notarization
-  and Gatekeeper verification, and the website release-card update. Record
-  completion evidence for #97–#99 and progress on #60/#61; refresh the public
-  download guide and synchronize its changelog. No runtime changes after release.
 
 ## [2026.0906_001] — 2026-09-06
 
