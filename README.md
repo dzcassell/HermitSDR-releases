@@ -35,6 +35,11 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0928_001
+
+- **Tuning controls.** A step cluster sits right of the frequency readout: ◀ ▶ move one step, ◀◀ ▶▶ ten, ⌥ ×10, ⇧ a fifth, and press-and-hold repeats (×10 after two seconds). The step menu runs 1 Hz to 1 MHz including the 9/10 kHz broadcast and 12.5/25 kHz channel rasters, or Auto; *Snap to step grid* makes each press land on the grid. The same step drives the wheel, the arrow keys and the flywheel.
+- **Drag to pan.** Press, hold and swipe the waterfall or spectrum sideways to move the display window; at the edge of the sampled span the radio's centre follows on a live session, never so far that the tuned signal leaves it. A click still tunes, the red marker still drags, ⌘-drag keeps the old drag-tune.
+
 ## New in 2026.0927_010
 
 - **Kenwood CAT emulation (receive-only).** Settings ▸ CAT ▸ *Kenwood CAT* serves the TS-2000 command set (FA/FB/MD/IF/AI/FT/SM/PC/ID…) and the PowerSDR ZZ equivalents on TCP 127.0.0.1:19090, for loggers and band decoders that speak Kenwood rather than hamlib — pick rig "Kenwood TS-2000" in the client. Tuning, mode, split and drive use the same paths as rigctl; auto-information sends a status after every change. Every keying command is refused in this build. Off by default; loopback only. See docs/KenwoodCAT.md in the source repository.

@@ -7,6 +7,26 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0928_001] — 2026-09-28
+
+### Added
+- **Tuning controls (Damon: "flexibility in tuning").** A step cluster
+  sits right of the frequency readout in the console: ◀ ▶ move one step,
+  ◀◀ ▶▶ ten, ⌥ ×10, ⇧ a fifth, press-and-hold repeats and counts ×10 after
+  two seconds. The step menu beside it now runs 1 Hz … 1 MHz (with the 9 /
+  10 kHz broadcast and 12.5 / 25 kHz channel rasters) or Auto, and a
+  *Snap to step grid* switch makes each press land on the grid — channel
+  stepping. The same step drives the wheel, the arrow keys and the
+  flywheel.
+- **Drag the waterfall or spectrum sideways to pan.** Press, hold and swipe
+  moves the display window over the sampled span; at the span's edge the
+  radio's centre follows on a live session, never so far that the tuned
+  signal leaves the span. A click still tunes (now on release), the red
+  marker still drags, ⌘-drag keeps the old drag-tune, ⌥-drag in the
+  waterfall still scrubs the time machine. docs/Tuning.md lists every
+  tuning control and what was borrowed from SDR Console, Thetis, SDR#,
+  SmartSDR and GQRX.
+
 ## [2026.0927_010] — 2026-09-27
 
 ### Added
