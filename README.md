@@ -17,10 +17,10 @@ notarized build from the [**Releases**](../../releases/latest) page.
 
 For the complete release history, read the [**CHANGELOG**](CHANGELOG.md).
 
-An opt-in **Console Preview** (View → Appearance → Console Preview) ships in
-the current download: dense instrument-style receiver and transmitter banks
-beside a dominant waterfall, six interface palettes, and a bottom workspace.
-It is still under operator review and the original layout remains the default.
+The **console layout** is the default since 2026.0927_001: dense
+instrument-style receiver and transmitter banks beside a dominant waterfall,
+six interface palettes, and a bottom workspace. The classic layout is still
+there under View → Appearance → Console Layout (untick it).
 The [UI design brief](docs/UI_DESIGN.md) and
 [implementation roadmap](docs/UI_IMPLEMENTATION_ROADMAP.md) describe the goal.
 
@@ -34,6 +34,13 @@ on-air QSOs are in the log (WU1T ↔ KA3MAJ, W8NGA, KN1B and KJ5DZV, FT8, 40 m, 
 ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
+
+## New in 2026.0927_001
+
+- **The console layout is now the default.** Receiver bank, transmitter bank and workspace around a full-height spectrum, six palettes and the compact header greet every launch. The original layout stays available: untick **View → Appearance → Console Layout**. A choice you already saved either way is respected.
+- **A nodding hand beside the footer's Receiver / Transmitter / Workspace buttons** keeps pointing at the panel toggles so they are never overlooked. It holds still under Reduce Motion; its tooltip names the ⌘⌥1 / ⌘⌥2 / ⌘⌥3 shortcuts.
+
+Full suite: 1,857 tests, zero failures.
 
 ## New in 2026.0926_004
 

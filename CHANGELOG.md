@@ -7,6 +7,19 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0927_001] — 2026-09-27
+
+### Changed
+
+- **The console layout is now the default.** Receiver bank, transmitter bank
+  and workspace around a full-height spectrum, six interface palettes and the
+  compact header greet every launch. The original layout remains available as
+  **View → Appearance → Console Layout** (untick it); a saved choice either
+  way is respected. The footer's "CONSOLE PREVIEW" caption is gone.
+- A pointing hand beside the footer's Receiver / Transmitter / Workspace
+  buttons nods continuously so the panel toggles are never overlooked; it
+  holds still under Reduce Motion and its tooltip names the ⌘⌥1/2/3 shortcuts.
+
 ## [2026.0926_004] — 2026-09-26
 
 ### Changed
