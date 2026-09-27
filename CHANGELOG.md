@@ -7,6 +7,20 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0927_010] — 2026-09-27
+
+### Added
+- **Kenwood CAT emulation, receive-only (#126 milestone 1).** Settings ▸ CAT
+  ▸ *Kenwood CAT* serves the TS-2000 command set (FA/FB/MD/IF/AI/FT/FR/SM/
+  PC/KS/ID/PS) plus the PowerSDR ZZ equivalents (ZZFA/ZZFB/ZZMD/ZZIF/ZZAI/
+  ZZSW/ZZPC) on TCP 127.0.0.1:19090 for loggers and band decoders that
+  speak Kenwood rather than hamlib. Tuning and mode go through the same
+  paths as rigctl; auto-information sends an `IF` after every change at
+  most four times a second. Every keying command (TX, RX, KY, ZZTX) is
+  refused — the transmit milestone is a separately reviewed diff. Off by
+  default; loopback only. Verified in Demo over TCP and with hamlib's own
+  TS-2000 driver. See docs/KenwoodCAT.md.
+
 ## [2026.0927_009] — 2026-09-27
 
 ### Added

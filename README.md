@@ -35,6 +35,10 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0927_010
+
+- **Kenwood CAT emulation (receive-only).** Settings ▸ CAT ▸ *Kenwood CAT* serves the TS-2000 command set (FA/FB/MD/IF/AI/FT/SM/PC/ID…) and the PowerSDR ZZ equivalents on TCP 127.0.0.1:19090, for loggers and band decoders that speak Kenwood rather than hamlib — pick rig "Kenwood TS-2000" in the client. Tuning, mode, split and drive use the same paths as rigctl; auto-information sends a status after every change. Every keying command is refused in this build. Off by default; loopback only. See docs/KenwoodCAT.md in the source repository.
+
 ## New in 2026.0927_009
 
 - **AGC threshold line on the panadapter.** DSP ▸ AGC ▸ *Threshold line on the panadapter* draws the AGC threshold — the level below which the AGC has no gain left (about −88 dBFS at the defaults) — as a dashed line labelled with its level and the max gain. Drag the line to set max gain; only the line's grab strip takes the pointer, so click and wheel tuning are untouched. Off by default; nothing is drawn with AGC Off.
