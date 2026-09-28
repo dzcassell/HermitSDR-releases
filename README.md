@@ -35,6 +35,10 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0928_003
+
+- **Report an Issue and the other GitHub links now open this public repository.** They pointed at the private source repository, which showed a GitHub 404 to everyone else. Issues are open here.
+
 ## New in 2026.0928_002
 
 - **Drag-to-pan keeps the waterfall.** Swiping the waterfall or spectrum past the edge of the sampled span (every swipe at ×1 zoom) retunes the radio's centre, and that used to clear the waterfall to black. The history now slides sideways by exactly the move, so every row stays under the relabelled scale and keeps scrolling; peak-hold and the ghost slide with it. The pan also keeps the whole receive passband inside the span.

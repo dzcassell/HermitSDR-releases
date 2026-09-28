@@ -7,6 +7,14 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0928_003] — 2026-09-28
+
+### Fixed
+- **Report an Issue, View on GitHub, the guide and the changelog link now
+  open the public download repository.** They pointed at the private
+  source repository, which shows every ordinary user a GitHub 404. A test
+  now fails the build if any app link points there again.
+
 ## [2026.0928_002] — 2026-09-28
 
 ### Fixed
