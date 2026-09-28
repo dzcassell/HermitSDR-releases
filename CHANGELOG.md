@@ -7,6 +7,20 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0928_005] — 2026-09-28
+
+### Changed
+- Render TX Audio Chain as compact left-to-right stage cards with precedence arrows,
+  section navigation and horizontally ordered rack units; preserve all live bindings.
+- Give auxiliary windows and popovers the main console's shared default label font;
+  align measurement headers and update notes with its compact themed surfaces.
+
+### Fixed
+- Show Digital-profile forced bypasses consistently on the chain cards.
+- Keep the horizontal chain top-aligned when restoring an older tall window.
+- Show popup choices directly instead of nesting a single named picker submenu.
+- Restore Roger beep directly below Effect in the compact Transmitter Source panel.
+
 ## [2026.0928_004] — 2026-09-28
 
 ### Changed

@@ -36,6 +36,17 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0928_005
+
+- **Horizontal TX Audio Chain.** Upright stage cards, left-to-right arrows,
+  inset values and section navigation; rack units follow the same direction.
+- **Compact transmitter fixes.** Effect choices open directly, and Roger beep
+  appears immediately below Effect. Digital-profile forced bypasses display correctly.
+- **Consistent auxiliary styling.** Shared console typography, compact measurement
+  headings and themed update notes. Existing TX interlocks and DSP remain intact.
+- **Validation.** Debug/Release builds, 2,021 tests (five intentional skips),
+  presentation/control smokes and Demo UI checks passed. No RF was transmitted.
+
 ## New in 2026.0928_004
 
 - **Aether-inspired native UI.** Blue-gray panels, cyan accents, narrow headings,
