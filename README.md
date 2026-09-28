@@ -19,7 +19,8 @@ For the complete release history, read the [**CHANGELOG**](CHANGELOG.md).
 
 The **console layout** is the default since 2026.0927_001: dense
 instrument-style receiver and transmitter banks beside a dominant waterfall,
-six interface palettes, and a bottom workspace. The classic layout is still
+a choice of interface palettes, and a bottom workspace. Aether Dark is now the
+default for fresh settings; existing palette preferences are preserved. The classic layout is still
 there under View → Appearance → Console Layout (untick it).
 The [UI design brief](docs/UI_DESIGN.md) and
 [implementation roadmap](docs/UI_IMPLEMENTATION_ROADMAP.md) describe the goal.
@@ -34,6 +35,18 @@ on-air QSOs are in the log (WU1T ↔ KA3MAJ, W8NGA, KN1B and KJ5DZV, FT8, 40 m, 
 ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
+
+## New in 2026.0928_004
+
+- **Aether-inspired native UI.** Blue-gray panels, cyan accents, narrow headings,
+  inset values and compact controls extend through the console and auxiliary
+  windows. Native macOS menus, radio behavior and TX interlocks are retained.
+- **UI fixes.** EQ keyboard adjustment, stable Audio Unit fallback controls,
+  readable TX policy rows, horizontally scrollable Speaker Tracker events, and
+  scrollable long configuration forms.
+- **Validation.** 2,021 regression tests, five intentional skips, zero failures;
+  native-control and presentation checks passed. Some integration/device windows
+  still need manual visual checks; no new live-radio validation is claimed.
 
 ## New in 2026.0928_003
 

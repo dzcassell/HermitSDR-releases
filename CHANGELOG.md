@@ -7,6 +7,36 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0928_004] — 2026-09-28
+
+### Changed
+- Add an offscreen production-control smoke test for numeric bindings, Float
+  conversion, native step snapping, disabled state and accessible labels.
+- Extend Aether-style chrome across auxiliary windows, group boxes, menus,
+  fields, toggles, DSP numeric tracks and full TX controls. Native menu behavior,
+  radio/DSP paths, existing palettes and the previous layout are preserved.
+- Add an agent-facing UI inventory, reference mapping and validation checklist.
+
+- Aether Dark is the default palette for fresh settings. The native console now
+  uses blue-gray surfaces, cyan accents, narrow applet headers, boxed readouts,
+  compact tuning groups and rectangular workspace tabs. Existing palettes and
+  the previous layout remain selectable. Tuning, waterfall panning and all TX
+  actions/interlocks retain their existing implementations.
+
+### Fixed
+- Keep long station/streaming configuration windows scrollable as mappings,
+  destinations and diagnostics expand, rather than growing beyond the display.
+- Keep Speaker Tracker diagnostics on a separate row and make its event table
+  horizontally scrollable, preventing clipped columns and extremely tall rows.
+- Keep Audio Unit fallback slider identity stable while refreshing values, so
+  keyboard focus and dragging are not reset every second.
+- Give RX/TX EQ faders keyboard adjustment and reject edits while disabled.
+- Prevent TX policy labels wrapping into single characters beside gain sliders.
+- Clarify why the sub-receiver is unavailable in Demo mode or IQ replay.
+
+- Clarify a Kenwood CAT documentation comment so the tuning-source regression
+  scanner does not mistake shorthand prose for an unguarded call. No CAT code changed.
+
 ## [2026.0928_003] — 2026-09-28
 
 ### Fixed
