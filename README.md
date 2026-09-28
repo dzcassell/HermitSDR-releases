@@ -36,6 +36,17 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0928_006
+
+- **Compact TX Controls.** Status, ARM/PTT/Tune/two-tone and shortcuts share
+  one pinned row. Fixed-width buttons and normal UI fonts replace the oversized
+  pixel-lettered controls; timing fields fit together with their safety guidance.
+- **YouTube Streaming.** Restored this name in the Station menu, window and
+  feature catalog. Existing settings and other streaming destinations are retained.
+- **Validation.** Debug/Release builds and 2,021 tests (five intentional skips)
+  passed; the compact header was inspected in Demo at multiple widths. No RF
+  was transmitted and existing TX interlocks are unchanged.
+
 ## New in 2026.0928_005
 
 - **Horizontal TX Audio Chain.** Upright stage cards, left-to-right arrows,

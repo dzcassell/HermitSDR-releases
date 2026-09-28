@@ -7,6 +7,18 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0928_006] — 2026-09-28
+
+### Fixed
+- Restore the YouTube Streaming name in the Station menu, window, feature catalog
+  and help text, retaining existing streaming settings and destinations.
+
+### Changed
+- Compact the TX Controls header into one pinned row with bounded PTT/Tune/test
+  buttons, a shared-font status badge, smaller frequency readout and normal log
+  button. Combine native digital timing controls to save vertical space without
+  changing commands, settings or TX interlocks.
+
 ## [2026.0928_005] — 2026-09-28
 
 ### Changed

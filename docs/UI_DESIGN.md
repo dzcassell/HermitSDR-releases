@@ -1,4 +1,4 @@
-> **Current direction (2026.0928_005):** AetherSDR is the visual reference,
+> **Current direction (2026.0928_006):** AetherSDR is the visual reference,
 > replacing the earlier Bitwig/Ableton comparisons below. The native console is
 > the default, with the previous layout still selectable. Shared blue-gray
 > panels, cyan accents, inset fields, compact controls and narrow titles now
@@ -6,6 +6,8 @@
 > TX Audio Chain uses upright cards in left-to-right processing order, with
 > arrows, horizontal scrolling and section navigation. Effect choices open
 > directly; Roger beep sits below Effect in the compact Transmitter panel.
+> Full TX Controls now uses a single compact operate row with fixed-width
+> buttons and shared typography. The Station entry is named YouTube Streaming.
 > The older text below records the earlier design phase.
 
 # HermitSDR console UI design
