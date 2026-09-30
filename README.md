@@ -36,6 +36,22 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0930_001
+
+- **Fix for the crash shortly after connecting.** With paired LAN CAT enabled,
+  the previous version's idle-client timer triggered a Swift thread-isolation
+  assertion after ten seconds. The callback now runs correctly on the CAT queue;
+  pairing, idle cleanup and transmitter interlocks keep their existing behavior.
+- **Regression coverage.** A test runs the production timer through four ticks
+  and checks that unpaired idle peers expire while paired/local peers survive.
+  It reproduces the crash with the old code. All 2,165 tests (five intentional
+  skips), Debug/Release builds, 50 optimized CAT tests and the performance
+  benchmark passed. Physical radio reception remains an operator check;
+  reproducing and fixing this fault requires no RF.
+- **Verified download.** Signed and notarized; checksums, Gatekeeper and
+  stapled tickets independently checked. VirusTotal: 0/75 engines flagged.
+  The exact signed app also passed a 20-second isolated launch check.
+
 ## New in 2026.0929_001
 
 - **AM, SAM and DSB filters to 20 kHz (#158).** The filter slider runs to

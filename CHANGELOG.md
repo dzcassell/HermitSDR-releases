@@ -7,6 +7,27 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [Unreleased]
+
+### Documentation
+
+- Record the reproduced CAT timer crash, local regression/build results and
+  independently verified 2026.0930_001 release, scan and website publication.
+
+## [2026.0930_001] — 2026-09-30
+
+### Fixed
+
+- **Crash shortly after connecting with paired LAN CAT enabled (#162).**
+  The idle-client timer introduced in 2026.0929_001 inherited main-actor
+  isolation but fired on the CAT background queue, causing a Swift runtime
+  trap on its first ten-second tick, even without a CAT client connected.
+  Its callback is now explicitly Sendable. Pairing, idle-client cleanup and
+  transmit interlocks retain their existing behavior.
+- A regression keeps the production timer running through four ticks and
+  verifies that idle unpaired LAN peers expire while paired and loopback
+  peers remain. The same test reproduces SIGTRAP against the previous code.
+
 ## [2026.0929_001] — 2026-09-29
 
 Overnight issue sweep, bug sweep and release. Everything here was built
