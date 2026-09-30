@@ -36,6 +36,25 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0930_002
+
+- **GPT-6.1 Sol codebase audit.** Repository-wide builds, static analysis,
+  audit and regression checks, plus focused source review. This is a software
+  sweep; physical radio/RF and live external services were not exercised.
+- **Recording and streaming fixes.** Serialize Wave Editor recording saves
+  and retain failures; discard stale TCI/Kenwood listener callbacks; resume
+  queued overlay AAC after its HTTP header; handle joined and fragmented
+  Icecast response headers.
+- **Reduced audio contention.** Coalesce TCI burst scheduling into one pending
+  drain and move recording interpolation outside the producer FIFO lock.
+- **Validation.** 2,170 tests, five intentional skips, zero failures;
+  focused AddressSanitizer/ThreadSanitizer, Debug/Release builds, 37 smoke
+  checks and a 10-second optimized benchmark against a 30-second gate.
+- **Verified download.** Signed and notarized; public checksums, signatures,
+  Gatekeeper, stapled tickets and matching ZIP/DMG app contents independently
+  checked. VirusTotal: 0/75 engines flagged. The exact signed app passed a
+  20-second launch with isolated preferences and networking denied.
+
 ## New in 2026.0930_001
 
 - **Fix for the crash shortly after connecting.** With paired LAN CAT enabled,

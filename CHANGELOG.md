@@ -9,8 +9,51 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.0930_002] — 2026-09-30
+
+### Checked
+
+- **The entire codebase was checked with the new GPT-6.1 Sol model (#163).**
+  This run combines repository-wide build/static analysis and regression
+  checks with focused source review of recording, network lifecycle and
+  audio streaming. Physical radio/RF behavior and live external services
+  were not exercised; this is not a claim that every source line was
+  manually reviewed or that no bugs remain.
+
+### Fixed
+
+- Wave Editor recording finalization now serializes close, rename and
+  cancellation, and preserves errors for every caller. Concurrent saves
+  no longer race to publish the same partial file.
+- Old TCI and Kenwood CAT listener callbacks can no longer stop a replacement
+  listener, publish obsolete events or admit peers after shutdown. Kenwood
+  receive callbacks also discard data from disconnected peers. TCI Network
+  callbacks enter through the actor scheduler, removing peer-state access
+  reports reproduced under ThreadSanitizer.
+- Overlay AAC queued during the HTTP handshake now flows as soon as the
+  response header finishes sending, without waiting for another audio frame.
+- Icecast handles joined or fragmented interim/final HTTP responses without
+  dropping response bytes or prematurely accepting an incomplete header.
+- Correct the coarse Wave Editor peak test to check each column's actual
+  sample rather than an unrelated random sample.
+
+### Optimized
+
+- TCI audio bursts schedule one pending drain instead of one dispatch task
+  per block, while retaining the bounded newest-audio queue and loss count.
+- Wave Editor interpolation and output allocation run outside the producer's
+  FIFO lock, reducing contention with the real-time recording tap.
+
+### Added
+
+- Deterministic production-owner regressions for TCI/Kenwood listener restart
+  and overlay AAC delivery, plus recorder, TCI burst and Icecast regressions.
+  The new owner smokes run in CI and the extended sanitizer workflow.
+
 ### Documentation
 
+- Add the sweep report and revised concurrency ownership record; track
+  remaining WebKit/vendored-DSP analyzer diagnostics in #164.
 - Record the reproduced CAT timer crash, local regression/build results and
   independently verified 2026.0930_001 release, scan and website publication.
 
