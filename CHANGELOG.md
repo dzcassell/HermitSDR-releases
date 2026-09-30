@@ -7,6 +7,356 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.0929_001] — 2026-09-29
+
+Overnight issue sweep, bug sweep and release. Everything here was built
+without a hand on hardware; the "Verified live" paragraph at the end says
+what was exercised on the SquareSDR 2 and what was not. Nothing that touches
+the transmit path landed: the transmit-side findings of the sweep are staged
+on `stage/tx-safety-sweep` and tracked in #161.
+
+### Added
+
+- **AM, SAM and DSB filters to 20 kHz (#158).** The filter slider for AM, SAM
+  and DSB now runs to 20 kHz, with 12, 16 and 20 kHz presets beside the
+  existing ones. Above 11 kHz the receiver keeps a 24 kHz IF through the
+  detector and the audio stages, so the speakers get audio out to half the
+  filter width — 10 kHz from a 20 kHz channel — rather than a wider filter
+  feeding the same 6 kHz of audio. Widths up to 11 kHz are unchanged, sample
+  for sample. C-QUAM stereo, NRSC de-emphasis, RX EQ, AGC and squelch all run
+  on the wide path; noise reduction, auto-notch and Audio Unit inserts are
+  voice-band tools and are bypassed while it is active, which the filter
+  popover says. Decoders, recordings, streams and remote audio stay at
+  12 kHz, fed an anti-aliased copy.
+- **TCI server, receive-only (#125 milestones 1–3).** Digital-mode programs
+  and loggers that speak Expert Electronics' TCI can connect to
+  `ws://127.0.0.1:50001` for frequency, mode, filter width, RIT, split,
+  volume and mute; signal-level reports; receiver audio at 8, 12, 24 or
+  48 kHz (float32 or 16/24/32-bit integer, one or two channels); and spots,
+  which appear on the panadapter with the DX cluster's and are removed by the
+  program's own `spot_delete` / `spot_clear`. Settings ▸ CAT ▸ TCI server,
+  off by default, loopback only, up to eight clients. Tuning goes through
+  the same gate as CAT, so the dial lock and transverter ranges apply.
+  Nothing sent over TCI can transmit: `trx`, `tune`, `drive`, XIT changes,
+  transmit audio and every `tx_` / `cw_` command are refused; the client is
+  told `receive_only:true` and reads `trx:0,false` back. Refusals are counted
+  in Settings and logged under `cat-audit`. `docs/TCI.md` lists the supported
+  and refused commands, the audio frame layout and the sources the wire
+  format was checked against (the TCI Protocol v2.0 document, a recorded
+  ExpertSDR3 handshake, two other servers and two clients). No third-party
+  TCI client has been connected yet.
+- **Kenwood CAT over a serial port (#126).** *Settings ▸ CAT ▸ Kenwood CAT ▸
+  Serial port for apps on this Mac* creates a pseudo-terminal that software
+  which can only open a serial port uses as the radio: give it the path shown
+  (`~/Library/Application Support/HermitSDR/CAT/kenwood-tty`). The port is raw
+  from the first byte, each client that opens it gets a fresh session, and
+  the path disappears when the switch goes off. Apps that pick their port
+  from a list of hardware devices will not list it. A *Serial device* picker
+  does the same over a real USB-serial adapter (4800–115200 baud) for band
+  decoders and amplifier controllers, and retries every five seconds if the
+  adapter is unplugged. Not yet tried with a real logger or adapter.
+- **Kenwood CAT on the LAN (#126).** *Reach* chooses who may connect over
+  TCP: this Mac only (the default), the LAN with pairing, or the LAN without.
+  Only private addresses are ever admitted. With pairing a LAN client may
+  read at once and must send `HSPAIR` followed by the code from Settings
+  before it can tune; a wrong code closes the connection and the third
+  starts a one-minute cool-down. The unpaired setting is for loggers that
+  cannot send the code and carries the same red warning as rigctl's.
+- **More Kenwood commands, all receive-side (#126):** `RT` `RC` `RU` `RD`
+  (RIT), `AG0` and `ZZAG` (volume), `ZZSM0` (PowerSDR S-meter), `ZZSP`
+  (split). `IF` now carries the RIT offset and the RIT/XIT flags, and `KS`
+  reports the keyer's own speed. Keying (`TX`, `RX`, `KY`, `ZZTX`) is still
+  refused on every transport and at every trust level.
+- **Control API revision 1 (#122):** `setVFOB` sets VFO B, `setFilterPreset`
+  picks one of the widths the mode offers, `welcome.radio.filters` lists
+  those widths and the range per mode, and the state gains `filterPreset`.
+  `welcome.apiRevision` says which additions a server understands;
+  `apiVersion` stays 1 and version-1 clients are unaffected. The Python
+  reference client gained `--vfo-b` and `--filter-preset` and prints the
+  presets. Transmit messages are refused exactly as before.
+- **RFSpace NetSDR: 2 MHz span (#140).** The rate picker offers 1536 k on
+  NetSDR sessions. The radio runs at its 2 MHz maximum (80 MHz / 40), which
+  exists only in 16-bit mode, and a 96/125 polyphase stage brings it to the
+  1536 k chain rate. The 25/24 rates up to 768 k stay 24-bit. Signal levels
+  read the same in both depths. Verified on loopback fixtures only — the lab
+  unit has not been run at 2 MHz.
+- **RFSpace NetSDR: frequency calibration (#142).** Settings ▸ RFSpace NetSDR
+  shows the A/D clock value the radio holds (control item 0x00B0) and can
+  measure a standard-frequency carrier (WWV 2.5–25 MHz, CHU 3.330 / 7.850 /
+  14.670 MHz): it tunes USB 1 kHz below the reference, listens for eight
+  seconds, measures the carrier to a few hundredths of a hertz and puts the
+  dial back. Receive only. Storing the corrected value, or restoring the
+  nominal 80,000,000 Hz, is a separate step behind a confirmation, because
+  the radio keeps the value across power cycles. A single measurement may
+  move the clock by at most 50 ppm and the stored value stays within
+  ±100 ppm of nominal. With a reflock board fitted the section says the
+  calibration is unnecessary. Never exercised on a radio — see Changed for
+  the lock on the write step. The codec also understands the DC-offset
+  calibration item (0x00D0); no control in the window yet.
+- **Speaker Tracker: jump to an over (#119).** Each row has a ↺ button that
+  retunes to the over's frequency and mode and rewinds the RF time machine to
+  two seconds before it began. The over is replayed from the IQ history; the
+  tracker still keeps no audio. The button is dim, and says why, when the
+  history was replaced since the over began, when the over has aged out, when
+  it was itself heard from a recording or a rewind, or when the time machine
+  is unavailable (not connected, a recording playing, sub-receiver on). When
+  only the start of the over has left the history the jump lands on the
+  oldest buffered RF and says so.
+
+### Changed
+
+- **NetSDR clock-calibration writes are locked in this release.** Reading the
+  stored value and measuring against WWV/CHU work; the *Store* and *Restore
+  nominal* buttons stay disabled until the workflow has been validated on a
+  NetSDR, because the value is non-volatile in the radio and the correction's
+  sign has only been checked against a loopback fixture.
+  `defaults write com.hermitsdr.app netsdrCalibrationWrites -bool YES`
+  unlocks them for that bench session.
+- The usage-statistics service on hermitsdr.com was hardened (see Fixed) and
+  redeployed.
+
+### Fixed
+
+- Kenwood CAT settings: the serial-device row was wider than the Settings
+  window and pushed the whole column off its left edge; it is now two rows.
+
+
+#### Crashes found before release
+
+- A change made during this sweep (keeping the IQ inlet across a mid-stream
+  rewire, below) made the receive DSP thread overflow its stack about 25 s
+  into a live session. Caught on the SquareSDR before anything shipped; it
+  never reached a release. The cause is general enough to name: a closure
+  held directly as a lock's state is re-wrapped on every access, two frames
+  deeper each time.
+- **The same pattern was already in shipped code.** The audio-listener
+  pipeline (`/stream.aac`, HLS and Icecast, since 2026.0927_007) read such a
+  callback on every AAC frame and would have crashed the app after a few
+  minutes with listeners connected; the Audio Unit fault sink had it too.
+  Both are boxed now, and a documentation test refuses the pattern anywhere
+  in the sources.
+
+#### Panadapter, tuning and display
+
+- Dragging the waterfall toward 0 Hz no longer crashes: the pan asked the radio
+  for a negative centre when the tuned station sat in the bottom few hundred
+  kHz of a wide span (600 kHz AM on a 1536 kHz span). The centre now stops at
+  0 Hz and at the radio's top frequency, and a drag never moves the span
+  backwards when the dial is parked at the very edge with a wide filter.
+- A held ◀ ▶ step button stops when its header disappears under the pointer
+  (layout switch, the connect sheet after a lost radio) and after a minute at
+  most; it used to keep stepping the dial with nothing held.
+- The sub-receiver's green passband fill is clipped to the window like the main
+  passband and the TX footprint, so a filter wider than the zoomed view no
+  longer stretches the frequency scale.
+- Rows waiting to be drawn slide with the waterfall during a drag-pan instead of
+  landing a few bins off at the top, and the spectrum trace follows at once.
+- The second waterfall texture used while panning is released two seconds after
+  the drag (it could hold as much GPU memory as the waterfall itself).
+- The resize and closed-hand cursors are restored when the AGC threshold line or
+  the spectrum goes away mid-hover or mid-drag.
+
+#### Radio link and receiver engine
+
+- An ANAN that goes silent (power cycle, or another program's discovery probe
+  taking the session) is recovered by the stream watchdog: the restart now
+  re-establishes command ownership with one discovery probe before the
+  bring-up. It used to repeat the bring-up every ~1.7 s at 0 pkt/s while the
+  header still read connected, because the firmware ignores commands from a
+  host it has not seen a probe from. Test-verified only; the ANAN was offline.
+- Starting or stopping an IQ recording, the Band DVR or Remote Access
+  mid-stream no longer drops up to one DSP batch (about 5 ms) of IQ from the
+  receiver, the time machine and the recording itself.
+- Time-machine bookmarks expire, and a rewind returns to live, when the stream
+  had a hole the radio link made itself (a watchdog restart, a keyed PureSignal
+  capture). They used to replay off by the length of the hole and still look
+  valid.
+- A Protocol 2 radio with an unreviewed board or old firmware (receive-only
+  profile) streams after Connect; it connected without an error and never
+  delivered IQ.
+- The discovery socket is stored and released on the discovery queue, closing a
+  narrow race between Release/Set IP and Connect.
+- **NetSDR rate change while streaming.** After the link paused a capture to
+  change rate (or input) and started the next one, packets of the old
+  capture still in the socket buffer were resampled as if they belonged to
+  the new rate. The link now holds packets back until the radio's
+  capture-start sequence 0 arrives (or 0.5 s has passed, in case that packet
+  was lost) and always drops packets of the other bit depth. The first start
+  after connect is unaffected.
+
+#### Decoders
+
+- FT8/FT4 decodes are no longer stamped with the previous band's frequency
+  after a retune in the middle of a slot: a capture is dropped when the dial
+  moves more than 5 Hz, and decoding resumes at the next slot boundary. Labels,
+  the log and PSKReporter spots came from the old carrier before.
+- An FT8, FT4 or JS8 slot whose audio stopped part-way (disconnect, replay
+  pause) is abandoned instead of being completed minutes later with unrelated
+  audio under the old slot time.
+- The FT8 station-clock estimate uses the correction that was in force when each
+  slot's capture started. The once-a-second tick could move the correction in
+  mid-slot and the next measurement then overshot (0.30 s read as 0.50 s).
+- Rewinding the RF time machine now moves the slot clock of JS8, WSPR, JT9, JT65
+  and Q65 as well as FT8/FT4, so a replayed slot decodes under its own time, and
+  RF Vision starts new regions instead of keeping the live ones listed over
+  historical signal.
+- The CW decoder's noise floor can no longer settle at exactly zero after
+  digital silence, which left its signal gate open until the decoder was
+  switched off and on.
+- A demodulated block containing a NaN or an infinity is dropped before it
+  reaches the decoders; one such block used to silence every enabled decoder
+  until it was re-enabled.
+- **Speaker Tracker times follow the clock, not the sample count (#119).**
+  An over heard after a disconnect, a paused stream or audio dropped under
+  load was dated too early, by the length of the gap. Times are now taken
+  from when the audio arrived.
+- Speaker Tracker: channel statistics of the wrong length in a hand-edited or
+  damaged store start over instead of indexing out of bounds.
+
+#### Remote control, viewer chat and streaming
+
+- Viewer chat commands are refused whenever the transmitter is armed, keyed,
+  tuning, in its unkey tail or held by native FT8/JS8/beacon — not only while
+  keyed. An armed station keys by itself at the next slot, and a viewer's
+  `!freq` could choose the frequency it transmitted on. The viewer is told
+  "The operator has the transmitter armed — viewer tuning is paused".
+- Control API tuning commands (`tune`, `tuneStep`, `setBand`, `setMode`,
+  `swapVFO`, `setVFOB`) are refused while the shack is keyed, RF-hot or
+  between the frames of a native FT8/JS8 program. An armed but idle shack
+  still tunes, so a remote FT8 session keeps working.
+- **A refused Control API client could lose the reason (#141).** The server
+  closed its socket as soon as it had sent its refusal and close frame. A
+  WebSocket client answers a close frame with its own; when that answer met
+  the closed socket the connection was reset and the client's stack threw
+  the refusal away before the application read it — the client saw "socket
+  is not connected" instead of `revoked`, `auth_failed` or `cooldown`. The
+  server now waits (up to five seconds) for the client's close. This was
+  the Thread Sanitizer failure in CI's Control API smoke: under load 25
+  refusals in 900 were lost before the change, none in 1,200 after.
+- YouTube viewers are recognised by their channel ID instead of their display
+  name, and YouTube chat moderators are recognised as moderators. A viewer who
+  copies an allow-listed display name no longer gains its privileges; for
+  YouTube the allow list takes channel IDs (shown in brackets in the Activity
+  log). Twitch login names work as before. Cooldowns follow the account
+  through a rename.
+- Replies to refused commands and `!help` are limited to one per viewer every
+  30 seconds and one every 3 seconds overall, so a viewer typing nonsense
+  commands can no longer make the bot answer every line. Every line is still
+  logged in the window.
+- Viewer commands on YouTube are read when Viewer Commands is on, even with the
+  crab co-host off (the chat was only polled for the co-host).
+- `!zoom` during a zoom animation no longer over-steps, and can never step the
+  sample rate.
+- Saving stream keys, the Google client secret or the Mastodon/Bluesky tokens
+  writes only the fields you changed. After a Keychain read that failed at
+  launch, the next Go Live used to delete the stored keys.
+- An idle launch no longer reads the Keychain for the streaming and social
+  accounts: the usage heartbeat, the OBS overlay and Auto-Clips read the
+  stream status without building the streaming service, and the social tokens
+  are read when the window opens or a post trigger fires.
+- Live audio for `/stream.aac` listeners and Icecast is handed over in encoder
+  order (a burst of frames could arrive shuffled).
+- The overlay server drops a connection that has not sent a complete request
+  within 10 seconds, so idle connections cannot fill all sixteen slots.
+- `HEAD` requests to the overlay server get headers only; a player's `HEAD`
+  probe of `/stream.aac` no longer becomes a permanent listener.
+- The shack cam picture disappears two seconds after the camera stops
+  delivering frames instead of freezing on the last one.
+- A streaming destination that attaches while the encoder is producing gets
+  its codec headers before any media.
+- Discord interaction and webhook tokens are redacted from the system log.
+- Stopping a YouTube account-mode start during the silent sign-in refresh no
+  longer opens the browser consent page afterwards.
+- None of the streaming changes has run against a real service or camera;
+  they are covered by tests and the production-code smokes.
+
+#### Settings, files and lifecycle
+
+- Quitting with the main window closed and another window still open now
+  releases the radio and saves the last settings. The clean-quit steps lived
+  inside the main window, so closing it first left an ANAN "in use", lost the
+  final settings and reported an unclean exit.
+- A saved or exported time-machine buffer recorded through a transverter
+  replays on the RF dial it was heard on, like a normal IQ recording, instead
+  of on the radio's IF.
+- Seeking inside an IQ recording made through a transverter lands on the
+  right samples (it was 12 bytes early, which swaps I and Q), and the Band DVR
+  shelf lists such files with their true length.
+- Starting the app with paired LAN CAT enabled no longer waits on the
+  Keychain: CAT comes up for this Mac at once and opens to paired LAN clients
+  a moment later.
+- A CAT port that is busy at launch no longer switches the CAT server off in
+  your saved settings. The error is shown; the preference stays.
+- LAN CAT clients can no longer take every connection: this Mac's own
+  programs have their own eight slots, and a LAN client that has not paired
+  and stays silent for 30 seconds is disconnected.
+- The Meeting Share passcode is kept in the Keychain, and a passcode inside a
+  pasted Zoom link is no longer written to settings. Existing values move
+  over the first time the window opens.
+- Usage-statistics server: malformed dates, identifiers and numbers are
+  rejected at the door, and one bad stored row can no longer stop the
+  dashboard from loading. Deployed to hermitsdr.com with a self-test.
+- Release script: a Gatekeeper rejection now fails the release instead of
+  printing "Distributable ready"; the launch check explains a failed start
+  instead of exiting silently, and runs with a scratch home folder so it
+  cannot overwrite the installed app's settings.
+
+#### Logbook, cluster and station tools
+
+- LoTW confirmation downloads parse again: every real report ends with a bare
+  `<APP_LoTW_EOF>` marker that the ADIF reader rejected, so no confirmation was
+  ever applied. The marker is accepted only in LoTW reports and never stands in
+  for a missing end-of-record. Checked against the documented report format,
+  not a fresh download.
+- Portable callsigns show the country they are operating from: `W4/DL1XYZ` is
+  the United States and `F/DL1XYZ` is France in spot labels, rarity flames and
+  the crab's callsign lookups (both used to read Germany). `/P`, `/M`, `/QRP`
+  and call-area suffixes are ignored; `/MM` and `/AM` stations belong to no
+  country.
+- DX spots can be posted on a quiet or heavily filtered cluster node: the
+  node's greeting now counts as a completed login instead of waiting for the
+  first spot to arrive.
+- Stream Deck "open URL" keys open web links (http/https) only; a layout can no
+  longer launch a local file or another app's custom link.
+- A damaged country-file download (a captive-portal or proxy page) is never
+  cached, and an unusable cached file falls back to the built-in copy and is
+  refreshed at once instead of degrading country lookups for a week.
+- Wave Editor recordings keep their samples in order when stopping coincides
+  with a background write, and finishing a recording replaces an existing file
+  in one step.
+- A MIDI pad or pedal that reports pressure as a stream of controller values
+  fires its button once per press instead of once per value.
+- The WAV reader rejects files whose header claims an impossible frame layout
+  or tens of thousands of channels.
+
+#### Windows (#160)
+
+- **TX EQ A/B row no longer wraps inside its labels.** At narrow widths the
+  row takes a second (or third) line of whole controls.
+- **MIDI Controller: an encoder mapped to tuning no longer overhangs the
+  window.** The row's fixed-width pickers add up to about 830 points in a
+  640-point window; the action and step now move to a second line.
+
+### Verified live
+
+On the SquareSDR 2 with the 40 m dipole, receive only, TX SAFE throughout:
+drag-to-pan with the NCO following at ×1 on a real Protocol 1 radio (signal
+columns stayed aligned through 500 px drags each way, no sequence errors);
+zoom-out stepping the sample rate 96 → 192 → 384 kHz with a clean waterfall;
+and wide AM/SAM at 20 kHz on a 41 m broadcaster — a recording of the mixer
+output shows programme energy to 9.5 kHz that is absent at 10 kHz and
+narrower, AM and SAM within ±3 dB of each other above 6 kHz, and clean
+hand-overs across 11 kHz in both directions. Also on that session, with
+scripted clients rather than real programs: the TCI server's init burst,
+`vfo` moving the dial, `trx`/`tune` refused, sensor reports and 12 kHz audio
+frames; and the Kenwood pseudo-terminal answering `FA`/`MD`/`IF`, moving the
+dial on `FA`, refusing `TX`/`ZZTX1`/`KY`, and serving a client that closed
+and reopened the port. Not exercised tonight: the ANAN and the NetSDR (both
+offline — every ANAN and NetSDR change above is test-verified only), TCI and
+Kenwood with real logging or digital-mode programs, Kenwood over a real
+serial adapter or the LAN, any streaming service, a fresh LoTW download, and
+the transmit-side fixes, which remain staged (#161).
+
 ## [2026.0928_006] — 2026-09-28
 
 ### Fixed

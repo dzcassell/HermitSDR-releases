@@ -36,6 +36,41 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+## New in 2026.0929_001
+
+- **AM, SAM and DSB filters to 20 kHz (#158).** The filter slider runs to
+  20 kHz with 12/16/20 k presets; above 11 kHz the receiver keeps a 24 kHz
+  path through the detector and audio stages, so the speakers get audio to
+  half the filter width. Verified on a 41 m broadcaster with the SquareSDR 2.
+- **TCI server, receive-only (#125).** Digital-mode programs and loggers that
+  speak Expert Electronics' TCI connect to `ws://127.0.0.1:50001` for
+  frequency, mode, filter, RIT, split, volume, signal reports, receiver audio
+  and spots. Every transmit command is refused. Settings ▸ CAT.
+- **Kenwood CAT over a serial port and the LAN (#126).** A pseudo-terminal
+  port for loggers that only speak serial, an optional real serial device,
+  and a LAN reach with pairing. Still receive-only.
+- **Control API revision 1 (#122)**: VFO B and filter presets; tuning is
+  refused while the shack is keyed, RF-hot or between native FT8 frames.
+- **NetSDR**: 2 MHz span in 16-bit mode (#140) and a receive-only frequency
+  calibration measurement against WWV/CHU (#142; writing to the radio stays
+  locked until validated on hardware). Test-verified only — the unit was
+  offline.
+- **Speaker Tracker**: jump to an over from its row via the RF time machine
+  (#119); event times now follow the clock.
+- **Bug sweep**: about fifty fixes across the radio link, decoders, remote
+  control and viewer chat, streaming, settings, files and station tools —
+  including a crash when drag-panning toward 0 Hz, a stack-overflow class in
+  callbacks held inside locks (which would have crashed the app after a few
+  minutes with audio listeners on), FT8 spots stamped with the wrong band
+  after a mid-slot retune, LoTW reports that could never be parsed, portable
+  callsigns resolving to the home country, and viewer-chat commands accepted
+  while the transmitter was armed. Full list in CHANGELOG.md.
+- **Validation.** 2,164 tests (five intentional skips) passed, every smoke,
+  audit and benchmark; live receive checks on the SquareSDR 2 (drag-to-pan
+  with NCO retune, zoom-out rate stepping, wide AM/SAM, TCI and Kenwood over
+  scripted clients). No RF was transmitted; transmit-side fixes from the
+  sweep are staged for review, not shipped.
+
 ## New in 2026.0928_006
 
 - **Compact TX Controls.** Status, ARM/PTT/Tune/two-tone and shortcuts share
