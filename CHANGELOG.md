@@ -9,6 +9,11 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+### Documentation
+
+- Record independently verified 2026.0930_002 publication, clean final-DMG
+  scan, isolated signed-app launch, public documentation and website update.
+
 ## [2026.0930_002] — 2026-09-30
 
 ### Checked
