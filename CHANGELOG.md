@@ -7,7 +7,27 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
-## [Unreleased]
+## [2026.1002_001] — 2026-10-02
+
+### Changed
+
+- Redesign the upper console strip with tunable digital frequency numerals,
+  mode-specific filter presets and calibrated power/SWR scales. Narrow
+  windows can scroll the strip.
+- Add 30 frequency display styles: 24 variations from the supplied fonts
+  and six earlier designs. Native color pickers independently adjust the
+  main digits and the final three digits; font/color choices persist.
+- Import custom `.ttf` frequency fonts, with private copies that survive
+  moving the original file and checks for digits and a decimal point.
+- Add **Provide Feedback** beside Ask the Crab and in Help: complaints,
+  issues, praise, feature requests and other feedback, optional contact
+  email/app versions, validated fields and local JSON draft export.
+- Add explicit feedback delivery with matching receipts and manual retries
+  from a private local outbox. Include a separate server endpoint and
+  authenticated dashboard inbox with read/unread, completed status and
+  internal notes. **Server delivery remains unavailable until configured
+  and deployed**; no automatic background retries or telemetry identifier
+  accompany a report.
 
 ### Documentation
 

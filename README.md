@@ -36,6 +36,27 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
+Current version: **2026.1002_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1002_001
+
+- **Customizable digital frequency display.** Choose among 30 styles, including
+  native and slanted supplied fonts; pick separate colors for the main digits
+  and final three digits, or import your own `.ttf`. Choices persist.
+- **Redesigned upper console strip.** Digital numerals, mode-specific filter
+  presets and calibrated power/SWR scales; narrow windows can scroll the strip.
+- **Provide Feedback.** A form beside Ask the Crab accepts complaints, issues,
+  praise, feature requests and other feedback, with optional contact email and
+  app versions. Save a local JSON draft. Delivery and the private dashboard
+  inbox are implemented but remain unavailable until the server is configured
+  and deployed; reports do not send automatically.
+- **Verified download.** Signed, notarized and stapled; downloaded checksums,
+  Gatekeeper, signatures and matching ZIP/DMG app contents independently checked.
+  VirusTotal: 0/75 engines flagged. The exact signed app passed an isolated
+  launch with networking denied; all 30 font styles and custom-font checks pass.
+- **Validation.** 2,170 regression tests, five intentional skips, zero failures;
+  complete Debug/Release builds and a 9-second benchmark against a 30-second gate.
+
 ## New in 2026.0930_002
 
 - **GPT-6.1 Sol codebase audit.** Repository-wide builds, static analysis,
@@ -912,6 +933,13 @@ Ask The Crab can use on-device or explicitly configured providers; selected
 cloud providers receive submitted prompts/audio. The "Check for Updates" feature
 contacts GitHub to read the public releases list — the same data this
 page shows.
+
+**Provide Feedback** sends only after an explicit Send action when server
+availability is enabled. The report contains the category, subject and message,
+plus optional contact email and app/macOS versions. It carries no telemetry
+identifier, radio data, callsign, frequency, audio or logs. Failed sends retain
+one private local outbox copy for manual retry or discard; there are no automatic
+background retries. Delivery remains unavailable until server deployment.
 
 ## What's next
 
