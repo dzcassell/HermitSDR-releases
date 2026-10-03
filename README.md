@@ -36,7 +36,25 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1002_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1003_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1003_001
+
+- **Black instrument faces.** Solid black backgrounds for the frequency
+  readout and RF power/SWR meters keep the digits and scales clear.
+- **S-meter under the frequency.** A calibrated ruled LED bar matches the
+  power/SWR style and shows S-units plus dBm. It replaces the console tuning
+  ribs and header meter; digit click/scroll, typed entry and step buttons remain.
+- **Direct mode buttons.** USB, LSB, CW, AM, SAM, FM, NFM and DSB are exposed
+  beside the filter presets, with the current mode highlighted.
+- **Clearer UTC clock.** Larger amber digital numerals across interface palettes.
+- **Verified download.** Signed, notarized and stapled; public hashes,
+  Gatekeeper, signatures and matching ZIP/DMG app contents independently checked.
+  VirusTotal: 0/75 engines flagged. The exact signed app passed an eight-second
+  launch with scratch preferences and networking denied.
+- **Validation.** 2,170 regression tests, five intentional skips, zero failures;
+  complete Debug/Release builds, native Demo checks and a 10-second optimized
+  performance smoke against a 30-second gate. No live radio/RF session.
 
 ## New in 2026.1002_001
 

@@ -7,6 +7,25 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1003_001] — 2026-10-03
+
+### Changed
+
+- Give the console frequency readout and RF power/SWR meters solid black faces.
+- Replace the decorative tuning ribs beneath the console frequency with a
+  calibrated S-meter in the same ruled LED style as power/SWR, showing S-units
+  and dBm. Remove the duplicate console header S-meter; digit click/scroll,
+  frequency entry, font/color menus and the legacy-layout dial remain available.
+- Expose every receive mode as a compact button beside the filter controls,
+  with the selected mode highlighted and announced for accessibility.
+- Enlarge the console UTC digits and use amber across interface palettes.
+
+### Validation
+
+- Pass the full 2,170-test regression suite (five intentional skips), complete
+  Debug/Release builds, native presentation checks and the performance gate.
+  Inspect the revised console in synthetic Demo; no live radio/RF session.
+
 ## [2026.1002_001] — 2026-10-02
 
 ### Changed
@@ -31,6 +50,9 @@ batch of improvements ships as a new version.
 
 ### Documentation
 
+- Record release-candidate regression, performance and DMG packaging validation.
+- Record signed/notarized 2026.1002_001 publication, matching public assets,
+  0/75 final-DMG scan, isolated launch and website/documentation update.
 - Record independently verified 2026.0930_002 publication, clean final-DMG
   scan, isolated signed-app launch, public documentation and website update.
 
