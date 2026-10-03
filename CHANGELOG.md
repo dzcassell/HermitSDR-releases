@@ -7,6 +7,37 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1003_002] — 2026-10-03
+
+### Added
+
+- Pulse the status-bar version yellow and float an “Update Available!” sticker
+  above it when the existing updater offers a newer release. Clicking the
+  version opens Software Update; the standard app-menu update entry remains.
+  Reduce Motion keeps the highlight and sticker steady.
+
+### Changed
+
+- Extend console RF power and SWR bars to the right edge of their panel by
+  placing readings beside the scale labels instead of reserving a blank column.
+  Keep end-of-scale numbers inside the meter bounds.
+- Draw attention to Provide Feedback with a gentle theme-colored breathing
+  glow. Keep a steady highlight with Reduce Motion and pause when inactive.
+
+### Fixed
+
+- Make feedback connection checks show progress and the last check time, and
+  explain missing server setup, disabled delivery, HTTP failures and invalid
+  responses instead of repeating an unchanged generic message.
+
+### Validation
+
+- Pass all 2,170 regression tests (five intentional skips), clean Debug/Release
+  builds, feedback delivery and native control checks, repository audit, and
+  the optimized performance gate (nine seconds against a 30-second limit).
+- Inspect offscreen production feedback, full-width meter and update-sticker
+  renders. No live radio/RF session or real feedback submission.
+
 ## [2026.1003_001] — 2026-10-03
 
 ### Changed
@@ -25,6 +56,11 @@ batch of improvements ships as a new version.
 - Pass the full 2,170-test regression suite (five intentional skips), complete
   Debug/Release builds, native presentation checks and the performance gate.
   Inspect the revised console in synthetic Demo; no live radio/RF session.
+
+### Documentation
+
+- Record verified signed/notarized release publication, matching public assets,
+  0/75 final-DMG scan, isolated launch and website/documentation updates.
 
 ## [2026.1002_001] — 2026-10-02
 

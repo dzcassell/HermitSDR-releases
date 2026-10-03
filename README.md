@@ -36,7 +36,29 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1003_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1003_002** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1003_002
+
+- **Verified download.** Developer ID signed, notarized and stapled. Public
+  hashes, Gatekeeper and matching ZIP/DMG app contents independently checked;
+  VirusTotal reported 0/75 detections. The exact signed app passed an
+  eight-second launch with scratch preferences and networking denied.
+
+- **Visible update shortcut.** When an update is offered, the status-bar version
+  pulses yellow with a hovering “Update Available!” sticker. Click it to open
+  Software Update; the standard app-menu command stays available.
+- **Feedback button glow.** A gentle theme-colored pulse draws attention to
+  Provide Feedback. Both animations stay steady with Reduce Motion.
+- **Full-width RF meters.** Power and SWR scales reach the panel's right edge,
+  with readings beside the centered labels and end labels kept within bounds.
+- **Clear connection checks.** Checking progress, completion time and specific
+  HTTP/network/service status replace the unchanged generic feedback message.
+  Feedback delivery is still awaiting server setup; drafts remain available.
+- **Validation.** 2,170 tests, five intentional skips, zero failures; clean
+  Debug/Release builds, focused checks, repository audit and a nine-second
+  optimized performance check against the 30-second limit. Offscreen production
+  UI renders inspected; no live radio/RF test or real feedback submission.
 
 ## New in 2026.1003_001
 
