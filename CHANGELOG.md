@@ -7,6 +7,26 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1004_001] — 2026-10-04
+
+### Changed
+
+- Enlarge the console UTC clock with prominent amber hours/minutes and smaller
+  red seconds, aligned along the bottom of the black instrument face.
+
+- Move the amber UTC clock onto the black tuning face beside power/SWR, make
+  the console header black, and illuminate controls yellow/green/red according
+  to availability, enabled/window-open state and stop/transmit/fault state.
+
+- Give the entire console tuning strip a continuous solid black face, including
+  section labels and unused space. Remove beveled title bars and the frequency
+  outline, keeping meters and controls overlaid with their existing colors.
+
+### Documentation
+
+- Record independently verified publication of 2026.1003_002, public release
+  documentation and website download-card update; retain frozen release notes.
+
 ## [2026.1003_002] — 2026-10-03
 
 ### Added

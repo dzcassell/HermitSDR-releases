@@ -36,7 +36,28 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1003_002** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1004_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1004_001
+
+- **Verified download.** Developer ID signed, notarized and stapled; independent
+  public hash, Gatekeeper and matching ZIP/DMG app checks passed. VirusTotal
+  reported 0/75 detections. The exact signed app passed an eight-second launch
+  with scratch preferences and networking denied.
+
+- **Black console face.** The tuning strip and top toolbar now use solid black,
+  with meters and controls overlaid and section labels on the same face.
+- **Prominent UTC clock.** Large amber hours/minutes and smaller red seconds
+  sit immediately left of the RF power/SWR meters.
+- **Control state glows.** Yellow marks available/off controls, green marks
+  enabled or open tools, and red marks stop/transmit/fault states. Disabled
+  controls remain dim; existing safety wording and native behavior stay intact.
+- **Validation.** 2,170 tests, five intentional skips, zero failures; complete
+  Debug/Release builds, native-control and feedback-view checks, repository
+  audit and a ten-second optimized benchmark against the 30-second limit.
+  The new clock and black strips were inspected in synthetic Demo; no live
+  radio/RF test or real feedback submission. Feedback delivery still awaits
+  server setup.
 
 ## New in 2026.1003_002
 
