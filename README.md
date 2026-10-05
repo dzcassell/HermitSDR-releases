@@ -36,7 +36,24 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1005_003** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1005_004** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1005_004
+
+- **Haunted Hollow, a Halloween Dynamic Underlay.** Palette icon → Dynamic
+  Underlays → *Haunted Hollow 🎃 — Halloween* (or Receiver → Display → FX).
+  Aurora curtains, stars and a low moon hang over a hollow of dead trees,
+  gravestones and up to nine carved jack-o'-lanterns, each lit by a candle
+  that flickers on its own. Now and then a shadow crosses — a witch on her
+  broom against the moon, a shambling zombie, a goblin, a horned monster —
+  and pale, smoke-like ghosts drift through and fade. Your signals stay on
+  top, with the same contrast controls as the other scenes. Everything is
+  drawn by the GPU from code; no image files are loaded. Settings: lantern
+  count, ghosts, candle flicker, motion, and switches for the aurora, moon,
+  shadows, fog and bats.
+
+  ![Haunted Hollow](docs/ui-reference/haunted-hollow-witch-and-ghosts.png)
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `bbb3a32d7949653626eecb31606a9db81ae295536dea633f53efd7fd7ed10226`.
 
 ## New in 2026.1005_003
 
@@ -693,7 +710,7 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | TX policy | Operator policy checked in TXCoordinator for every request source (UI, CAT, hardware PTT, keyboard, system) and kind (voice, CW, TUNE, two-tone, digital): IARU Region 1/2/3 or Custom tag as context only, one or more confirmed allowed ranges (inclusive bounds), Off / Warn / Inhibit enforcement, confirmation reset whenever region or ranges change, judged on the actual TX frequency (split/XIT, transverter RF) |
 | Spotting | DX cluster telnet client (multiple nodes at once, RBN-ready, waterfall labels + Times Square ticker) · LoTW user badges + TQSL sign-and-upload · PSKReporter uploads · live planetary K-index |
 | Logbook | ADIF import/export with preserved fields · editing, bulk changes, saved filters and backups · precise LoTW contact matching · DXCC/WAS/grid coverage · interactive worked-world globe, gray line and local DX radar · 100,000-contact performance fixture |
-| Feature catalog | Searchable inventory of 66 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
+| Feature catalog | Searchable inventory of 67 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
 | Extras | Sub-RX (VFO B) · diversity RX (P2) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT (LAN peers pair before tuning or keying) · transverter profiles (IF→RF dial/CAT/log mapping with per-profile drive ceiling) · Speaker Tracker (local voiceprint clustering and naming of received voices, off by default) · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · MIDI controllers (any CoreMIDI source: learn-mapped encoders with speed acceleration, pickup knobs, pads on the Stream Deck action model; off by default, keying assignments refused pending review) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) · **MAGNET HF Emergency** (magnethf.com watch/net availability, native JS8 transmit verified against JS8Call 3.0.3, JS8Call API hand-off, CW auto-key, voice script) |
 | Platform | macOS 15+, Apple silicon only |
 

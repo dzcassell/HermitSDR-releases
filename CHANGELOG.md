@@ -7,6 +7,21 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1005_004] — 2026-10-05
+
+### Features
+
+- **Haunted Hollow**, a Halloween Dynamic Underlay (palette icon → Dynamic Underlays → Haunted Hollow 🎃 — Halloween, or Receiver → Display → FX). Slow aurora curtains, faint stars and a low moon behind cloud hang over a hollow of dead trees, gravestones and up to nine carved jack-o'-lanterns. Every candle flickers on its own irregular track — flutter, lean, draughts and the occasional gutter — and lights the cavity seen through the carving, the cut edge of the shell, the flesh around the cuts, the air and the ground; branches and stones catch it on the side that faces it. About every minute and a half a shadow crosses (a witch and her cat on a broom across the moon, a lurching zombie, a darting goblin, a horned brute), and every two minutes one to four ghosts drift through: translucent, flow-warped wisps computed per pixel, not sprites. Settings: lantern count, ghosts per haunting, candle flicker, motion, and switches for the aurora, moon, shadows, fog and bats, plus the same signal presets, colours, signal brightness, Signals over scenery, Underlay brightness and High contrast as the other scenes, saved separately as `hauntedHollow.v1`. All artwork is procedural or drawn in code and baked once into a signed-distance atlas when the scene is selected; nothing is loaded from disk. See `docs/HauntedHollow.md` and `docs/HauntedHollowArtwork.md`. Verified with package tests and `tools/haunted-hollow-smoke.sh` (240 offscreen frames under Metal API validation); the scene has been judged from rendered stills only, not yet watched in motion on a display.
+
+### Validation
+
+- Full suite: 2,267 tests, six skips, zero failures (659.2 s), including the scene's scheduler, settings and layout tests. Signed Debug and unsigned Release builds, the repository audit, the benchmark and all 51 smoke fixtures other than the Release launch smoke passed; the new `tools/haunted-hollow-smoke.sh` and the three existing scene smokes render the production shaders under Metal API validation. Measured GPU time for the scene alone at 1800×720, 4× MSAA with maximum populations: 0.53 ms median in three steady runs and 0.89 ms in the run made right after a rebuild; the first run after shaders are rebuilt is consistently slower and the reason has not been established.
+- The scene was built and judged from offscreen stills (kept in `docs/ui-reference/haunted-hollow-*.png`). In the app it was then run for two minutes in a network-denied Demo build and seen through window captures: lanterns, trees, moon, aurora and a ghost that appeared and faded, with the Demo band's signals on top; the whole Debug frame took about 3.3 ms against about 1.5–2 ms for the Classic palette. Nobody has watched it in continuous motion yet, the settings window was not opened, and the walker gaits, flicker feel and pacing are as designed rather than as observed.
+
+### Operations
+
+- Record the verified 2026.1005_003 publication, the afternoon's delegated branches (staged transmit fixes, updater rollback, radio audio output) and the day's automation lessons in the project notes and handoff record.
+
 ## [2026.1005_003] — 2026-10-05
 
 ### Features
