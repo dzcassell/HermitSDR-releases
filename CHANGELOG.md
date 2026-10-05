@@ -7,6 +7,32 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1005_003] — 2026-10-05
+
+### Features
+
+- Experimental signal-aware click for sideband voice (#192): the tuning-step menu's "A click on the panadapter" gains "Find the voice signal's carrier". It averages the last second or two of spectrum, finds the strongest part of the voice near the click, follows it toward the carrier side until the level is 14 dB below that peak, and puts the dial 120 Hz beyond that edge on the 100 Hz grid. The hover band turns green when it has found a carrier; with no clear voice signal the dial lands on the click and a note says so. It declines for carriers, CW, digital tones and AM. The average runs only while this choice is selected. Measured on one 15-minute receive-only recording of 27.385 MHz LSB traffic (SquareSDR 2, 2026-10-05), taking the channel frequency as the true carrier: 1,798 of 1,808 clicks placed anywhere in a transmitting station's voice produced an estimate, with a median absolute error of 36 Hz, 76% within 100 Hz, 96% within 200 Hz and a worst case of 1.4 kHz. The stations are not frequency standards and the two constants were chosen on the first minutes of the same recording, so read that as "usually within a hundred hertz or two". Not measured on amateur SSB, weak fading signals or overlapping stations. The default click is unchanged.
+
+### Fixes
+
+- Every in-window menu is now one level (#191 follow-up). A real-pointer probe showed that the Waterfall appearance menu loses its submenus the same way the Peaks menu did: the submenu opens, then closes as the pointer moves into it. Waterfall view, History, Skin and Dynamic Underlays are inline sections there (the console's copy leaves out Skin and Dynamic Underlays, which have their own buttons beside it), the RX and TX antenna and NetSDR RF-input chips list their choices directly, and the RX EQ Profiles menu lists "Delete …" entries in a section. Menu-bar submenus were never affected.
+- A hover tip no longer appears underneath an open menu.
+
+### Development
+
+- `tools/verify-public-release.sh` downloads a published release again and checks it independently (checksums, scan record, both signatures and tickets, Gatekeeper, ZIP/DMG equality, bundle identity, the empty source anchor, the notes). `tools/update_public_mirror.py` brings the public repository's README, changelog and mirrored operator documents up to a release tag, with `--check` and `--dry-run`; it refuses a document that links to the private repository. `tools/update-website-release.sh` now refuses to advertise a version the public repository does not document. `docs/Release.md` describes the sequence and a documentation test pins the tools.
+- Debug-only hooks for checks that do not touch the operator's console: `HERMITSDR_RX_CAPTURE` (wait for a named radio to be idle, connect, tune, record IQ, disconnect — it calls no transmit entry point), `HERMITSDR_REPLAY` (open a recording at launch) and `HERMITSDR_CLICK_PROBE` (hover and click a frequency without a pointer and log where the dial lands). Release builds contain none of them.
+
+### Validation
+
+- Full suite: 2,258 tests, six skips (the five standing ones and the opt-in recording measurement), zero failures (645.1 s), including seven new estimator and spectrum-average tests on synthetic voice shapes (both sidebands, a click just outside the signal, adjacent stations, weak and buried signals, refusal of carriers and wide signals, pause hold-over and retune reset, concurrent feed and read) and one for the new click choice. Signed Debug and unsigned Release builds, the repository audit, the benchmark and all 50 smoke fixtures other than the Release launch smoke passed.
+- Receive-only on the SquareSDR 2 (11 m antenna, never armed): a Debug build connected through the new capture hook and recorded 15 minutes at 27.385 MHz LSB; the estimator figures above come from that recording. In the app, replaying the recording in a network-denied Debug build, ten pointer-free probes clicking 1.2 kHz into the voice put the dial on 27.3850–27.3854 MHz (run before the edge-to-carrier constant was trimmed from 150 to 120 Hz), and the preview band was seen green over the signal. Live on the radio the channel had gone quiet, so the only live click exercised the "no clear voice signal" path.
+- Menus, with a real pointer in a network-denied Demo build: before the change the Waterfall view submenu opened and then closed as the pointer entered it; after it the appearance and Peaks menus are single-level and no tip shows behind them. The antenna chips are visible only on a live multi-antenna radio and the EQ delete entries only with saved profiles; both were changed by the same rule and not seen on screen.
+
+### Operations
+
+- Split `CLAUDE.md` (477 KB) into a 67 KB durable project record with a replaceable "Current state" section, and move the session history verbatim into `docs/handoffs/` (three files by period, plus the per-release notes from the old Workflow section); a script asserted that no line was lost. `AGENTS.md` now tells every agent to write session records there. Record the verified 2026.1005_002 publication, the refreshed staged transmit branches (#161) and the cleanup of merged worktrees and branches.
+
 ## [2026.1005_002] — 2026-10-05
 
 ### Fixes

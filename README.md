@@ -36,7 +36,29 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1005_002** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1005_003** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1005_003
+
+- **Experimental: click a voice, land on its carrier.** A third choice in the
+  tuning-step menu's *A click on the panadapter*: *Find the voice signal's
+  carrier*. Click anywhere in a USB or LSB voice signal and HermitSDR looks at
+  the last second or two of spectrum, finds the sharp low-frequency edge of
+  that voice and puts the dial on its carrier. The preview band beside the
+  pointer turns green when it has found one; where there is no clear voice
+  signal the dial simply lands on the click. On a 15-minute recording of 11 m
+  LSB traffic it was within 100 Hz three times in four and within 200 Hz 96%
+  of the time. It has not been measured on amateur SSB or weak fading signals
+  yet, so fine-tune by ear, and tell us how it does for you. The default
+  click is unchanged.
+- **Every in-window menu is one level.** The Waterfall appearance menu had the
+  same fault as the Peaks menu fixed in the last release: its submenus closed
+  as the pointer moved into them. Waterfall view, History, Skin and Dynamic
+  Underlays are now sections of one menu, the antenna chips list their jacks
+  directly, and the RX EQ Profiles menu lists its delete entries in place.
+- **Tooltips stay out of the way.** A hover tip no longer appears underneath
+  an open menu.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `194204e5c531af1cdbc2c4648ebe51d1c186e443854356a78433679f5ca7f5fe`.
 
 ## New in 2026.1005_002
 
