@@ -36,7 +36,68 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1004_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1005_002** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1005_002
+
+- **Click-tuning lands where you click.** In USB and LSB a click on the
+  panadapter now puts the dial (the carrier) on the clicked frequency, as in
+  other SDR consoles. Before, the click centred the receive filter, so the
+  dial ended up about 2 kHz away with a wide filter. Click the carrier edge of
+  a voice signal: the upper edge in LSB, the lower in USB. Prefer the old way?
+  Open the tuning-step menu in the bottom strip and choose **Filter centres on
+  the click**. Thanks to Dave, GW4GTE, for the report.
+- **See before you click.** A faint band beside the pointer shows where the
+  receive filter will sit if you click there, in either click mode.
+- **One-click band keys.** 160 through 10 m (and 6 m on radios that tune it)
+  sit under the mode keys. Each band returns to its own frequency, mode,
+  filter and RF gain; press the lit band again to step its band stack.
+- **Peaks menu fixed.** "How many" and "Level in" are now inline in one menu;
+  as submenus they closed as soon as the pointer moved into them.
+- **Connect an amplifier through the reference driver.** The line protocol
+  behind Station → Control Devices → Station Devices is now documented in
+  [docs/ReferenceAmplifierProtocol.md](docs/ReferenceAmplifierProtocol.md),
+  with [tools/expert-amp-bridge.py](tools/expert-amp-bridge.py), a small
+  monitor-only bridge for SPE Expert amplifiers running behind Expert Amp
+  Server. The bridge has been tested only against simulators so far; reports
+  from real stations are welcome. Thanks to Justin, AI5OS, for the request.
+- **Verified download.** Developer ID signed, notarized and stapled; the public ZIP and DMG were downloaded again and checked independently (checksums, strict signatures, Gatekeeper, matching app trees). VirusTotal reported 0/75 detections for the DMG, SHA-256 `4699f9499382eeb150e0d9589ac2c85fb96727ea6904ab8e9cada0768f2d24c7`.
+- **Validation.** 2,249 tests, five intentional skips, zero failures; Debug and
+  Release builds, the repository audit and the benchmark passed. The new
+  behaviour was checked in Demo Mode with networking denied; no radio was
+  connected and nothing was transmitted.
+
+## New in 2026.1004_002 – 2026.1005_001
+
+Ten releases in two days; the full notes are in [CHANGELOG.md](CHANGELOG.md).
+
+- **Console.** Tuning arrows and the step picker moved to the bottom strip;
+  the Receiver bank pairs its controls to save height; the clocks and RF
+  power/SWR meters stay pinned at the right of the header while the control
+  bank chooses a full or compact layout to fit the window; a local-time clock
+  sits under UTC; a Black Hole palette; a direct FX menu for the animated
+  waterfall backgrounds.
+- **Second receiver (SUB).** Its own mode, filter, AGC, noise reduction,
+  seven-band EQ, notch, signal meter and WAV recorder, each able to follow the
+  main receiver or stand alone. On capable Protocol 2 radios diversity
+  reception and an independently tuned SUB now run together.
+- **Receive DSP.** An NB2 impulse blanker that predicts across short
+  impulses, and a separate spectral impulse blanker (SNB), both off by default.
+- **Per-radio receive profiles.** Tuning, rate, gain, antenna, band stacks,
+  filters and DSP choices are restored for each physical radio before it
+  connects.
+- **Built-in manual.** Sixteen searchable offline chapters under Help, with
+  context help from each tool.
+- **MIDI.** Import Thetis Midi2Cat controller mappings with a preview,
+  skipped-row reasons and undo.
+- **PureSignal diagnostics.** Measured IMD5 and floor-qualified IMD3/IMD5
+  readings.
+- **Provide Feedback.** The form beside Ask the Crab now delivers to the
+  HermitSDR inbox; only what you type is sent (and your e-mail address if
+  you choose to give one), plus the app and macOS versions if you leave that
+  box ticked.
+- **Releases.** Every download is VirusTotal-scanned before publication, and
+  publication now refuses to proceed without a clean, matching scan.
 
 ## New in 2026.1004_001
 
@@ -610,7 +671,7 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | TX policy | Operator policy checked in TXCoordinator for every request source (UI, CAT, hardware PTT, keyboard, system) and kind (voice, CW, TUNE, two-tone, digital): IARU Region 1/2/3 or Custom tag as context only, one or more confirmed allowed ranges (inclusive bounds), Off / Warn / Inhibit enforcement, confirmation reset whenever region or ranges change, judged on the actual TX frequency (split/XIT, transverter RF) |
 | Spotting | DX cluster telnet client (multiple nodes at once, RBN-ready, waterfall labels + Times Square ticker) · LoTW user badges + TQSL sign-and-upload · PSKReporter uploads · live planetary K-index |
 | Logbook | ADIF import/export with preserved fields · editing, bulk changes, saved filters and backups · precise LoTW contact matching · DXCC/WAS/grid coverage · interactive worked-world globe, gray line and local DX radar · 100,000-contact performance fixture |
-| Feature catalog | Searchable inventory of 64 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
+| Feature catalog | Searchable inventory of 66 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
 | Extras | Sub-RX (VFO B) · diversity RX (P2) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT (LAN peers pair before tuning or keying) · transverter profiles (IF→RF dial/CAT/log mapping with per-profile drive ceiling) · Speaker Tracker (local voiceprint clustering and naming of received voices, off by default) · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · MIDI controllers (any CoreMIDI source: learn-mapped encoders with speed acceleration, pickup knobs, pads on the Stream Deck action model; off by default, keying assignments refused pending review) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) · **MAGNET HF Emergency** (magnethf.com watch/net availability, native JS8 transmit verified against JS8Call 3.0.3, JS8Call API hand-off, CW auto-key, voice script) |
 | Platform | macOS 15+, Apple silicon only |
 

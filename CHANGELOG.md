@@ -7,6 +7,245 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1005_002] — 2026-10-05
+
+### Fixes
+
+- A click on the panadapter in USB or LSB now puts the dial on the clicked frequency (#192, reported by GW4GTE and by Damon). Until now the click centred the receive filter instead, so the dial landed 300 Hz plus half the filter width away from the click — about 2 kHz high in LSB with a 3.4 kHz filter. The new default matches SDR#, SmartSDR and Thetis: click the carrier edge of a voice signal. The tuning-step menu's "A click on the panadapter" choice keeps the previous behaviour ("Filter centres on the click") for operators who prefer to click the middle of a signal. The sub-receiver window follows the same choice. CW, AM, SAM, FM and DSB are unchanged, as are the 100 Hz click grid, the dial lock and the marker drag.
+- The Peaks menu in the status bar is one level (#191, reported by GW4GTE). "How many" and "Level in" were submenus, and the submenu closed as soon as the pointer moved from the parent row into it, so the count could never be chosen with a mouse or trackpad. Reproduced on macOS 26 in Demo with a real pointer (a menu-bar submenu survives the same movement); the two choices are now inline sections of the same menu. The cause inside the nested SwiftUI menu was not isolated, and other in-window menus with submenus have not yet been probed the same way.
+
+### Features
+
+- One-click band keys in the console's Mode / Filter bank (#191): 160 through 10 m, plus 6 m on radios that tune it, replacing the Band dropdown there. They run the same command as the Band menu — each band restores its own frequency, mode, filter and RF gain, and pressing the lit band steps its band stack. The key for the band the dial is on is lit; none is lit while a transverter is active. Both the full bank (wide windows) and the compact bank (1280 points) carry the row inside the unchanged 124-point strip.
+- A faint band beside the hover cursor on the panadapter shows where the receive filter will sit if you click there (#192). It uses the same arithmetic as the click in either click mode and includes RIT, so the preview and the result cannot disagree.
+
+### Documentation
+
+- Document the "Reference amplifier (line protocol)" driver for operators (#190, requested by AI5OS): `docs/ReferenceAmplifierProtocol.md` covers Station Devices setup over TCP, every command and reply, timing, alarms, the inhibit-only safety contract and the known limits. Add `tools/expert-amp-bridge.py`, a dependency-free, monitor-only bridge that presents an SPE Expert amplifier behind Expert Amp Server (`GET /api/v1/status` only) to that driver; missing or stale readings are reported as unavailable, an amplifier alarm is a fault, and a lost status link is a warning unless `--link-loss fault` is given. Verified by its built-in selftest (54 checks) against stand-ins written from the Expert Amp Server 0.4.8 source; not yet run against a real server, a real amplifier or the app. No app code changed for this.
+- `docs/Tuning.md`, the README controls table and the in-app manual describe the new click behaviour, the preview band and the band keys.
+
+### Development
+
+- `HERMITSDR_DEMO=1` in the environment of a Debug build enters Demo Mode shortly after launch, so a UI check needs no pointer click on a console the operator may be using. Release builds ignore it.
+- `tools/dev-launch-isolated.sh` starts a Debug build with all networking denied by the OS and writes to the production support folder refused, for UI checks beside a running operator instance.
+
+### Validation
+
+- Full suite: 2,249 tests, five intentional skips, zero failures (675.7 s), including five new click-tune regressions (default carrier placement in both sidebands, the previous filter-centred arithmetic with shift, non-sideband modes, preview equals result, stored-choice fallback). Signed Debug and unsigned Release builds, the repository audit and the optimized benchmark (9 s against the 30 s limit) passed. All 50 `tools/*-smoke.sh` fixtures other than the Release launch smoke passed; the sub-receiver fixture now exercises both click modes.
+- Native checks used a network-denied Debug build in Demo beside the operator's running app, which was not touched: at 1280 and 1920 points the band row fits both banks; in LSB a click at 14.2050 MHz set the dial to 14.205000 with the default and a click at 14.2150 set 14.216500 with "Filter centres on the click" (2.4 kHz filter); the preview band sat below the pointer in LSB and centred on it in the other mode. With a real pointer the old Peaks submenu closed on entry and the new one-level menu highlighted its items; a count was chosen through accessibility and read back checked. Demo clamps tuning to its recorded 20 m span, so a band key's jump to another band was observed only as the restored mode and filter; no radio was connected and nothing was transmitted.
+
+### Operations
+
+- Save the final release CI result, deployed-feedback checkpoint and operator-reported issues #188–#192 in the canonical project handoff before session exit.
+
+- Enable the website feedback backend and password-protected inbox over HTTPS using the existing Apache/localhost service. Preserve telemetry and service sandboxing, keep credentials outside source, back up deployment files/SQLite, and verify durable receipts, duplicate handling, authentication, CSRF/revision checks and private inbox updates with a synthetic record removed after validation. This server activation requires no new app build.
+
+## [2026.1005_001] — 2026-10-05
+
+### Fixes
+
+- Keep UTC/local clocks and RF power/SWR meters fixed at the right of the console header (#160). Measure the actual tuning-control content and choose the full or compact bank; only overflowing controls scroll, with visible indicators. Compact mode retains band, filter presets/editor, VFO B/offset controls and palette selection, and exposes the unchanged decoder controls in a native popover with an enabled-decoder count. Preserve the 124-point header height, clock digit geometry/colors, calibrated meter style and right-edge padding. Give UTC/local clocks separate accessibility announcements and retain native time-zone/DST editing.
+
+### Validation
+
+- Verify all eight normal mode preset rows at 1280 points, the full bank at 1920, three native dial styles, palette propagation and decoder count/controls. Exercise control-only fallback scrolling with a private receive-only 2.414 GHz display while clocks/meters stay fixed. Pass 2,244 tests (five intentional skips), actual presentation/native instrument fixtures, both app configurations, all 30 dial styles and serial benchmark 9/30 s. No physical radio, transmitter or installed-app operation. A separate 45-minute exact signed Release process/window/RSS check passed with bounded memory (189.3 MiB settled baseline, 189.4 MiB peak). Publish the signed, notarized, stapled 001 DMG after a matching VirusTotal 0/75 verdict; independently download and verify all five public assets, validate the inner app and update the website.
+
+## [2026.1004_010] — 2026-10-04
+
+### Features
+
+- Add a direct FX menu in Receiver → Display for animated waterfall backgrounds, their settings, a Classic static fallback and feature visibility. Keep the existing appearance submenu and the Receiver panel width (#160).
+
+- Add independent SUB seven-band audio EQ and automatic tone notch (#165). Both default off and remain independent with Follow main enabled. EQ gains are bounded and saved per radio; Flat resets the curve without changing the enable choice. Optional fields keep earlier profiles compatible. SUB recordings include this processing. Automatic notch applies to the narrow audio path; bypass it for CW and tone-based digital signals.
+
+### Fixes
+
+- Give Dev builds separate “HermitSDR Dev” support and document folders for settings, auxiliary stores, calibration, caches, recordings and CAT (#187). Dev skips production SquareDeck migration entirely. Released builds retain their existing folders, preference restore rules and legacy migration. Existing preference and Keychain namespaces remain separate. Shared historical Dev files are deliberately not imported because they may contain production data.
+
+### Validation
+
+- Exercise actual settings-mirror and migration sources with fake filesystem roots and in-memory preferences in DEBUG and Release, covering fresh/existing mirrors, privacy precedence, export filtering and shutdown. DEBUG leaves fifteen seeded production/legacy files byte-identical. Verify SUB profile compatibility, finite EQ bounds, main/SUB control isolation and real DSP tone-shaping/notch behavior.
+
+- Deny credential-service IPC and operator Keychain reads in the exact Release launch test. Verify the endpoint exists outside the isolation policy and is explicitly refused inside it, without accessing an operator credential. The corrected full package suite passed 2,244 tests, five intentional skips and zero failures. A two-hour actual RXChain/WAV soak passed 360 rate rebuilds and 28,440 cleanup changes with zero recorder drops and bounded memory; the finalized WAV header, frame/byte counts and sampled PCM were verified. A separate 90-minute signed Release process/window/memory check and serial benchmark (10/30 s) passed. These software and isolated native checks do not establish physical-radio or listening quality. Publish the signed, notarized, stapled 010 DMG after a matching VirusTotal 0/75 verdict; independently download and verify all five public assets, check the inner app and update the website.
+
+## [2026.1004_009] — 2026-10-04
+
+### Features
+
+- Add independent SUB Spectral, Adaptive and ML noise reduction, Off by default, with bounded Spectral/Adaptive amount controls (#165 milestone). Follow main continues to cover mode/filter/AGC; main NR never overrides this slice. Optional profile fields preserve 007/008 catalog decoding and retain choices through rebuild/reconnect. SUB recordings include its own processed audio. Add a narrow SUB-only filtered pre-AGC dBFS LED meter with a single coalesced UI delivery slot, unavailable/keyed blanking and stale-generation rejection; expose one dedicated accessibility value and do not imply calibrated RF power.
+
+### Fixes
+
+- Keep SUB NR/amount and AGC edits on their existing control mailbox; rebuild its channel filter only when the effective mode, width or shift changes, avoiding unnecessary detector resets.
+
+- Remove the three source-reviewed FT8 analyzer dead stores while preserving final message writes, debug logging and bounded duplicate/full-table refusal (#164). RNNoise/pitch generic-model diagnostics remain documented and open.
+
+### Validation
+
+- Select one reducer atomically under the chain lock and apply amounts through the existing synchronized controls; retain TX freeze and generation guards. Cover legacy profile decoding, hostile amounts, actual engine/presentation/main isolation and production-chain exclusive selection. Native receive-only controls require isolated test copies; no listening-quality claim follows from muted checks.
+
+- Verify 2,239 tests (five skips, zero failures), serial benchmark 9/30 s, final signed/unsigned builds and actual passband reset boundaries. Document the distinct Spectral/Adaptive synchronization paths and both FT8 log levels. Publish the signed, notarized, stapled 009 DMG after a matching VirusTotal 0/75 verdict; independently download/verify all five assets and update the website. Retain #187's shared-mirror repair and unbaselined auxiliary-store residual rather than claiming operator data was untouched.
+
+## [2026.1004_008] — 2026-10-04
+
+### Features
+
+- Record unmixed SUB audio independently from the SUB window (#165 milestone), before speaker mix volume/mute. Use distinct SUB/VFO-B filenames, bounded producer buffering and utility-task 48 kHz mono WAV finalization; display duration, dropped frames and saved/error status. Stop on SUB off, rate change, disconnect, window close and quit, with a twelve-hour RIFF duration bound; never restore recording intent or grant transmitter authority.
+
+### Validation
+
+- Linearize recorder producer detachment before asynchronous finalization, so already-snapshotted audio sinks cannot append after STOP. Verify unmixed source ownership, stale generation rejection, independent recordings, availability boundaries and finalized private WAV headers. Extend the actual receiver-controls and diversity facade fixtures with the recording availability owner and assert SUB-off detachment.
+
+### Release safeguards
+
+- Require a protected VirusTotal key and a completed zero-detection verdict matching the final DMG name/hash/size/provenance before automated publication (#186). Remove the missing-key publication bypass while retaining unsigned offline dry runs; add private refusal fixtures and CI enforcement.
+
+### Documentation and diagnostics
+
+- Record the interactive native adapter’s post-Quit relaunch hazard (#187) and exact-PID/temporary-executable guard; distinguish successful private recording checks from the unexpected unsandboxed Dev reopen and restored shared mirror.
+
+- Review application RNNoise built-in model call-site invariants (#164) and add plain/Address/Undefined sanitizer model-weight and finite-input fixtures. Preserve vendored algorithms/licenses and explicitly retain generic pitch/LPC and FT8 analyzer residuals. Published signed/notarized 008 DMG passed the full 2,237-test suite (five skips), exact isolated Release native gate and VirusTotal 0/75; public hashes, sizes, provenance and notarization were independently verified.
+
+## [2026.1004_007] — 2026-10-04
+
+### Features
+
+- Add independent mode, filter width/shift and AGC speed/gain/slope controls to the SUB receiver window, plus its audio mix slider (#165 first milestone). Default Follow main preserves existing behavior and remembers independent choices while following. Persist bounded receive-only settings per physical radio with compatibility for earlier catalogs.
+
+### Fixes
+
+- Use the effective SUB mode/filter for its displayed passband, click tuning, chain rebuilds and FM deviation; main mode/filter/AGC changes no longer overwrite independent SUB choices. Restore the shared AM de-emphasis choice when creating a SUB chain; preserve the existing dial lock and VFO B tuning behavior.
+
+### Validation
+
+- Cover independent/following transitions, hostile numeric settings, sideband/wide passbands, per-radio compatibility and extracted production engine/facade/presentation commands. Run SUB command isolation in CI and document the new receive gates. General receiver-bank allocation, individual output devices and recordings remain open scope in #165. Published signed/notarized DMG passed 2,236 tests (five skips), exact isolated native Release launch and VirusTotal 0/75; public asset hashes and notarization independently verified.
+
+## [2026.1004_006] — 2026-10-04
+
+### Features
+
+- Allow concurrent diversity and independently tuned SUB reception on capable P2 profiles (#176). Reserve the coherent DDC0/1 pair and independent DDC3, preserve monitor suspension and the existing PureSignal allocation, and decode the two streams separately. Explain shared ADC RF front ends and resource refusals; retain both receive choices across supported profile restores.
+
+### Fixes
+
+- Deliver P2 receiver-count changes immediately once bring-up is complete and reset only the toggled SUB sequence tracker; the prior setter updated its working state without sending the promised live DDC configuration.
+
+- Explicitly disable radio mic-jack PTT in RX-only probe DUC configuration, matching the application while PA/MOX/drive remain zero.
+
+### Validation
+
+- Make the virtual P2 radio follow the selected normal/coherent primary DDC and rate; verify stream assignments, independent NCOs, mode transitions, reconnect, resource refusal and stale-port rejection. Add an identity/ownership-gated RX-only concurrent-stream probe with fake-socket safety checks; run its safety and production presentation fixtures in CI.
+
+### Documentation
+
+- Record verified 006 publication, concurrent-stream RX-only measurements and exact release gates; keep coherent RF null acceptance and the general receiver bank explicit, and record the corrected temporary native relay limitation.
+
+## [2026.1004_005] — 2026-10-04
+
+### Features
+
+- Add an original independent spectral impulse blanker in Receiver DSP (#170), Off by default. A broadband FFT rise and robust time-domain spike test qualify bounded complex reconstruction; main/SUB receive audio and decoder taps share the setting. Keep clean samples unchanged at fixed 159-sample IF delay, retain raw full-span displays/recorded IQ, reset on mode/rate/unkey and preserve FIFO continuity on retune. Optional profile fields preserve compatibility with 004 catalogs.
+
+### Fixes
+
+- Keep the expanded Receiver DSP popover at a stable, bounded height and scroll its contents within the display, so SNB and mode-specific controls remain reachable.
+
+- Declare the pure decoded RGBA-to-CGImage factory nonisolated so SSTV/WEFAX worker queues construct immutable images without an implicit main-actor call; UI publication remains on the main actor.
+
+### Validation
+
+- Strengthen isolated release launch checks against cached operator preferences by denying both local/global cfprefsd lookups and all operator preference-directory reads; prime a fake parent preference cache in the policy fixture (#184). Seed interactive copies through their private settings mirror.
+
+- Write Control API fixture stage/refusal progress directly to stderr with elapsed times so sanitizer CI timeouts retain actionable diagnostics (#141); preserve timeout budgets, assertions and actual server behavior.
+
+### Documentation
+
+- Record verified 005 publication, exact-binary isolation, full-suite and successful CI evidence, with explicit remaining issue scope and protected live operator session.
+
+## [2026.1004_004] — 2026-10-04
+
+### Features
+
+- Restore receive operating profiles by physical-radio MAC/protocol before connecting (#171): tuning/rate/RF gain/antenna, band stacks and mode filter memories, NB/NB2/NR/AGC/EQ/APF, squelch, output/volume and sub-receiver/diversity choices. Freeze a shared-settings migration seed; retain saved preferences when a capability or audio device is temporarily unavailable. Transmitter/service settings remain global and no TX authorization is restored.
+
+
+### Fixes
+
+- Gate RX-only P2 rate-probe control/cleanup on verified idle Orion2 identity and an explicit expected MAC (#185). BUSY, malformed, wrong-identity and timed-out discovery never send RUN=0; partial owned starts still tear down. Receive BPF follows the production Orion2 band map; PA/MOX/drive remain zero.
+
+
+- Keep Media Deck WebKit script-message reads and playback updates on the SDK-defined main actor, preserving delivery order and removing the untyped cross-task handoff (#164). Vendored DSP analyzer diagnostics remain a separate review.
+
+### Release validation
+
+- Isolate the local exact-binary Release launch probe from live operator sessions (#184): OS-denied network traffic and operator settings access, private preferences/home, exact child-PID cleanup and a native-window ownership check. It no longer discovers radios or selects a process with pgrep.
+
+### Documentation
+
+- Record verified publication of 004 and the existing Control API sanitizer CI timeout/local-pass evidence; keep its diagnostic issue open.
+
+- Record the autonomous 003 feature/release checkpoint and preserve the unshipped #180 startup-health spike, native launch failure, corrected fixture preference impact and required isolation/launcher follow-ups. Published 003 application sources remain unchanged.
+
+## [2026.1004_003] — 2026-10-04
+
+### Features
+
+- Add an Off/NB/NB2 receiver selector and an original bounded causal complex predictor for short impulse reconstruction (#169). The existing hold blanker remains the default; threshold, duty governor, event counting and disabled-sample behavior are retained.
+- Add a bundled offline operator manual with sixteen searchable chapters, contextual Help routing for every cataloged instrument, native selectable text and keyboard navigation (#179).
+- Import Thetis Midi2Cat XML through a controller/channel/encoder preview, report skipped commands and duplicates, review keying bindings explicitly, and preserve an atomic JSON backup with Undo import (#172). MIDI input must remain disabled during import; existing keying refusal is unchanged.
+- Add measured RF IMD5 and explicit floor-limited/unavailable IMD3/IMD5 diagnostics; refine off-bin tone locations, reject clipped/invalid samples and insufficient product bandwidth, and prevent floor-limited IMD3 from qualifying predistortion trials (#182).
+
+### Documentation
+
+- Survey Apache Labs ANAN Core v1.128, open nine focused feature-gap issues (#174–#182), and record overlap, source evidence and validation limits in catalog #183.
+
+- Survey hpsdr-rs at pinned revision, open eight confirmed feature-gap issues (#165–#172), and record the comparison catalog (#173) with existing-feature and validation distinctions.
+
+- Record independently verified publication of 2026.1004_002, including signed/notarized release, clean VirusTotal scan, website update and dashboard country display fix.
+
+## [2026.1004_002] — 2026-10-04
+
+### Receiver layout
+- Move console tuning arrows and step picker to a centered horizontal row in the bottom Receiver/Transmitter/Workspace strip.
+- Pair Auto gain/Blanker, AGC/NR and Notch/Squelch horizontally in the Receiver bank, reclaiming three control rows and a divider at the existing panel width.
+
+### Website
+- Show all countries in the dashboard overview table and group smaller donut categories into Other so chart totals match the full dataset.
+- Add Ask The Crab audio troubleshooting screenshot and explanation to hermitsdr.com, including on-device and optional online assistant modes.
+
+### Added
+
+- Add the selectable Black Hole theme with pure-black window, panel, title,
+  control, inset and app-owned popover surfaces. Native menu popups use macOS
+  dark appearance; colored safety indicators and selection cues remain.
+
+- Add a local clock below UTC with matching seven-segment geometry, green
+  hours/minutes and red seconds. A local-clock settings picker selects a
+  time zone and automatic daylight-saving correction or standard time.
+
+### Fixed
+
+- Render unselected console filter presets in darker orange/amber to separate
+  them visually from mode selectors while retaining the selected green state.
+
+- Remove the duplicate console UTC heading, keeping its amber trailing tag.
+
+- Add a small right inset to the main console RF power/SWR meters so the
+  bars and scale labels clear the window boundary.
+
+- Match TX Meters to the main console's black-face, full-width ruled LED
+  meters, with centered readouts and the same RF power/SWR scales. Preserve
+  audio warning thresholds, peak holds and transmitter controls.
+
+- Fit the Software Update window to its compact content instead of leaving
+  wide empty margins. Check for updates promptly on every launch and present
+  available releases, retaining automatic-check opt-out and skipped versions.
+
+### Documentation
+
+- Record independently verified publication of 2026.1004_001, including
+  public release documentation and website download-card update.
+
 ## [2026.1004_001] — 2026-10-04
 
 ### Changed
