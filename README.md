@@ -36,7 +36,12 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1005_005** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1005_006** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1005_006
+
+- **The ADC OVF indicator no longer shoves the header controls around** (reported by Damon with a screenshot of the strip "glitching like crazy"). The chip was added to the header row only while the radio's overflow flag was set, and a radio near clipping reports that flag on and off many times a second, so every edge inserted or removed about 60 points and moved the bandwidth toggle, Ask the Crab and Provide Feedback sideways. ADC OVF is now a lamp with a permanent slot between the connection button and the bandwidth toggle: dark and dim while the converter is clear, red while it clips. Lit, it pulses twice a second with a soft halo and throws small yellow and orange sparks from its edges; the pulse and sparks are drawn in an overlay that takes no layout space and stays inside the header row. The lamp stays lit for 0.6 s after the last overflow report, so packet-rate flicker reads as one steady burst instead of a strobe. With Reduce Motion on it lights without the pulse or sparks. It has a hover tip and an accessibility label and value. The overflow flag itself (Auto gain back-off, the Control API's `overload` field) is unchanged.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `52fd6f822119404797387f77d4d57cab82c5c57a5e834b9a44632a7696a3ae52`.
 
 ## New in 2026.1005_005
 

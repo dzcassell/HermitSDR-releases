@@ -7,6 +7,25 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1005_006] — 2026-10-05
+
+### Fixes
+
+- **The ADC OVF indicator no longer shoves the header controls around** (reported by Damon with a screenshot of the strip "glitching like crazy"). The chip was added to the header row only while the radio's overflow flag was set, and a radio near clipping reports that flag on and off many times a second, so every edge inserted or removed about 60 points and moved the bandwidth toggle, Ask the Crab and Provide Feedback sideways. ADC OVF is now a lamp with a permanent slot between the connection button and the bandwidth toggle: dark and dim while the converter is clear, red while it clips. Lit, it pulses twice a second with a soft halo and throws small yellow and orange sparks from its edges; the pulse and sparks are drawn in an overlay that takes no layout space and stays inside the header row. The lamp stays lit for 0.6 s after the last overflow report, so packet-rate flicker reads as one steady burst instead of a strobe. With Reduce Motion on it lights without the pulse or sparks. It has a hover tip and an accessibility label and value. The overflow flag itself (Auto gain back-off, the Control API's `overload` field) is unchanged.
+
+### Tooling
+
+- Debug builds accept `HERMITSDR_ADC_OVF_PROBE="start=4;burst=3;rest=3;count=6"`, which flips the published overflow flag every 50 ms in bursts so the lamp can be checked without a radio or a pointer.
+
+### Validation
+
+- Seen on screen: a Debug build in Demo Mode, launched through the network-isolated launcher with the overflow probe flipping the flag every 50 ms, was captured 60 times across bursts and rests. The Disconnect button and the Full and Ask the Crab buttons were pixel-identical in every frame, lit or dark; the lamp was dark between bursts and lit, haloed and sparking during them, with the sparks inside the header row. Not checked: a real radio's overflow, the legacy (non-console) header, Reduce Motion, and the hover tip.
+- Full suite: 2,292 tests, six skips, zero failures (689.9 s). Signed Debug and unsigned Release builds, the repository audit, the benchmark and all 51 smoke fixtures other than the Release launch smoke passed.
+
+### Operations
+
+- Record the verified 2026.1005_005 publication and the second Haunted Hollow pass in the project notes and handoff record.
+
 ## [2026.1005_005] — 2026-10-05
 
 ### Features
