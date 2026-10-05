@@ -36,7 +36,28 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1005_004** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1005_005** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1005_005
+
+- **Haunted Hollow, second pass.** The moon is now a proper lunar disc — seas
+  with ragged shores, rayed craters, cloud lit from behind — and it moves:
+  it rises behind the firs, crosses the sky in about 28 minutes and sets,
+  twice an hour, with the witch still finding it wherever it is. Look closely
+  and it has a face, with eyes that follow the zombie, the goblin and the
+  horned monster as they pass, wander when nobody is about, and blink.
+  (Settings → *Face in the moon* turns it off.) The walkers themselves are
+  now jointed figures posed every frame: the zombie shambles with a dragged
+  foot and a lolling head, the goblin scuttles and stops to look behind it,
+  the monster rolls its shoulders — no more ghosted limbs mid-stride.
+
+  ![The moon watches](docs/ui-reference/haunted-hollow-moon-eyes-stage.png)
+- **Signal-aware click and Snap.** With *Snap to step grid* on and a step of
+  500 Hz or more, the experimental "find the voice signal's carrier" click
+  lands exactly on a round frequency when its estimate is close to one.
+- **QSO Log.** The Saved filters menu no longer hides its remove entries in a
+  submenu.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `e34fa8ac6f5ae62412cbf58dd5f176850db758afb35f335def747826fb5e8211`.
 
 ## New in 2026.1005_004
 
