@@ -7,6 +7,21 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1006_002] — 2026-10-06
+
+### Fixes
+
+- **NFM receive: the CTCSS tone is no longer heard as hum** (#193, reported through the website inbox: "can you fix HUM come with CTCSS in receive NFM mode?"). A repeater's sub-audible access tone (67–254.1 Hz) rode the discriminator output under every over, and nothing after the detector removed it. Worse, the de-emphasis is flat below its 300 Hz corner and unity at 1 kHz, so the tone left the speaker about 10 dB louder relative to speech than it was sent — in the loopback fixture a tone at the usual 15 % of deviation came out at twice the amplitude of a 1 kHz program, loud enough to push the AGC-off limiter into compressing the voice. The FM and NFM speaker audio now passes a sub-audio filter: a sixth-order Butterworth high-pass cornered at 300 Hz (flat to ±0.2 dB from 500 Hz up, −3 dB at the corner, 67 Hz down 75 dB, 100 Hz down 55 dB, 150 Hz down 34 dB, 203.5 Hz down 18 dB) plus a 12 Hz-wide notch that follows whichever tone the CTCSS detector has locked onto, which takes care of the 203–254 Hz tones that sit just under the corner where the high-pass alone only manages 8–12 dB. The detector keeps hearing the unfiltered audio, so the Detected tone readout is unchanged; every non-FM mode is byte-identical. The toggle "Filter sub-audible tones" sits with the FM controls in the DSP popover, on by default and saved with the other FM preferences (a configuration saved before this release decodes with it on and keeps its deviation and tone choices). Checked through the production transmitter and receiver chains: NFM with a 100 Hz tone and a 1 kHz program — tone down more than 40 dB, program within 3 %, detector still reports 100.0 Hz. **Not yet heard on a repeater.**
+
+### Features
+
+- **Stream Deck: Bookmarks on keys, fixed-amount tuning and a tuning-step key** (#194, asked for through the website inbox: "Please add/mapping frequencies from MEMORY to a Stream Deck pad. Too please add tunning step 1kHz (there is only 5/10 kHz)"). The key editor's action list gains three groups. *Bookmarks* lists the operator's saved Bookmarks (the app's memories) by name, frequency and mode; the key recalls one with its stored filter and RF settings, shows its frequency, lights when the dial is within 50 Hz of it in the same mode, and reads "missing" if the bookmark was deleted (the press is refused with a receipt rather than tuning somewhere else). *Tune by a fixed amount* moves the dial by ±100 Hz, ±1 kHz, ±5 kHz, ±10 kHz, ±12.5 kHz or ±25 kHz regardless of the console's tuning step — until now the deck's UP/DOWN keys only moved by whatever step the console had selected, Auto by default, which follows the zoom and can land on 5 or 10 kHz at wide spans. *Tuning step* sets the console step itself (Auto, 100 Hz, 1 kHz, 5 kHz, 10 kHz, 12.5 kHz, 25 kHz) and lights when that step is selected, so the existing UP/DOWN and ×10 keys can be put on 1 kHz from the deck. Both tuning actions honour the dial lock like the existing step keys. Existing layouts decode unchanged. The editor still owns no radio: the bookmark list reaches it through the live-state snapshot the radio installs on the device controller, and without one the group is simply empty.
+
+### Internals
+
+- The feedback inbox at hermitsdr.com gained a **Reply in Gmail** button beside the reporter's address: it opens a Gmail compose window with the recipient, "Re: <subject>" and the report quoted, so a reply is one click. Deployed 2026-10-06; the previous files are in the server's backup folder.
+- New issue #195 scopes a crash-report prompt: after an unclean exit, offer to send a trimmed, redacted macOS crash report to the feedback inbox. Not built in this release.
+
 ## [2026.1006_001] — 2026-10-06
 
 ### Features
