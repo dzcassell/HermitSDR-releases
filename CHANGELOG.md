@@ -7,6 +7,13 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1006_003] — 2026-10-06
+
+### Features
+
+- **SPE Expert: Operate and Standby from HermitSDR** (#190). `tools/expert-amp-bridge.py` 1.1 gains `--allow-control`. Expert Amp Server only offers the amplifier's OPERATE key, which toggles, so the bridge turns the protocol's absolute OPER and STBY into a verified toggle: it reads the amplifier's state fresh, presses the key only if the state differs, waits a second (`--control-settle`), reads back, and answers OK only when the amplifier reports the requested state; one retry if nothing moved, never more than two presses, and any other outcome is an `ERR STATE` naming what the amplifier reports. OPER is refused while the amplifier reports an alarm; TUNE and BAND stay refused. The Operate and Standby buttons in Station Devices then work; keying is unchanged (the radio's PTT line keys the amplifier, never the bridge). Checked against the bridge's built-in fake server only (self-test 65 checks); not yet run against Expert Amp Server or a 2K-FA.
+
+- **After an unexpected quit, HermitSDR offers to send the crash report** (#195). If the previous run never reached the quit path and macOS wrote a crash report for this app since, the next launch shows a sheet: the exact text that would go to the feedback inbox (app and macOS versions, the fault, the crashed thread's stack, other threads' HermitSDR frames, and the app's binary image; register state, instruction bytes, the VM summary, code-signing details and the crash-reporter key are left out, and the home folder and user name are replaced wherever they appear), an optional note and email, and Send or Don't send. Nothing is sent automatically, a report is offered once whatever the choice, reports older than two weeks are never offered, and "Don't offer to send crash reports again" is remembered. A force quit or a power loss leaves no crash report and so no prompt. Sending goes through the same delivery centre as Provide Feedback, so the retry outbox applies. The digest is built by a pure function with package tests against a sanitised real report; the sheet and the launch check have been compiled only. Debug builds accept `HERMITSDR_CRASH_FIXTURE=<file.ips>` to show the sheet from a file.
 ## [2026.1006_002] — 2026-10-06
 
 ### Fixes

@@ -20,12 +20,23 @@ server's GET /api/v1/status. Python 3 standard library only (3.7 or newer).
 
 Then add a device in HermitSDR with link TCP, the bridge's host, port 4001.
 
-Read-only by construction: the only request this program ever makes is
-GET <amp-url>/api/v1/status. It never presses a front-panel key and never
-changes operate/standby. The protocol's OPER, STBY, TUNE and BAND commands
-are answered "ERR READONLY". There is deliberately no control mode: Expert
-Amp Server (v0.4.8) offers an OPERATE *toggle* key and blocks "standby", so
-an absolute OPER/STBY cannot be honoured without a read-then-toggle race.
+Monitor-only by default: the only request this program makes is
+GET <amp-url>/api/v1/status, and the protocol's OPER, STBY, TUNE and BAND
+commands are answered "ERR READONLY".
+
+With --allow-control, OPER and STBY are honoured through Expert Amp Server's
+OPERATE key (POST /api/v1/actions/button {"name":"operate"}). That key
+*toggles*, and the server has no separate standby action, so the bridge
+turns the absolute command into a verified toggle: read the amplifier's
+state fresh (never from the poll cache); if it already matches, answer OK
+without pressing; otherwise press once, wait --control-settle seconds, read
+again, and answer OK only when the amplifier reports the requested state.
+One retry if the state did not change at all; never more than two presses
+per command; any other outcome is "ERR STATE …" with what the amplifier
+reports, and nothing further is pressed. OPER is refused while the amplifier
+reports an alarm. TUNE and BAND stay refused (the server offers no absolute
+action for them). The residual risk is a hand on the front panel in the
+second between the read and the press — the verification reports it.
 
 Honest readings: a value the server does not report is sent as "-" (shown
 as a dash in HermitSDR), never as a number. When the server is unreachable,
@@ -59,7 +70,8 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 
-BRIDGE_VERSION = "1.0"
+BRIDGE_VERSION = "1.1"
+BUTTON_PATH = "/api/v1/actions/button"
 STATUS_PATH = "/api/v1/status"
 DEFAULT_PORT = 4001            # the port HermitSDR's "Add..." sheet pre-fills
 MAX_COMMAND_BYTES = 256        # longest unterminated command we will buffer
@@ -159,6 +171,39 @@ def fetch_status(url, timeout):
             or not isinstance(document.get("data"), dict):
         raise UpstreamError("status reply has no success/data")
     return document["data"]
+
+
+def press_button(base, name, timeout):
+    """POST the front-panel key `name` (Expert Amp Server's actions API).
+
+    Raises UpstreamError unless the server answers 2xx with a JSON document
+    whose `success` is not false.
+    """
+    body = json.dumps({"name": name}).encode("utf-8")
+    request = urllib.request.Request(base.rstrip("/") + BUTTON_PATH, data=body, method="POST",
+                                     headers={"Accept": "application/json",
+                                              "Content-Type": "application/json",
+                                              "User-Agent": "hermitsdr-expert-amp-bridge/"
+                                              + BRIDGE_VERSION})
+    try:
+        with _OPENER.open(request, timeout=timeout) as response:
+            if not 200 <= response.status < 300:
+                raise UpstreamError("HTTP %d" % response.status)
+            reply = response.read(MAX_HTTP_BYTES)
+    except UpstreamError:
+        raise
+    except urllib.error.HTTPError as error:
+        raise UpstreamError("HTTP %d" % error.code)
+    except urllib.error.URLError as error:
+        raise UpstreamError(clean_text(getattr(error, "reason", error), 80))
+    except (OSError, ValueError, http.client.HTTPException) as error:
+        raise UpstreamError(clean_text(error, 80) or error.__class__.__name__)
+    try:
+        document = json.loads(reply.decode("utf-8")) if reply.strip() else {}
+    except (ValueError, UnicodeDecodeError):
+        raise UpstreamError("button reply is not JSON")
+    if isinstance(document, dict) and document.get("success") is False:
+        raise UpstreamError("server refused: " + clean_text(document.get("error", "no reason"), 80))
 
 
 class Snapshot(object):
@@ -334,8 +379,10 @@ class Config(object):
     def __init__(self, amp_url="http://127.0.0.1:8088", listen="127.0.0.1",
                  port=DEFAULT_PORT, poll=1.0, stale_after=3.0, http_timeout=2.0,
                  link_loss="warning", max_clients=4, client_idle=90.0, model=None,
-                 verbose=False):
+                 verbose=False, allow_control=False, control_settle=1.0):
         self.amp_url = amp_url
+        self.allow_control = allow_control
+        self.control_settle = control_settle
         self.listen = listen
         self.port = port
         self.poll = poll
@@ -412,8 +459,13 @@ class ClientSession(object):
         if head == "ST?":
             st_line, alarms = self.bridge.view()
             return [st_line] + self.alarm_lines(alarms)
-        if head in ("OPER", "STBY", "TUNE", "BAND"):
-            return ["ERR READONLY bridge is monitor-only, %s not sent to the amplifier" % head]
+        if head in ("OPER", "STBY"):
+            if not self.bridge.cfg.allow_control:
+                return ["ERR READONLY bridge started without --allow-control, %s not sent" % head]
+            return [self.bridge.set_operating(head == "OPER")]
+        if head in ("TUNE", "BAND"):
+            return ["ERR READONLY Expert Amp Server offers no absolute %s action; use the "
+                    "amplifier's panel" % head]
         if head == "LOGIN":
             return ["OK"]                 # no secret is configured or checked
         return ["ERR UNKNOWN " + clean_text(head, 16)]
@@ -439,6 +491,7 @@ class Bridge(object):
         self.link_code = ALARM_LINK if cfg.link_loss == "fault" else ALARM_LINK_WARNING
         self._clients = 0
         self._clients_lock = threading.Lock()
+        self._control_lock = threading.Lock()
         family = socket.AF_INET6 if ":" in cfg.listen else socket.AF_INET
         self.listener = socket.socket(family, socket.SOCK_STREAM)
         self.listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -469,6 +522,54 @@ class Bridge(object):
     def view(self):
         return build_view(self.poller.snapshot(), time.monotonic(),
                           self.cfg.stale_after, self.link_code)
+
+    def set_operating(self, want_operate):
+        """Honour OPER/STBY through the OPERATE toggle key, verified. One
+        command at a time; returns the protocol reply line."""
+        wanted = "operate" if want_operate else "standby"
+        with self._control_lock:
+            try:
+                status = fetch_status(self.poller.url, self.cfg.http_timeout)
+            except UpstreamError as error:
+                return "ERR LINK cannot read the amplifier before %s: %s" % (wanted.upper(), error)
+            if status.get("provenance") != "status-poll" or status.get("recentContact") is False:
+                return "ERR LINK amplifier status is not live; %s not pressed" % wanted.upper()
+            state = str(status.get("operatingState", "")).strip().lower()
+            if state not in ("operate", "standby"):
+                return "ERR STATE amplifier state unknown (%s); nothing pressed" % clean_text(state or "-", 20)
+            if state == wanted:
+                return "OK already in %s" % wanted.upper()
+            if want_operate and describe(status.get("alarmCode"), status.get("alarmsText"),
+                                         status.get("activeAlarms")):
+                return "ERR ALARM amplifier reports an alarm; clear it before OPERATE"
+            presses = 0
+            for attempt in (1, 2):
+                try:
+                    press_button(self.cfg.amp_url, "operate", self.cfg.http_timeout)
+                except UpstreamError as error:
+                    log("control: OPERATE key press failed: %s" % error)
+                    return "ERR LINK OPERATE key press failed: %s" % error
+                presses += 1
+                time.sleep(self.cfg.control_settle)
+                try:
+                    status = fetch_status(self.poller.url, self.cfg.http_timeout)
+                except UpstreamError as error:
+                    return ("ERR LINK pressed OPERATE once but could not read the result: %s; "
+                            "check the amplifier" % error)
+                now = str(status.get("operatingState", "")).strip().lower()
+                if now == wanted:
+                    log("control: amplifier now in %s (%d press%s)"
+                        % (wanted.upper(), presses, "" if presses == 1 else "es"))
+                    return "OK %s" % wanted.upper()
+                if now != state:
+                    # It moved, but not where we asked: someone else is on the
+                    # panel or the server's state is behind. Do not fight it.
+                    break
+                # Unchanged after the press: one retry only.
+            log("control: amplifier reports %s after %d press%s, wanted %s"
+                % (now.upper() or "-", presses, "" if presses == 1 else "es", wanted.upper()))
+            return ("ERR STATE amplifier reports %s after %d press%s; check the front panel"
+                    % (now.upper() or "-", presses, "" if presses == 1 else "es"))
 
     def model(self):
         if self.cfg.model:
@@ -587,8 +688,11 @@ class _ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
 
 
 class FakeAmpServer(object):
-    def __init__(self, port=0):
+    def __init__(self, port=0, control=False):
         self.mode = "standby"
+        self.control = control        # answer the OPERATE key like Expert Amp Server
+        self.press_effect = "toggle"  # "toggle" | "ignore" | "fail"
+        self.presses = 0
         self.requests = []            # (method, path) of everything received
         fake = self
 
@@ -618,7 +722,25 @@ class FakeAmpServer(object):
                 fake.requests.append((self.command, self.path))
                 self._reply(405, b'{"success":false,"error":"selftest: write refused"}')
 
-            do_POST = do_PUT = do_PATCH = do_DELETE = _state_changing
+            def do_POST(self):
+                if not fake.control or self.path != BUTTON_PATH:
+                    return self._state_changing()
+                fake.requests.append(("POST", self.path))
+                length = int(self.headers.get("Content-Length") or 0)
+                try:
+                    body = json.loads(self.rfile.read(length).decode("utf-8"))
+                except ValueError:
+                    body = {}
+                if body.get("name") != "operate":
+                    return self._reply(400, b'{"success":false,"error":"unknown button"}')
+                fake.presses += 1
+                if fake.press_effect == "fail":
+                    return self._reply(500, b'{"success":false,"error":"serial write failed"}')
+                if fake.press_effect == "toggle":
+                    fake.mode = "operate" if fake.mode == "standby" else "standby"
+                self._reply(200, b'{"success":true,"data":{"pressed":"operate"}}')
+
+            do_PUT = do_PATCH = do_DELETE = _state_changing
 
             def log_message(self, *_):
                 pass
@@ -900,18 +1022,23 @@ def selftest():
     check("config: --amp-url must be http(s); request path is fixed",
           refused and status_url("http://pi:8088/") == "http://pi:8088/api/v1/status")
     check("config: default listen address is loopback", Config().listen == "127.0.0.1")
+    check("config: control is off unless --allow-control", Config().allow_control is False)
     check("config: lost amplifier status is a warning by default, a fault on request",
           Config().link_loss == "warning"
           and parse_arguments([]).link_loss == "warning"
           and parse_arguments(["--link-loss", "fault"]).link_loss == "fault")
+    args = parse_arguments(["--allow-control", "--control-settle", "0.5"])
+    check("config: --allow-control is accepted and off by default",
+          args.allow_control is True and args.control_settle == 0.5
+          and parse_arguments([]).allow_control is False)
     with contextlib.redirect_stderr(io.StringIO()) as captured:
         try:
-            parse_arguments(["--allow-control"])
+            parse_arguments(["--control-settle", "0"])
             code = 0
         except SystemExit as stop:
             code = stop.code
-    check("config: --allow-control is refused with an explanation",
-          code == 2 and "toggle" in captured.getvalue())
+    check("config: a zero or negative --control-settle is refused",
+          code == 2 and "control-settle" in captured.getvalue())
 
     # 2. End to end over real sockets.
     fake = FakeAmpServer()
@@ -1097,6 +1224,75 @@ def selftest():
               kinds == ["closed"] and bridge.client_count() == 1, str(kinds))
         check("clients: the live connection is unaffected", radio.poll()[0] is not None)
 
+        # --allow-control: a separate fake with the OPERATE key, a separate bridge.
+        ctrl_fake = FakeAmpServer(control=True)
+        ctrl = Bridge(Config(amp_url=ctrl_fake.url, port=0, poll=0.05, stale_after=0.5,
+                             http_timeout=0.5, client_idle=2.0, allow_control=True,
+                             control_settle=0.05))
+        ctrl.start()
+        try:
+            panel = DriverClient(ctrl.port)
+            clients.append(panel)
+            panel.command("ID?\r\n")
+            panel.poll_until(lambda t: t["operating"] is False)
+            reply = panel.command("OPER\r\n")
+            check("control: OPER from standby presses the key once and verifies OPERATE",
+                  reply == [("ack", None)] and ctrl_fake.presses == 1 and ctrl_fake.mode == "operate",
+                  "%s presses=%d" % (reply, ctrl_fake.presses))
+            reply = panel.command("OPER\r\n")
+            check("control: OPER while already operating presses nothing",
+                  reply == [("ack", None)] and ctrl_fake.presses == 1, str(reply))
+            reply = panel.command("STBY\r\n")
+            check("control: STBY from operate presses once and verifies STANDBY",
+                  reply == [("ack", None)] and ctrl_fake.presses == 2 and ctrl_fake.mode == "standby",
+                  "%s presses=%d" % (reply, ctrl_fake.presses))
+            ctrl_fake.press_effect = "ignore"
+            reply = panel.command("OPER\r\n")
+            check("control: a key the amplifier ignores -> one retry, then ERR STATE, two presses",
+                  len(reply) == 1 and reply[0][0] == "rejected" and reply[0][1].startswith("STATE")
+                  and ctrl_fake.presses == 4 and ctrl_fake.mode == "standby", "%s presses=%d" % (reply, ctrl_fake.presses))
+            ctrl_fake.press_effect = "fail"
+            reply = panel.command("OPER\r\n")
+            check("control: a failed press is ERR LINK and is not retried",
+                  len(reply) == 1 and reply[0][0] == "rejected" and reply[0][1].startswith("LINK")
+                  and ctrl_fake.presses == 5, "%s presses=%d" % (reply, ctrl_fake.presses))
+            ctrl_fake.press_effect = "toggle"
+            ctrl_fake.mode = "alarm"
+            reply = panel.command("STBY\r\n")
+            check("control: STBY is honoured while the amplifier alarms",
+                  reply == [("ack", None)] and ctrl_fake.presses == 6 and ctrl_fake.mode == "standby", str(reply))
+            ctrl_fake.mode = "alarm"          # alarm reported in operate state
+            ctrl_fake.mode = "standby"
+            ctrl_fake_alarm_standby = dict(canned_status("standby"))
+            # An alarm while in standby: OPER must be refused without a press.
+            saved = canned_status
+            def alarmed_standby(mode, _saved=saved):
+                live = _saved(mode)
+                if mode == "standby":
+                    live.update({"alarmCode": "S", "alarmsText": ["swr exceeding limits"],
+                                 "activeAlarms": ["swr exceeding limits"]})
+                return live
+            globals()["canned_status"] = alarmed_standby
+            try:
+                reply = panel.command("OPER\r\n")
+            finally:
+                globals()["canned_status"] = saved
+            check("control: OPER is refused while the amplifier reports an alarm",
+                  len(reply) == 1 and reply[0][0] == "rejected" and reply[0][1].startswith("ALARM")
+                  and ctrl_fake.presses == 6, "%s presses=%d" % (reply, ctrl_fake.presses))
+            reply = panel.command("TUNE\r\n") + panel.command("BAND 20\r\n")
+            check("control: TUNE and BAND stay refused with --allow-control",
+                  len(reply) == 2 and all(k == "rejected" and p.startswith("READONLY") for k, p in reply),
+                  str(reply))
+            ctrl_fake.stop()
+            reply = panel.command("OPER\r\n")
+            check("control: with the amp server gone, OPER is ERR LINK and nothing is pressed",
+                  len(reply) == 1 and reply[0][0] == "rejected" and reply[0][1].startswith("LINK"),
+                  str(reply))
+            panel.close()
+        finally:
+            ctrl.stop()
+
         seen = before + fake.requests
         check("read-only: the amp server saw only GET %s (%d requests)"
               % (STATUS_PATH, len(seen)),
@@ -1126,9 +1322,10 @@ def parse_arguments(argv):
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=(
             "Present an SPE Expert amplifier, as seen by Expert Amp Server, to HermitSDR's\n"
-            "\"Reference amplifier (line protocol)\" driver. Monitor-only: the bridge issues\n"
-            "GET /api/v1/status and nothing else, and answers OPER/STBY/TUNE/BAND with\n"
-            "ERR READONLY. It cannot key a radio or change the amplifier."),
+            "\"Reference amplifier (line protocol)\" driver. Monitor-only by default: the\n"
+            "bridge issues GET /api/v1/status and answers OPER/STBY/TUNE/BAND with ERR\n"
+            "READONLY. With --allow-control, OPER and STBY press the amplifier's OPERATE\n"
+            "key through the server and verify the result. It can never key a radio."),
         epilog=(
             "In HermitSDR: Station -> Control Devices -> Station Devices -> Add...,\n"
             "driver \"Reference amplifier (line protocol)\", link TCP, host = the machine\n"
@@ -1170,16 +1367,16 @@ def parse_arguments(argv):
                         help="run against a built-in fake amp server and fake HermitSDR "
                              "driver, then exit (touches no real device)")
     parser.add_argument("--allow-control", action="store_true",
-                        help="not available (this bridge is monitor-only); accepted only "
-                             "so that it can be refused with an explanation")
+                        help="honour OPER and STBY from HermitSDR through Expert Amp Server's "
+                             "OPERATE key as a verified toggle (read, press once if needed, "
+                             "wait --control-settle, read again; one retry; ERR otherwise). "
+                             "Off by default: the bridge then only watches")
+    parser.add_argument("--control-settle", type=float, default=1.0, metavar="SECONDS",
+                        help="how long to wait after pressing OPERATE before reading the "
+                             "amplifier's state back (default %(default)s)")
     args = parser.parse_args(argv)
-    if args.allow_control:
-        parser.error(
-            "--allow-control is not available. The reference protocol's OPER and STBY are "
-            "absolute commands, but Expert Amp Server only exposes an OPERATE toggle key "
-            "(POST /api/v1/actions/button {\"name\":\"operate\"}) and blocks \"standby\"; a "
-            "toggle driven from possibly stale status could put the amplifier in OPERATE "
-            "when STANDBY was asked for. This bridge is monitor-only.")
+    if not (math.isfinite(args.control_settle) and 0 < args.control_settle <= 10):
+        parser.error("--control-settle must be between 0 and 10 seconds")
     for name in ("poll", "stale_after", "http_timeout", "client_idle"):
         value = getattr(args, name)
         if not (math.isfinite(value) and value > 0):
@@ -1202,7 +1399,8 @@ def main(argv=None):
     cfg = Config(amp_url=args.amp_url, listen=args.listen, port=args.port, poll=args.poll,
                  stale_after=args.stale_after, http_timeout=args.http_timeout,
                  link_loss=args.link_loss, max_clients=args.max_clients,
-                 client_idle=args.client_idle, model=args.model, verbose=args.verbose)
+                 client_idle=args.client_idle, model=args.model, verbose=args.verbose,
+                 allow_control=args.allow_control, control_settle=args.control_settle)
     try:
         bridge = Bridge(cfg)
     except OSError as error:
@@ -1212,8 +1410,9 @@ def main(argv=None):
     for name in ("SIGINT", "SIGTERM"):
         signal.signal(getattr(signal, name), lambda *_: stop.set())
     bridge.start()
-    log("listening on %s:%d for HermitSDR; reading %s every %.1f s (monitor-only)"
-        % (cfg.listen, bridge.port, bridge.poller.url, cfg.poll))
+    log("listening on %s:%d for HermitSDR; reading %s every %.1f s (%s)"
+        % (cfg.listen, bridge.port, bridge.poller.url, cfg.poll,
+           "OPER/STBY control enabled, verified toggle" if cfg.allow_control else "monitor-only"))
     if cfg.listen not in ("127.0.0.1", "::1", "localhost"):
         log("note: no authentication or encryption; keep this port on a trusted station LAN")
     try:

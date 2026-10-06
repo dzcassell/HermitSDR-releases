@@ -402,16 +402,28 @@ curl -O https://raw.githubusercontent.com/dzcassell/HermitSDR-releases/main/tool
 - **It only watches.** The one request it ever makes is
   `GET /api/v1/status`. It never presses a front-panel key and never changes
   operate or standby.
-- It answers `OPER`, `STBY`, `TUNE` and `BAND` with `ERR READONLY`. The four
-  buttons are still shown in HermitSDR; pressing one writes the refusal to the
-  log and does nothing else.
-- There is no way to switch control on, and that is deliberate. Expert Amp
+- Started without `--allow-control`, it answers `OPER`, `STBY`, `TUNE` and
+  `BAND` with `ERR READONLY`. The four buttons are still shown in HermitSDR;
+  pressing one writes the refusal to the log and does nothing else.
+- **`--allow-control` honours Operate and Standby** (bridge 1.1). Expert Amp
   Server offers the amplifier's OPERATE key, which flips between operate and
-  standby, and it blocks a separate "standby" action. `OPER` and `STBY` in
-  this protocol mean "be in operate" and "be in standby". Building those out
-  of a key that flips the state, using a reading that may be a moment old,
-  could put the amplifier into operate when standby was asked for. Use Expert
-  Amp Server's own web page to control the amplifier.
+  standby, and has no separate "standby" action, while `OPER` and `STBY` in
+  this protocol mean "be in operate" and "be in standby". The bridge therefore
+  treats each as a verified toggle: it reads the amplifier's state fresh from
+  the server (never from its poll cache); if the state already matches it
+  answers `OK` without pressing anything; otherwise it presses OPERATE once,
+  waits `--control-settle` seconds (1 s by default), reads again and answers
+  `OK` only when the amplifier reports the requested state. If the state did
+  not move at all it presses once more; it never presses more than twice for
+  one command. Any other outcome is `ERR STATE …` naming what the amplifier
+  reports, and nothing further is pressed — check the front panel. `OPER` is
+  refused with `ERR ALARM` while the amplifier reports an alarm (`STBY` is
+  always allowed). `TUNE` and `BAND` stay refused: the server offers no
+  absolute action for them. The residual risk is a hand on the front panel in
+  the second between the read and the press; the verification reports it
+  rather than hiding it. Operate/standby through the bridge was checked
+  against the built-in fake server only (`--selftest`, 65 checks), not a real
+  amplifier.
 - **Losing sight of the amplifier is a warning, not a stop.** If the bridge
   cannot get the amplifier's status (the amplifier is switched off, or Expert
   Amp Server cannot be reached), it shows dashes and raises a warning.
@@ -433,6 +445,9 @@ Server.
 
    ```
    python3 expert-amp-bridge.py --listen 0.0.0.0 --amp-url http://127.0.0.1:8088
+
+  # the same, with Operate / Standby from HermitSDR honoured (verified toggle)
+  python3 expert-amp-bridge.py --listen 0.0.0.0 --amp-url http://127.0.0.1:8088 --allow-control
    ```
 
    `--listen 0.0.0.0` lets other computers on your network connect. Without
