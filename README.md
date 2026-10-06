@@ -36,7 +36,15 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1006_003** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1006_004** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1006_004
+
+- **"Configure ANAN Network" no longer leaves you staring at "Command sent"** (#196, K6AVP's first-run report on an ANAN-100B). Protocol 2's set-address command has no acknowledgement, and the sheet said so only by sitting there with a Cancel button. It now watches the rescan for the same board answering discovery again — at the requested address for a static write — and says so with a Close button; after 25 seconds without an answer it says plainly that no acknowledgement is expected, suggests Rescan, and names the case where the radio's firmware does not implement address changes (some reduced Protocol 2 builds, the ANAN-100B among them), so the operator knows to use the manufacturer's tool instead of waiting.
+- **FT8 / FT4 say when they are paused** (#196). The decoders only run in USB — the tooltip said so, but a lit FT8 key in another mode decoded nothing in silence. The decoder row now shows "paused · needs USB" beside the keys whenever FT8 or FT4 is on and the receiver is not in USB. (The operator's "band active, no decodes" has not been reproduced; this is the one thing the app could have told him at the time.)
+- **TCI server can accept clients from other machines** (#196). Settings ▸ CAT ▸ "Allow TCI clients from other machines on this LAN" binds every interface instead of loopback, so WSJT-X or a logger on another computer can connect to ws://<this Mac>:port. TCI has no pairing step, so the setting's note says what that means: anyone on the LAN who can reach the port can tune the receiver and hear its audio. Transmit commands stay refused whatever the source. Off by default; the status line names the binding.
+- **A Light palette** (#196, "dark mode too hard on eyes — need a normal lite mode"). "Light" joins the palette menu beside the dark skins: paper-grey surfaces, ink text, one blue selection accent, meter and state colours darkened to read on light ground, and the native appearance switched to Aqua for that skin only so menus and popovers follow. Dark remains the default and nothing about the existing palettes changed. Instrument faces that are black by design (the header strip with the dial, S-meter, clocks and power meters; the waterfall; the branded About and update panels) stay black. Seen on screen in Demo Mode: light sidebar, control bank and status bars around the black instruments. Debug builds take `HERMITSDR_SKIN=<palette name>` for screen checks.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `4c991665cd6c288d579f0e4e23d5782a5c44d061d2bad53d7d5249363ee14d00`.
 
 ## New in 2026.1006_003
 
