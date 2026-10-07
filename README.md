@@ -36,7 +36,15 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1007_002** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1007_003** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1007_003
+
+- **Every ANAN on Protocol 2 is now recognised by name and receives through its Alex relays** (after #197, for #196). ANAN-10/100 (Hermes, board 1), ANAN-10E/100B (board 2), ANAN-G2 (Saturn, board 10) and an Atlas/Metis backplane (board 0) no longer fall to "Unknown P2 Board", whose fallback never sent an Alex word — the likely cause of K6AVP's "band active, no decodes" on his ANAN-100B (#196). Hermes-class boards get the single classic Alex word with their receivers on DDC0/1; the G2 gets the Orion MkII's two-filter-board words. Transmit stays closed on all of them until a dummy-load session validates it.
+- **The reduced-firmware ANAN-10E/100B keeps everything optional off**: one receiver, no sub-RX, monitors, dither or random, and no mid-stream configuration resends.
+- **Protocol 1 Hermes, Griffin, Angelia, Orion and Orion MkII boards are named in the connect sheet** with their ADC count, still receive-only: the Protocol 1 stack sends no Alex bytes, so their filters and antennas are not driven yet, and the row's hover says so.
+- **Byte-identical guarantee for the validated and reviewed boards.** Full-packet hashes of the Orion MkII, Orion and Angelia General, DDC-specific and High-priority packets are pinned by test, recorded on the previous release's tree with a settle wait (the first recording captured whichever of the General or the High-priority packet landed first and flapped between boards from run to run) and reproduced on this one; the loopback virtual radio now streams a second receiver from DDC1 for DDC0/1 boards.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `1ec853c2de8f46f455391bf5f81286173e07fb7fd39043064efca71c07995bee`.
 
 ## New in 2026.1007_002
 
@@ -772,7 +780,7 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 <!-- Mirrors the app's built-in capability table (DSP/Capabilities.swift). -->
 | Capability | Support |
 | --- | --- |
-| Radios | Hermes-Lite 2 / SquareSDR (openHPSDR Protocol 1) · Apache Labs ANAN Orion-class, e.g. 7000DLE MK2 (Protocol 2) · ANAN-200D (Orion) and ANAN-100D (Angelia): receive with the single Alex board's filter and antenna relays, transmit closed until validated on the hardware · RFSpace NetSDR (receive-only direct-sampling HF receiver: TCP control + UDP I/Q on port 50000, its own LAN discovery, in-app static-IP/DHCP assignment) |
+| Radios | Hermes-Lite 2 / SquareSDR (openHPSDR Protocol 1) · Apache Labs ANAN Orion-class, e.g. 7000DLE MK2 (Protocol 2) · every other ANAN on Protocol 2 — ANAN-10/100 (Hermes), ANAN-10E/100B, ANAN-100D (Angelia), ANAN-200D (Orion), ANAN-G2 (Saturn) and an Atlas/Metis backplane — is recognised by name and receives through its Alex filter and antenna relays, transmit closed until validated on the hardware · Protocol 1 Hermes, Griffin, Angelia, Orion and Orion MkII boards are named and receive-only · RFSpace NetSDR (receive-only direct-sampling HF receiver: TCP control + UDP I/Q on port 50000, its own LAN discovery, in-app static-IP/DHCP assignment) |
 | RX / TX | Receive + transmit live-validated on both openHPSDR protocols (dummy load; on-air QSOs user-gated) · the NetSDR is receive-only, so its sessions carry no TX banner, ARM, PTT, TUNE or drive controls at all |
 | Sample rates | 48–384 kHz (P1) · up to 1536 kHz (P2) · 48–768 kHz on the NetSDR (the radio streams 50–800 kHz, resampled 24/25 to the chain rate) |
 | Demod modes | USB, LSB, CW, AM, SAM, FM, NFM, DSB · separate wide/narrow FM deviation · CTCSS encode/decode · FM sub-audio filter (the repeater's CTCSS tone leaves the speaker audio; on by default) · AM, SAM and DSB filters to 20 kHz, with 10 kHz audio at the speakers above 11 kHz of width |

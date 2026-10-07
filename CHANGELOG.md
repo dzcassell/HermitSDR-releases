@@ -7,6 +7,15 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1007_003] — 2026-10-07
+
+### Fixes
+
+- **Every ANAN on Protocol 2 is now recognised by name and receives through its Alex relays** (after #197, for #196). ANAN-10/100 (Hermes, board 1), ANAN-10E/100B (board 2), ANAN-G2 (Saturn, board 10) and an Atlas/Metis backplane (board 0) no longer fall to "Unknown P2 Board", whose fallback never sent an Alex word — the likely cause of K6AVP's "band active, no decodes" on his ANAN-100B (#196). Hermes-class boards get the single classic Alex word with their receivers on DDC0/1; the G2 gets the Orion MkII's two-filter-board words. Transmit stays closed on all of them until a dummy-load session validates it.
+- **The reduced-firmware ANAN-10E/100B keeps everything optional off**: one receiver, no sub-RX, monitors, dither or random, and no mid-stream configuration resends.
+- **Protocol 1 Hermes, Griffin, Angelia, Orion and Orion MkII boards are named in the connect sheet** with their ADC count, still receive-only: the Protocol 1 stack sends no Alex bytes, so their filters and antennas are not driven yet, and the row's hover says so.
+- **Byte-identical guarantee for the validated and reviewed boards.** Full-packet hashes of the Orion MkII, Orion and Angelia General, DDC-specific and High-priority packets are pinned by test, recorded on the previous release's tree with a settle wait (the first recording captured whichever of the General or the High-priority packet landed first and flapped between boards from run to run) and reproduced on this one; the loopback virtual radio now streams a second receiver from DDC1 for DDC0/1 boards.
+
 ## [2026.1007_002] — 2026-10-07
 
 ### Features
