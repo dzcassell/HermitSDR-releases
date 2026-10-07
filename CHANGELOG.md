@@ -7,6 +7,23 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1007_002] — 2026-10-07
+
+### Features
+
+- **YouTube clips play in the Media Deck mix, alongside wav pads.** A YouTube pad's audio is now tapped from WebKit's media process (a Core Audio process tap, muted at the source so nothing is heard twice) into the deck's own graph, so pad gain, the FX rack, the output device, "Send to stream mix", the deck meter and the TX App-audio source treat it exactly like a local pad — and a wav pad plays at the same time in the same mix. macOS asks once for System Audio Recording on the first YouTube play; refuse it and the clip plays to the speakers as before, and the pad, the player panel and the pad editor say "speakers only" with the reason. The tap exists only while a YouTube pad is active and is never created at launch. Nothing is downloaded or cached.
+- **The YouTube player is a panel, not a sheet.** It sits under the pad grid, serves every YouTube pad (pressing another swaps the clip) and leaves the grid fully usable while a clip plays.
+- **YouTube pads play again.** The embedded player had started refusing every clip with error 152 (embed origin); the deck now embeds from its own page origin, and every public clip tried plays.
+
+### Fixes
+
+- **ANAN-200D (Orion) and ANAN-100D (Angelia) are recognised and receive through their Alex relays** (#197). An operator's ANAN-200D on Protocol 2 firmware 1.9 showed up as "Unknown P2 Board (receive only)" and connected to white noise with no relay clicks on a band change: only the Orion MkII (board 5) had a profile, and the unknown-board fallback never sends an Alex word, so the Alex RX input and filter relays never closed. Boards 4 and 3 now take a reviewed receive profile with the single Alex board's word — RX high-pass and low-pass filter for the band, ANT1/2/3, EXT1, XVTR and bypass inputs — and one General latches each change, so band changes click relays as in Thetis. Transmit stays closed on both boards until a dummy-load session validates it; the connect sheet now reads "RECEIVE ONLY (transmit not validated on this board yet)" and hovering the row shows the resolver's reasoning. The loopback virtual radio now advertises a board type and firmware, and a new suite pins board resolution, the Alex bytes for every topology across seven bands and three inputs, an end-to-end connect against a virtual ANAN-200D, and byte-identical Orion MkII packets.
+- **NetSDR clock calibration no longer refuses a fading WWV carrier, and no longer mistakes the receiver's own clock for WWV** (#142). Measured live on MC000359 on 2026-10-07: WWV 20 MHz arrived 45 dB over the noise but faded 6–16 dB between the halves of the 8 s capture, so the amplitude-steadiness gate refused it although its frequency held to 0.16 Hz across fifteen windows. The gate now asks whether the two halves of the capture agree in frequency (within 0.5 Hz; the real 20 MHz capture differed by up to 0.42 Hz between halves) and each still shows a carrier; the amplitude ratio is only the fallback for a capture too short to split. The same session found the NetSDR hears its own 80 MHz clock at 10 and 20 MHz (80 MHz ÷ 8 and ÷ 4) at 26–35 dB over the noise, exactly on the dial with no fading, and the 10 MHz "measurement" had locked onto that spur rather than the real WWV 62 Hz away. Those references are labelled "(clock spur)" in the picker, a measurement that lands on one is refused with the reason, and the default reference is WWV 15 MHz. The refusal text now names what fell short (dB over the noise, half-capture disagreement, a missing half). The measurement also recentres the span on the dial first: with the span centred on the reference, the NetSDR's DC spike sat at exactly 1 kHz in the audio, where the WWV tone is expected, and the two halves of a capture flipped between the spike and WWV ("disagree by 94.25 Hz"). **Validated end to end on MC000359 the same day:** WWV 15 MHz read +94.5 and +94.8 Hz (+6.3 ppm) on two runs, the write stored 79,999,494 Hz and read it back, and afterwards WWV 15 MHz read +0.29 Hz and WWV 25 MHz +0.79 Hz (0.02–0.03 ppm). The write stays behind its confirmation and the hidden unlock key for this release.
+
+### Changed
+
+- **CHU is no longer offered as a frequency reference.** Canada's CHU time signal left the air for good in 2026, so the NetSDR clock-calibration picker lists WWV only (WWVH shares those frequencies) and the Settings button reads "Measure against WWV". Operator fact from Damon, 2026-10-07.
+
 ## [2026.1007_001] — 2026-10-07
 
 Six workstreams merged in one build: the Light palette across every window, the
