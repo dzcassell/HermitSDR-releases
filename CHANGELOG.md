@@ -7,6 +7,23 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1008_001] — 2026-10-08
+
+### Fixes
+
+- **Bookmarks stay reachable in every Console Layout** (#198). The full and compact console banks now carry the Bookmarks star, and Radio → Bookmarks… (⌘⇧B) opens the saved list in any layout. Switching layouts never deleted saved frequencies; it hid their entry point. The shared control exposes the bookmark count to accessibility.
+
+- **Warning toasts remain readable in the Light palette.** PA thermal notices and Crab watch alerts use white text on their fixed dark overlay, instead of inheriting dark primary text from Light appearance. Bookmarks and the thermal threshold popover use the shared palette and their own colour scheme, so their text remains readable beside the dark instrument header. The PA temperature chip keeps its single-line width beside the classic TX banner rather than collapsing into a narrow vertical strip.
+
+### Features
+
+- **PA temperature and current on the main panel** (#200). A Hermes-Lite 2 shows its PA temperature and drain current under RF Pwr / SWR, live during receive; an ANAN Orion MkII shows current only because its status packet has no temperature sensor. Missing samples and current below the conversion's trust floor show “—”.
+- **Configurable HL2 thermal warning** (#200). Temperature turns amber at an adjustable threshold (default 50 °C) and red at 55 °C, with a one-time session warning and a temperature chip beside the TX banner while warm or hot. The warning labels 55 °C as an operator-reported cut-off that has not been verified. These readouts only inform the operator; they do not key, unkey, inhibit or throttle the transmitter.
+
+### Documentation
+
+- Clarify the source and limits of the thermal thresholds, and update the engineering handoff with release validation and the remaining operator acceptance checks.
+
 ## [2026.1007_003] — 2026-10-07
 
 ### Fixes

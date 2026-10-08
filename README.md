@@ -36,7 +36,16 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1007_003** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1008_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1008_001
+
+- **Bookmarks stay reachable in every Console Layout** (#198). The full and compact console banks now carry the Bookmarks star, and Radio → Bookmarks… (⌘⇧B) opens the saved list in any layout. Switching layouts never deleted saved frequencies; it hid their entry point. The shared control exposes the bookmark count to accessibility.
+- **Warning toasts remain readable in the Light palette.** PA thermal notices and Crab watch alerts use white text on their fixed dark overlay, instead of inheriting dark primary text from Light appearance. Bookmarks and the thermal threshold popover use the shared palette and their own colour scheme, so their text remains readable beside the dark instrument header. The PA temperature chip keeps its single-line width beside the classic TX banner rather than collapsing into a narrow vertical strip.
+- **PA temperature and current on the main panel** (#200). A Hermes-Lite 2 shows its PA temperature and drain current under RF Pwr / SWR, live during receive; an ANAN Orion MkII shows current only because its status packet has no temperature sensor. Missing samples and current below the conversion's trust floor show “—”.
+- **Configurable HL2 thermal warning** (#200). Temperature turns amber at an adjustable threshold (default 50 °C) and red at 55 °C, with a one-time session warning and a temperature chip beside the TX banner while warm or hot. The warning labels 55 °C as an operator-reported cut-off that has not been verified. These readouts only inform the operator; they do not key, unkey, inhibit or throttle the transmitter.
+- Clarify the source and limits of the thermal thresholds, and update the engineering handoff with release validation and the remaining operator acceptance checks.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `07e88fe4ad5b0799d70af69f0300559986a473a8e6c4c9f7e8a35068b3156bca`.
 
 ## New in 2026.1007_003
 
