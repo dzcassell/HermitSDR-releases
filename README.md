@@ -36,7 +36,12 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1008_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1009_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1009_001
+
+- **Roger beeps now work in FM and NFM** (#199). The beep uses the configured FM deviation and pre-emphasis, retains the CTCSS tone when enabled, and keeps the carrier continuous from voice into beep before unkeying. Existing SSB/AM behavior and transmit protections remain unchanged.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `4693852f384ad55bc6f6b4dcea866ead987a107403d4467fc1efee5484736905`.
 
 ## New in 2026.1008_001
 

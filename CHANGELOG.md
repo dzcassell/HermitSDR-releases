@@ -7,6 +7,21 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1009_001] — 2026-10-09
+
+### Fixes
+
+- **Roger beeps now work in FM and NFM** (#199). The beep uses the configured FM deviation and pre-emphasis, retains the CTCSS tone when enabled, and keeps the carrier continuous from voice into beep before unkeying. Existing SSB/AM behavior and transmit protections remain unchanged.
+
+### Build
+
+- Pin CI and release checks to the selected Xcode SDK, preventing a newer Command Line Tools SDK from being combined with an older Swift compiler.
+
+### Validation
+
+- Operator dummy-load checks on an ANAN-7000DLE MkII at 29.600 MHz, ANT1 and 3% drive confirmed clean Classic beeps in FM, NFM, NFM with 100 Hz CTCSS detected during TX, and USB, monitored on a receive-only SquareSDR 2. RF deviation and tone-squelch continuity were not measured; these limits are recorded in the review packet.
+- Automated regressions cover FM deviation, pre-emphasis, CTCSS continuity, all-preset bounded tails and unchanged non-FM wire output.
+
 ## [2026.1008_001] — 2026-10-08
 
 ### Fixes
