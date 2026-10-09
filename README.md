@@ -36,7 +36,12 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1009_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1009_002** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1009_002
+
+- **Typing in embedded websites no longer triggers radio shortcuts** (#203). YouTube sign-in could lose the letter A to the Arcade FX shortcut, along with other configured shortcut letters. The keyboard manager now recognizes WebKit's internal editor through its view/responder ancestry and lets the website handle its keys. Native text editing stays protected, radio controls retain their shortcuts, and release of an already-held key still takes precedence over focus changes.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `fa4365668f5d2516490fdcd4d2b36e30cbe4cd41f8eb826f81b1e1a0b7eb20f9`.
 
 ## New in 2026.1009_001
 

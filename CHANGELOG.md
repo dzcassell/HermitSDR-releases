@@ -7,6 +7,22 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## Unreleased
+
+### Documentation
+
+- Record verified 2026.1009_001 publication, #199 operator acceptance, CI retry evidence and staged-branch synchronization for the Claude handoff.
+
+## [2026.1009_002] — 2026-10-09
+
+### Fixes
+
+- **Typing in embedded websites no longer triggers radio shortcuts** (#203). YouTube sign-in could lose the letter A to the Arcade FX shortcut, along with other configured shortcut letters. The keyboard manager now recognizes WebKit's internal editor through its view/responder ancestry and lets the website handle its keys. Native text editing stays protected, radio controls retain their shortcuts, and release of an already-held key still takes precedence over focus changes.
+
+### Validation
+
+- Native/WebKit focus checks and real keyboard entry on a local HTML page verified A, uppercase A, space and shortcut letters without firing app actions. No account credentials or radio keying were used.
+
 ## [2026.1009_001] — 2026-10-09
 
 ### Fixes
