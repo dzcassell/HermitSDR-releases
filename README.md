@@ -36,7 +36,14 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1009_002** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1009_003** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1009_003
+
+- **Media Deck audio reaches the transmitter.** Auto PTT sends YouTube and local pads directly to TX, including when speaker output is muted or the pad uses the stream route. Pad effects and gain remain active, and your previous input returns afterward. ARM and transmit interlocks remain in place.
+- **The latest YouTube typing fix is included.** Embedded website input keeps its keyboard focus, so typing no longer triggers radio shortcuts.
+- **Routing guidance is updated.** The [Media Deck guide](docs/MediaDeck.md) explains the direct transmit route and macOS audio permissions.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `e906fdfc3309c25237370eb3c1fa158f5c1e00a3e37797e98c6c007f3eb7fb2f`.
 
 ## New in 2026.1009_002
 

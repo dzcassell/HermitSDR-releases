@@ -7,11 +7,21 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
-## Unreleased
+## [2026.1009_003] — 2026-10-09
 
-### Documentation
+### Fixes
 
-- Record verified 2026.1009_001 publication, #199 operator acceptance, CI retry evidence and staged-branch synchronization for the Claude handoff.
+- Route the processed Media Deck mix, including embedded YouTube pads, directly
+  to TX during Auto PTT (#204) instead of keying the selected microphone/file input.
+  Preserve stereo, pad/master gain and FX across monitor/stream routes; restore
+  the prior TX input on release or disarm. Wait for captured YouTube audio before
+  keying, retaining ARM, ownership, timeout and hardware protections.
+
+### Documentation and validation
+
+- Publish the updated Media Deck routing guide in the public documentation mirror.
+- Record verified 2026.1009_001 and 2026.1009_002 publication and agent handoff evidence; add production-code stereo TX routing, input restoration, muted-output and rate-conversion fixtures to local checks and CI.
+- Live YouTube-to-radio acceptance remains operator-assisted; no radio was keyed during automated validation.
 
 ## [2026.1009_002] — 2026-10-09
 
