@@ -399,9 +399,9 @@ curl -O https://raw.githubusercontent.com/dzcassell/HermitSDR-releases/main/tool
 
 ### What the bridge will and will not do
 
-- **It only watches.** The one request it ever makes is
-  `GET /api/v1/status`. It never presses a front-panel key and never changes
-  operate or standby.
+- **It only watches by default.** Without `--allow-control`, it makes
+  only `GET /api/v1/status` requests and never presses a front-panel key or
+  changes operate or standby.
 - Started without `--allow-control`, it answers `OPER`, `STBY`, `TUNE` and
   `BAND` with `ERR READONLY`. The four buttons are still shown in HermitSDR;
   pressing one writes the refusal to the log and does nothing else.
@@ -498,6 +498,8 @@ most likely to want:
 | `--poll` | `1.0` | Seconds between status requests to Expert Amp Server. |
 | `--stale-after` | `3.0` | Readings older than this many seconds are reported as unavailable. |
 | `--link-loss` | `warning` | What to tell HermitSDR when the amplifier's status is lost: `warning` only warns, `fault` also stops transmitting. See below. |
+| `--allow-control` | off | Explicitly enable verified Operate/Standby requests; Tune and Set band remain read-only. |
+| `--control-settle` | `1.0` | Seconds to wait after an OPERATE key press before verifying the requested state. |
 | `--model` | (from the server) | Model word to report, if you want it fixed. |
 | `--verbose` | off | Log every line received from HermitSDR. |
 
@@ -509,7 +511,7 @@ Expert Amp Server answers `GET /api/v1/status` with
 | HermitSDR shows | Taken from | Notes |
 | --- | --- | --- |
 | Model | `modelName` | "EXPERT 2K-FA" is sent as `EXPERT-2K-FA`. `UNKNOWN` until the server has named it. |
-| Firmware | — | Shows the bridge's own version, `bridge-1.0`. The amplifier's firmware is not in the status. |
+| Firmware | — | Shows the bridge's own version, `bridge-1.1`. The amplifier's firmware is not in the status. |
 | Serial | — | Always a dash. |
 | State | `operatingState` | `operate` → OPERATE, `standby` → STANDBY, anything else → dash. |
 | Power | `powerWatts` | Watts. A dash when the server does not report it. |
@@ -580,11 +582,14 @@ An alarm reported by the amplifier is a fault with either setting.
   wrong.
 - **No transmit indication.** The status says whether the amplifier is
   transmitting; the protocol has nowhere to show it.
-- **Tested against Expert Amp Server 0.4.8.** A later version may rename
-  things. A field the bridge does not find becomes a dash, not a guess.
+- **Fixture-tested from Expert Amp Server 0.4.8 source.** A real server
+  and amplifier have not been tested. A later version may rename things. A field the bridge does not find becomes
+  a dash, not a guess.
 - **No password.** Neither Expert Amp Server nor the bridge asks who is
-  connecting. Keep both on a trusted network. Because the bridge only reads,
-  the most a stranger could do through it is see the amplifier's status.
+  connecting. Keep both on a trusted network. Default monitor mode exposes
+  status;
+  with `--allow-control`, any connected client can also request Operate or
+  Standby. Neither mode authorizes or keys the radio.
 
 ### If it does not work
 
@@ -595,7 +600,7 @@ An alarm reported by the amplifier is a fault with either setting.
 | HermitSDR will not transmit and the strip reads INHIBIT | Read the reason in the strip. `AMPALARM` is the amplifier's own alarm; `LINK` appears only if the bridge was started with `--link-loss fault`; "hot" is the **Hot at** setting. An alarm left over from an earlier session is covered under "Known limits". |
 | FAULTED, "Model mismatch" | Clear the **Expected model** field (or correct it) and press **Retry**. |
 | Alarm `WNOSTATUS` | Expert Amp Server is not getting answers to its status requests; check its settings page. |
-| Log says "device rejected: READONLY …" | Someone pressed Operate, Standby, Tune request or Set band. The bridge does not pass these on. |
+| Log says "device rejected: READONLY …" | Operate/Standby require explicit `--allow-control`; Tune request and Set band are always refused. |
 | Log says "device rejected: BUSY too many clients" | More than four programs are connected to the bridge (`--max-clients`). |
 
 The bridge prints what it is doing to its terminal: each connection, and each

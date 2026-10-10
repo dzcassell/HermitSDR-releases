@@ -4,6 +4,10 @@ Open **Station ▸ Audio & Streaming ▸ Media Deck** for a resizable, page-base
 saved automatically in Application Support and can also be exported as JSON
 for backup or transfer.
 
+In Edit mode the page grid, Rename, Delete, Export and Import tools occupy a
+separate compact footer row so narrow windows keep their labels readable.
+Toolbar toggles and empty-pad outlines follow the active palette immediately.
+
 ## Pad sources
 
 | Source | What it does | Output |
@@ -157,8 +161,9 @@ the deck ask for the key instead:
 - The deck never adopts a key it did not raise, and it never re-keys by
   itself: after a manual unkey, a disarm, a protection trip or a refusal the
   same playback stays off the air until a pad is started again.
-- A time-out timer unkeys after 180 s so a looping pad cannot hold the
-  transmitter.
+- There is no fixed playback-duration cutoff. Long videos, live streams and
+  looping pads stay keyed until playback ends, pauses or is stopped, Auto PTT
+  is switched off, or the normal transmitter controls/protections unkey.
 - The latch is never saved. Like ARM, every launch starts with it off, and
   editing or importing a deck document cannot turn it on.
 

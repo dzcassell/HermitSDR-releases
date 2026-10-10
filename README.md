@@ -36,7 +36,36 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1009_003** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1010_002** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1010_002
+
+- Remove the Media Deck's fixed 180-second Auto PTT cutoff (#205) so long videos,
+  streams and loops continue until playback stops or normal transmitter
+  controls/protections release the key. Preserve refusal and external-unkey
+  blocking; regressions cover one hour of simulated playback and release.
+  Update the Auto PTT tooltip and pad-editor routing guidance to match.
+- Flatten Speaker Tracker assignment and cluster-merge menus (#206) into native
+  sections, avoiding the in-window submenu pointer-loss defect. Keep the
+  existing actions and identify each destination explicitly. Anchor short
+  transmission lists to the top while retaining horizontal scrolling.
+- Keep Media Deck toolbar toggles and Keyboard Shortcuts binding buttons on
+  the active palette during live palette changes, using the window's observed
+  skin owner rather than rereading saved or launch-override settings (#160).
+- Put Media Deck edit-mode page tools on a separate compact footer row so
+  Rename/Delete/Export/Import labels do not wrap into vertical characters in
+  narrow windows (#160). Empty pad outlines also use the active theme border
+  instead of white, preserving visible pad boundaries in Light.
+- Include console Keyboard Shortcuts and Waterfall Capture controls in both
+  full and compact banks (#202).
+- Correct amplifier bridge 1.1 documentation: monitoring is the default;
+  explicit control enables verified Operate/Standby, and Tune/Set band remain
+  refused. Document the unauthenticated control exposure and fixture-only
+  validation accurately. Retain physical acceptance and optional native SPE
+  work in #207 when closing the delivered #190 protocol/bridge alternative.
+- Correct release/agent guidance to match the existing strict VirusTotal gate:
+  missing keys and unscanned verdicts stop publication.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `0eb6a5fc88485f53092e1c3aa80791ff7337f73be4e45344a3142a36d43b15c1`.
 
 ## New in 2026.1009_003
 

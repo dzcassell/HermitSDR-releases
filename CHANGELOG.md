@@ -7,6 +7,56 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1010_002] — 2026-10-10
+
+### Fixes
+
+- Remove the Media Deck's fixed 180-second Auto PTT cutoff (#205) so long videos,
+  streams and loops continue until playback stops or normal transmitter
+  controls/protections release the key. Preserve refusal and external-unkey
+  blocking; regressions cover one hour of simulated playback and release.
+  Update the Auto PTT tooltip and pad-editor routing guidance to match.
+- Flatten Speaker Tracker assignment and cluster-merge menus (#206) into native
+  sections, avoiding the in-window submenu pointer-loss defect. Keep the
+  existing actions and identify each destination explicitly. Anchor short
+  transmission lists to the top while retaining horizontal scrolling.
+- Keep Media Deck toolbar toggles and Keyboard Shortcuts binding buttons on
+  the active palette during live palette changes, using the window's observed
+  skin owner rather than rereading saved or launch-override settings (#160).
+- Put Media Deck edit-mode page tools on a separate compact footer row so
+  Rename/Delete/Export/Import labels do not wrap into vertical characters in
+  narrow windows (#160). Empty pad outlines also use the active theme border
+  instead of white, preserving visible pad boundaries in Light.
+
+- Include console Keyboard Shortcuts and Waterfall Capture controls in both
+  full and compact banks (#202).
+
+### Documentation
+
+- Correct amplifier bridge 1.1 documentation: monitoring is the default;
+  explicit control enables verified Operate/Standby, and Tune/Set band remain
+  refused. Document the unauthenticated control exposure and fixture-only
+  validation accurately. Retain physical acceptance and optional native SPE
+  work in #207 when closing the delivered #190 protocol/bridge alternative.
+- Correct release/agent guidance to match the existing strict VirusTotal gate:
+  missing keys and unscanned verdicts stop publication.
+
+## [2026.1010_001] — 2026-10-10
+
+### Fixes
+
+- Restore Keyboard Shortcuts and Waterfall Capture in both full and compact
+  Console Layout banks (#202), using the existing controls and owners. Give
+  their buttons stable accessible names; popovers follow the selected palette
+  even when opened from the black tuning strip. Opening either control does
+  not change bindings, capture an image or post to Discord.
+
+### Documentation
+
+- Close completed hpsdr-rs and ANAN Core research catalogs (#173, #183), retaining
+  all unfinished implementation and hardware acceptance in their child issues.
+- Save verified 2026.1009_003 publication and operator acceptance limits.
+
 ## [2026.1009_003] — 2026-10-09
 
 ### Fixes
