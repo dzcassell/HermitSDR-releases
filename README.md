@@ -36,7 +36,47 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1010_002** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1011_002** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1011_002
+
+- Per-band open-collector outputs, receive side (#124). Station › Control
+  Devices › OC Outputs sets the seven open-collector pins on the radio's
+  accessory connector per band — a receive row, a transmit row, a TUNE mask
+  and tune pulse timers — stored for the connected physical radio, the
+  zero-extra-hardware way to band-switch an amplifier, band decoder or antenna
+  relay. This build puts the band's receive row on the wire while receiving:
+  Protocol 1 register-0 byte C2 bits 1–7 and Protocol 2 high-priority byte
+  1401 bits 1–7. Every keyed frame still sends 0 — the transmit row, TUNE
+  mask and timers are staged on `stage/124-oc-tx-outputs` for the
+  transmit-path review. With the default all-zero matrix both protocols are
+  byte-identical to before (pinned by the wire-baseline tests); the virtual
+  radio reports the OC bytes it saw. `docs/OCOutputs.md` has the bit map.
+- The updater keeps the version you were running until the new one has started (#180). After Install & Relaunch, the previous app stays beside the new one until the new one's main window has been up for three seconds; only then is it deleted. If the new version cannot be started, crashes first, or has not confirmed within 60 seconds, the installer closes it, puts the previous version back, reopens it, and the Software Update window says what happened and why. Quitting the new version yourself during those three seconds counts as a start, not a failure. HermitSDR does not offer that version again by itself in that session; Check Now or the release page is the retry. Only the exact bundle that was installed is ever restored (bound by its code hash), never an older release, and every existing check stays: signature, Team ID, notarization, version, the refusal to update while the transmitter is armed or keyed, and the clean quit. The installer also re-checks that the copy it is about to install is the build the app verified, refuses to run two installs at once, and leaves a recoverable state if it is interrupted. Applies to updates started by a build that contains it. Details and limits: `docs/UpdateStartupHealth.md`.
+- Hermes-Lite 2 / SquareSDR AK4951 audio codec companion board, receive side (#209, requested by LB2EG; first part — the board's microphone and key jack are staged separately for the transmit-path review). **Not yet verified on a radio: no companion board was available when this was written.** A switch under Settings › Hermes-Lite 2 Hardware, off by default, shown only for the HL2 / SquareSDR profile and remembered per radio, tells the gateware the board is fitted — register 0, C3 bit 3, the bit stock gateware reads as Fan / Band Volts PWM and the ak4951 gateware variants read as the codec speaker switch, exactly as piHPSDR's "HL2 audio codec" option sets it — and fills the 63 left / right 16-bit codec slots of every outgoing Protocol 1 frame with the receiver's speaker mix (the same block the Mac speakers get: receiver while receiving, the app's CW sidetone and the TX monitor while keyed), at its own level, through the same bounded 12 → 48 kHz buffer as the ANAN path (#188). The gateware initialises the AK4951 itself at power-up (verified in the gateware's `i2c.v`), so no I2C writes are sent. With the switch off HermitSDR sends an HL2 byte-for-byte what it sent before: a new `P1WireBaselineTests` pins a scripted receive / key / unkey session against a digest taken before this change, and the virtual radio now reports the register-0 C3 values and the codec audio frames it saw. `docs/HL2AudioCodec.md` records what was verified against the gateware and what the first hardware session has to check.
+- Radio audio output for the ANAN-7000/8000DLE on Protocol 2 (#188, first part of #132; requested by an operator who uses the radio's own audio connections). **Not yet verified on a radio: no ANAN was available when this was written, so nobody has heard it.** A switch under Settings › ANAN Hardware, off by default and shown only for the reviewed Orion MkII profile, sends the receiver's speaker mix to the radio's audio codec as well as to the Mac, so headphones or a speaker plugged into the radio play it. It has its own level, separate from the Mac volume and mute, and the choice is remembered per radio. It plays what the Mac speakers are given: while you transmit the receiver is muted, and your own voice is heard only with TX Monitor on. The wire format is the Protocol 2 "DDC Audio" packet from the published specification (port 1028, 260 bytes: a sequence number and 64 stereo frames of 16-bit big-endian audio at 48 kHz), one packet for each microphone packet the radio sends, which is the codec's own clock. With the switch off HermitSDR sends byte-for-byte what it sent before: a test compares a scripted receive, key, unkey and antenna-change session against a digest taken from the code before this change. The radio's microphone as a transmit source and a key plugged into the radio are not in this build; `docs/Protocol2-Spec-Notes.md` section 8 lists what the first hardware session has to check.
+- Signal-aware click places the carrier by the band's transmit low-cut (#192,
+  experimental): 280 Hz on the amateur bands, 120 Hz on 11 m, instead of a
+  single 120 Hz fitted to CB rigs. On the 2026-10-11 20 m USB recording the
+  median error falls from 162 Hz (+162 signed, audibly off pitch) to 15 Hz with
+  90% of clicks within 100 Hz; the 11 m LSB measurements are unchanged. The
+  estimate reports the edge and distance it used, synthesised-voice tests pin
+  both sidebands within 100 Hz, and docs/Tuning.md carries the measured limits.
+- Stop the transmitter microphone from crashing the app when the input device
+  changes mid-session (#208). `MicInput` re-validates the tap format against the
+  hardware right before installing it and catches the Objective-C exception
+  AVFAudio raises on a mismatch, so a departed or reconfiguring microphone
+  becomes a logged, retried capture restart instead of a SIGABRT. Regression
+  tests pin the rejected formats and the exception-to-error conversion.
+- The Release workflow was changed to run `tools/release-launch-smoke.sh` and the #180 `tools/update-rollback-smoke.sh` gate on the self-hosted runner before notarization; the first attempt (run 38155595855) failed because the runner's launch-agent session cannot see the candidate's window, so the hosted job skips them again with that reason recorded, the local release path cannot skip them, and the exact published app is launch-smoked after publication as before. `DocsConsistencyTests` pins that the skip carries the documented reason.
+- Record October 11 operator receive validation: close #171/#136, retain #192
+  USB pitch-error measurements, and document NetSDR #140 rate-transition failure
+  and reconnect recovery with a Claude handoff; no new binary release.
+- Document repair of invalid duplicate local Git refs with backed-up contents
+  and preserved recovery pointers; verified fetch and object integrity.
+- Record independently verified 2026.1010_002 publication, issue closures,
+  public mirror/website hashes and preserved working-tree limits for agents.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `456d1ecf00cb74e13963e4d764b8a25cf7fceabfbba06356b68e4cca10586dba`.
 
 ## New in 2026.1010_002
 
@@ -850,8 +890,9 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | TX policy | Operator policy checked in TXCoordinator for every request source (UI, CAT, hardware PTT, keyboard, system) and kind (voice, CW, TUNE, two-tone, digital): IARU Region 1/2/3 or Custom tag as context only, one or more confirmed allowed ranges (inclusive bounds), Off / Warn / Inhibit enforcement, confirmation reset whenever region or ranges change, judged on the actual TX frequency (split/XIT, transverter RF) |
 | Spotting | DX cluster telnet client (multiple nodes at once, RBN-ready, waterfall labels + Times Square ticker) · LoTW user badges + TQSL sign-and-upload · PSKReporter uploads · live planetary K-index |
 | Logbook | ADIF import/export with preserved fields · editing, bulk changes, saved filters and backups · precise LoTW contact matching · DXCC/WAS/grid coverage · interactive worked-world globe, gray line and local DX radar · 100,000-contact performance fixture |
-| Feature catalog | Searchable inventory of 67 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
-| Extras | Sub-RX (VFO B) · diversity RX (P2) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT (LAN peers pair before tuning or keying) · transverter profiles (IF→RF dial/CAT/log mapping with per-profile drive ceiling) · Speaker Tracker (local voiceprint clustering and naming of received voices, off by default) · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · MIDI controllers (any CoreMIDI source: learn-mapped encoders with speed acceleration, pickup knobs, pads on the Stream Deck action model; off by default, keying assignments refused pending review) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) · **MAGNET HF Emergency** (magnethf.com watch/net availability, native JS8 transmit verified against JS8Call 3.0.3, JS8Call API hand-off, CW auto-key, voice script) |
+| Feature catalog | Searchable inventory of 68 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
+| Extras | Sub-RX (VFO B) · diversity RX (P2) · radio audio output — the receiver through the radio's own headphone / speaker jacks (ANAN Orion MkII on P2; HL2 / SquareSDR with the AK4951 audio codec companion board announced to the gateware on P1; both off by default and not yet verified on a radio) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT (LAN peers pair before tuning or keying) · transverter profiles (IF→RF dial/CAT/log mapping with per-profile drive ceiling) · Speaker Tracker (local voiceprint clustering and naming of received voices, off by default) · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · MIDI controllers (any CoreMIDI source: learn-mapped encoders with speed acceleration, pickup knobs, pads on the Stream Deck action model; off by default, keying assignments refused pending review) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) · **MAGNET HF Emergency** (magnethf.com watch/net availability, native JS8 transmit verified against JS8Call 3.0.3, JS8Call API hand-off, CW auto-key, voice script) |
+| OC outputs | Per-band open-collector matrix for the accessory connector (OC1–OC7 × band for receive, transmit and TUNE, tune pulse timers), stored per physical radio · the receive row drives Protocol 1 register 0 C2 and Protocol 2 high-priority byte 1401 while receiving · transmit/TUNE values stored, wire-side staged behind the transmit gate · all-zero default is byte-identical to the previous wire |
 | Platform | macOS 15+, Apple silicon only |
 
 ## The story so far

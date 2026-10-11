@@ -7,6 +7,63 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1011_002] — 2026-10-11
+
+### Features
+
+- Per-band open-collector outputs, receive side (#124). Station › Control
+  Devices › OC Outputs sets the seven open-collector pins on the radio's
+  accessory connector per band — a receive row, a transmit row, a TUNE mask
+  and tune pulse timers — stored for the connected physical radio, the
+  zero-extra-hardware way to band-switch an amplifier, band decoder or antenna
+  relay. This build puts the band's receive row on the wire while receiving:
+  Protocol 1 register-0 byte C2 bits 1–7 and Protocol 2 high-priority byte
+  1401 bits 1–7. Every keyed frame still sends 0 — the transmit row, TUNE
+  mask and timers are staged on `stage/124-oc-tx-outputs` for the
+  transmit-path review. With the default all-zero matrix both protocols are
+  byte-identical to before (pinned by the wire-baseline tests); the virtual
+  radio reports the OC bytes it saw. `docs/OCOutputs.md` has the bit map.
+
+- The updater keeps the version you were running until the new one has started (#180). After Install & Relaunch, the previous app stays beside the new one until the new one's main window has been up for three seconds; only then is it deleted. If the new version cannot be started, crashes first, or has not confirmed within 60 seconds, the installer closes it, puts the previous version back, reopens it, and the Software Update window says what happened and why. Quitting the new version yourself during those three seconds counts as a start, not a failure. HermitSDR does not offer that version again by itself in that session; Check Now or the release page is the retry. Only the exact bundle that was installed is ever restored (bound by its code hash), never an older release, and every existing check stays: signature, Team ID, notarization, version, the refusal to update while the transmitter is armed or keyed, and the clean quit. The installer also re-checks that the copy it is about to install is the build the app verified, refuses to run two installs at once, and leaves a recoverable state if it is interrupted. Applies to updates started by a build that contains it. Details and limits: `docs/UpdateStartupHealth.md`.
+- Hermes-Lite 2 / SquareSDR AK4951 audio codec companion board, receive side (#209, requested by LB2EG; first part — the board's microphone and key jack are staged separately for the transmit-path review). **Not yet verified on a radio: no companion board was available when this was written.** A switch under Settings › Hermes-Lite 2 Hardware, off by default, shown only for the HL2 / SquareSDR profile and remembered per radio, tells the gateware the board is fitted — register 0, C3 bit 3, the bit stock gateware reads as Fan / Band Volts PWM and the ak4951 gateware variants read as the codec speaker switch, exactly as piHPSDR's "HL2 audio codec" option sets it — and fills the 63 left / right 16-bit codec slots of every outgoing Protocol 1 frame with the receiver's speaker mix (the same block the Mac speakers get: receiver while receiving, the app's CW sidetone and the TX monitor while keyed), at its own level, through the same bounded 12 → 48 kHz buffer as the ANAN path (#188). The gateware initialises the AK4951 itself at power-up (verified in the gateware's `i2c.v`), so no I2C writes are sent. With the switch off HermitSDR sends an HL2 byte-for-byte what it sent before: a new `P1WireBaselineTests` pins a scripted receive / key / unkey session against a digest taken before this change, and the virtual radio now reports the register-0 C3 values and the codec audio frames it saw. `docs/HL2AudioCodec.md` records what was verified against the gateware and what the first hardware session has to check.
+- Radio audio output for the ANAN-7000/8000DLE on Protocol 2 (#188, first part of #132; requested by an operator who uses the radio's own audio connections). **Not yet verified on a radio: no ANAN was available when this was written, so nobody has heard it.** A switch under Settings › ANAN Hardware, off by default and shown only for the reviewed Orion MkII profile, sends the receiver's speaker mix to the radio's audio codec as well as to the Mac, so headphones or a speaker plugged into the radio play it. It has its own level, separate from the Mac volume and mute, and the choice is remembered per radio. It plays what the Mac speakers are given: while you transmit the receiver is muted, and your own voice is heard only with TX Monitor on. The wire format is the Protocol 2 "DDC Audio" packet from the published specification (port 1028, 260 bytes: a sequence number and 64 stereo frames of 16-bit big-endian audio at 48 kHz), one packet for each microphone packet the radio sends, which is the codec's own clock. With the switch off HermitSDR sends byte-for-byte what it sent before: a test compares a scripted receive, key, unkey and antenna-change session against a digest taken from the code before this change. The radio's microphone as a transmit source and a key plugged into the radio are not in this build; `docs/Protocol2-Spec-Notes.md` section 8 lists what the first hardware session has to check.
+
+### Fixes
+
+- Signal-aware click places the carrier by the band's transmit low-cut (#192,
+  experimental): 280 Hz on the amateur bands, 120 Hz on 11 m, instead of a
+  single 120 Hz fitted to CB rigs. On the 2026-10-11 20 m USB recording the
+  median error falls from 162 Hz (+162 signed, audibly off pitch) to 15 Hz with
+  90% of clicks within 100 Hz; the 11 m LSB measurements are unchanged. The
+  estimate reports the edge and distance it used, synthesised-voice tests pin
+  both sidebands within 100 Hz, and docs/Tuning.md carries the measured limits.
+
+- Stop the transmitter microphone from crashing the app when the input device
+  changes mid-session (#208). `MicInput` re-validates the tap format against the
+  hardware right before installing it and catches the Objective-C exception
+  AVFAudio raises on a mismatch, so a departed or reconfiguring microphone
+  becomes a logged, retried capture restart instead of a SIGABRT. Regression
+  tests pin the rejected formats and the exception-to-error conversion.
+
+### Changed
+
+- The Release workflow was changed to run `tools/release-launch-smoke.sh` and the #180 `tools/update-rollback-smoke.sh` gate on the self-hosted runner before notarization; the first attempt (run 38155595855) failed because the runner's launch-agent session cannot see the candidate's window, so the hosted job skips them again with that reason recorded, the local release path cannot skip them, and the exact published app is launch-smoked after publication as before. `DocsConsistencyTests` pins that the skip carries the documented reason.
+
+### Tests
+
+- #180: package tests for the clean-quit acknowledgement (health code, the real helper treating "acknowledged, then exited" as healthy, the run gate), a `quit in delay` scenario in the native rollback gate, and a two-build end-to-end run (previous release running → helper → new build by direct exec, with rollback and the on-screen recovery note) recorded under `docs/bench/2026-10-11/`.
+
+### Documentation
+
+- Record October 11 operator receive validation: close #171/#136, retain #192
+  USB pitch-error measurements, and document NetSDR #140 rate-transition failure
+  and reconnect recovery with a Claude handoff; no new binary release.
+- Document repair of invalid duplicate local Git refs with backed-up contents
+  and preserved recovery pointers; verified fetch and object integrity.
+
+- Record independently verified 2026.1010_002 publication, issue closures,
+  public mirror/website hashes and preserved working-tree limits for agents.
+
 ## [2026.1010_002] — 2026-10-10
 
 ### Fixes
@@ -72,6 +129,8 @@ batch of improvements ships as a new version.
 - Publish the updated Media Deck routing guide in the public documentation mirror.
 - Record verified 2026.1009_001 and 2026.1009_002 publication and agent handoff evidence; add production-code stereo TX routing, input restoration, muted-output and rate-conversion fixtures to local checks and CI.
 - Live YouTube-to-radio acceptance remains operator-assisted; no radio was keyed during automated validation.
+
+### Features
 
 ## [2026.1009_002] — 2026-10-09
 
