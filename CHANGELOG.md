@@ -7,6 +7,76 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1011_003] — 2026-10-11
+
+### Features
+
+- **Data modes DATA-U / DATA-L (#130, receive side).** Two new demodulation
+  modes beside USB and LSB for sound-card digital work: the same sideband
+  detectors with a 3 kHz filter from 100 Hz by default (presets 2.4/3.0/4.0/
+  5.0 kHz) and their own filter memory, so switching to FT8 never disturbs the
+  voice filter. FT8/FT4, the hosted digital decoders and the ALE monitor decode
+  in USB or DATA-U; Ask the Crab and the band stack's FT8 registers use DATA-U.
+  Every CAT dialect maps them both ways — hamlib `PKTUSB`/`PKTLSB` (what WSJT-X
+  and fldigi set, now read back as such), Kenwood MD 9/6 and ZZMD 07/09, TCI
+  `DIGU`/`DIGL`, Control API `DATA-U`/`DATA-L` (revision 2, additive). The
+  Digital Mode Check learns the state. Transmitting in a data mode still uses
+  the selected source, profile and drive; the automatic data TX bundle is
+  staged on `stage/130-data-mode-tx` for the transmit-path review.
+- **Serial-line station I/O, first half (#128).** Station › Control Devices ›
+  Serial Lines turns a USB-serial adapter's modem-control lines into station
+  I/O: a footswitch on CTS/DSR/DCD/RI as PTT, another input as a TX-inhibit
+  loop, DTR as the amplifier TX line and RTS as an autotuner TUNE pulse, each
+  with an invert option, a 20 ms debounce and lead/tail/pulse timing, polled
+  every 20 ms on the device's own queue, reopened with backoff when the adapter
+  vanishes, and exercisable with no hardware through the demo adapter. This
+  build displays and logs the inputs and drives an output only for the manual
+  test pulse — outputs rest at their inactive level after open, on every
+  mapping change and before close, and nothing here keys the radio; the
+  footswitch → hardware-PTT path, TX/TUNE line sequencing and the interlock
+  fold are staged on `stage/128-serial-lines` for the transmit-path review.
+  `docs/SerialLines.md` has the wiring notes.
+- **Web console: listen to and tune the receiver from a phone, tablet or any
+  browser (#154; first browser slice of #91, requested in #201).** Settings ›
+  Web console serves one static page from the OBS overlay server
+  (`http://<shack>:4997/console`, loopback unless Allow LAN) that pairs with
+  the Control API over `wss://` with the same code, certificate and grants,
+  then shows the panadapter and waterfall, S-meter, dial and receiver audio and
+  tunes it: click or tap, steps, arrow keys, mode, filter presets, bands, AGC,
+  VFO A⇄B / A→B, local volume and mute. Receive only — the page has no
+  transmit control and the API refuses transmit. Browser-session cap (1–4,
+  default 3) and an optional time limit; "Copy link with pairing code"; the
+  first contact per browser accepts the shack's self-signed certificate
+  (`docs/WebConsole.md`). The Control API now also binds during file replay and
+  Demo Mode. Off by default. New `tools/web-console-smoke.sh` runs in CI.
+- **Kenwood CAT speaks the PowerSDR/Thetis `ZZ` set loggers poll (#126,
+  receive side).** When a logger or digital program is set to "PowerSDR/Thetis"
+  or "TS-2000" it now gets the commands it actually sends: `ZZMD` with
+  Thetis's mode table (DSB included), `ZZFL`/`ZZFH`/`ZZFI`/`ZZIT` filter edges,
+  presets and shift, `ZZAR`/`ZZGT`/`GT` AGC, `ZZAG`/`ZZMA`/`ZZSO`/`ZZSQ`,
+  `ZZRT`/`ZZRF`/`ZZRU`/`ZZRD`/`ZZRC` RIT, `ZZVS`, `ZZBS`, `ZZRM` meter text and
+  Thetis-style `ZZAI` broadcasts, each reply byte-for-byte the width the
+  TS-2000 manual and Thetis's command table specify. `IF`/`ZZIF` now carry the
+  step and RIT fields exactly as the radio does. Every keying, TUNE, drive,
+  monitor, mic-gain or VOX command answers `?;` and is written to the audit
+  log (drive via `PC`/`ZZPC`, allowed in milestone 1, is now refused too). The
+  poll sequences of hamlib (TS-2000 and PowerSDR) and fldigi (TS-2000 and
+  PowerSDR) are replayed in tests over TCP and the serial pseudo-terminal.
+  `docs/KenwoodCAT.md` has the tables.
+- **Band data to station devices (#88, #89).** Station › Control Devices ›
+  Station Devices gains push-only drivers that make HermitSDR the radio side
+  of a link: the VK-Amps (VK3AMP) amplifier's automatic band switching as
+  *CAT Yaesu* (`FA…;` on a serial port, polls answered) or *CAT Icom* (CI-V
+  transceive), a Kenwood TS-2000 frequency stream, and the Palstar HF-AUTO
+  through W1TR's HF Auto app as N1MM `RadioInfo` or `USERDOC` XML over a new
+  UDP transport. The RF-side, transverter-mapped frequency goes out on every
+  change and is repeated each poll interval; the panel shows what was sent.
+  No device feedback is interpreted and nothing here can key, inhibit or tune
+  the radio. Fixture-verified against virtual devices, not yet tried on the
+  hardware (`docs/VKAmpsBandData.md`, `docs/PalstarHFAuto.md`).
+- Kenwood CAT: the TS-2000 poll cycle used by W1TR Rig Control and
+  Kenwood-polling band decoders is pinned by a test (#89).
+
 ## [2026.1011_002] — 2026-10-11
 
 ### Features
