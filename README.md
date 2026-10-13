@@ -36,7 +36,55 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1013_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1013_002** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1013_002
+
+- **Web console: the rest of the receiver from your phone (#201).** The
+  browser page now has RF gain (bounded by the radio's own range) and the step
+  attenuator, NR / NB / ANF, squelch on/off and level, RIT on/off with a
+  ±10 Hz / typed offset, split, and the shack's own volume and mute, kept
+  clearly apart from the page's local Listen / Mute / volume. Every control
+  follows the shack live. The step picker's new "shack step" entry moves the
+  dial by the shack's own tuning step, so ◀ ▶, the arrow keys and the scroll
+  wheel match what the operator set at the radio. While the shack is
+  transmitting the page greys the dial, step, mode, band and VFO controls and
+  says why instead of sending commands the server would refuse. Still receive
+  only; nothing on the page can key.
+- **SUB receiver output device (#165).** The SUB window's new **Out** picker
+  routes SUB audio to its own output device instead of summing it into the
+  main speaker mix; Mixed with main stays the default and is bit-identical to
+  before. Routed separately, the SUB slider is the SUB device level, keyed TX
+  mutes and fades it like the main speakers, and streams / Discord hear main
+  only. A SUB output device that disappears falls back to mixed with a warning
+  and a toast, and re-attaches by itself when it returns; the choice is saved
+  per radio and older profiles load unchanged.
+- **Adaptive NR: SNR-driven gain smoothing (#189).** Receiver DSP ▸ Noise
+  reduction (adaptive) gains "Smooth gain (SNR-driven)", off by default. In
+  frames the a-posteriori SNR says are noise alone the per-bin gains settle
+  onto their ~100 ms time average; frames with speech keep the ordinary
+  response. On synthetic fixtures the gain's temporal flutter in stationary
+  noise drops 74 % (Minimum) / 43 % (MMSE) while the speech component stays
+  within 0.3 dB and a block costs under 0.2 ms. Off is bit-identical to before
+  (pinned against the frozen copy). Saved as `nrAdaptiveGainSmoothing` and in
+  per-radio profiles. No listening test was done.
+- **SUB receiver: own Adaptive NR noise estimate and gain smoothing (#189).**
+  SUB NR ▸ Amount… offers Minimum / MMSE and Smooth gain independently of
+  main; stored with the SUB DSP block, older catalogs decode unchanged (SUB
+  stays on Minimum, smoothing off).
+- **NetSDR: rate changes across the 16/24-bit boundary (#140).** Changing the
+  rate while streaming between 384 and 1536 kHz no longer stalls the stream
+  into the 5 s watchdog disconnect: the restart waits for the radio to go idle
+  and re-sends sample rate and packet size with the RUN, the way a fresh
+  connect does. A radio that keeps the previous bit depth after a rate change
+  now streams 16-bit audio instead of silence, and the mismatch is logged.
+  Data packets held back or rejected by the link are counted and the first one
+  after each start is logged with its format, for bench diagnosis. Loopback
+  verified only; the live check in both directions is still owed.
+- **Adaptive NR Strength hover tip (#189)** said 2× and −25 dB; the code does
+  1.6× over-estimation and a −20 dB a-priori SNR floor. The tip now quotes the
+  code's law and a test pins it.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `7861747780a848435ecf77415d87df2a813d12b99d716561932909b9df8e8eb7`.
 
 ## New in 2026.1013_001
 
