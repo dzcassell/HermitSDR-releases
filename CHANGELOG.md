@@ -7,6 +7,53 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1013_001] — 2026-10-13
+
+Four website-inbox reports from 2026-10-12, all against 2026.1011_003.
+
+### Features
+
+- **FM / NFM tone squelch (TSQL) (#211).** Settings ▸ RX Audio ▸ FM gains
+  "Tone squelch (TSQL)": the speaker audio opens only while the selected CTCSS
+  tone is on the carrier, AND-ed with the carrier squelch, so a shared or noisy
+  channel stays quiet until the right repeater or station is heard. A dedicated
+  200 ms Goertzel gate opens about 0.2 s after the tone appears (0.3 s end to
+  end, measured through the loopback fixture), holds 250 ms through a fade,
+  resolves adjacent tones (100.0 vs 103.5 Hz, 67.0 vs 69.3 Hz) and ignores
+  speech, hum and open-squelch noise. Off by default; stored FM settings decode
+  with it off. A "TSQL" badge beside SQL in the control bar and console explains
+  a silent FM receiver; the tone picker is enabled for encode or tone squelch.
+  Applies to the sub receiver too, and FM bookmarks remember the setting.
+- **Waterfall zoom is discoverable (#213).** − / ×N / + zoom buttons sit right
+  above the waterfall beside the keyboard and capture icons in both Console
+  Layout banks; View ▸ Zoom In / Zoom Out now show ⌘= / ⌘- (the bare `=` /
+  `-` keys still work and stay rebindable); a trackpad pinch on the panadapter
+  zooms. The operator manual's display page lists every way to zoom.
+- **Ask The Crab gives directions for "how do I…" questions (#213).** A
+  question phrased "how do I / how do you / where is / which key" is answered
+  with the control(s) — zoom, tuning, mode, filter, band, bookmarks, recording,
+  palette, layout, volume, squelch, notch, 3D view, CRT glass and more — naming
+  the live key bindings and offering to do it, instead of silently doing it.
+  The on-device model is no longer handed the matching tool for such questions.
+
+### Fixes
+
+- **Bookmarks remember CTCSS (#210).** Bookmarks saved in FM or NFM now carry
+  their CTCSS encode state, tone, FM deviation and tone-squelch setting, and
+  restore them on recall from the Bookmarks panel, the console star, a Stream
+  Deck bookmark key or the crab, so switching between repeater memories no
+  longer leaves the previous station's tone active. Bookmarks saved in other
+  modes never touch the FM settings, older saved bookmarks still load, and the
+  Bookmarks list shows the tone beside each FM entry that transmits one.
+- **Waterfall / Display menus keep their check marks current (#212).** On
+  macOS 26.6 the in-window paint-palette menu and the FX menu no longer rebuilt
+  their content at open, so after choosing a new palette the old one stayed
+  checked and an enabled CRT Glass showed unchecked — the "fish-eye waterfall"
+  report was CRT Glass hidden by that stale check. Both menus now follow the
+  same settings-only publisher as the View menu (operator changes only, never
+  meter traffic, so the #191 open-menu flicker cannot return), and the console
+  skin menu shows a check mark beside the current palette.
+
 ## [2026.1011_003] — 2026-10-11
 
 ### Features

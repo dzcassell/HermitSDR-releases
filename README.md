@@ -36,7 +36,48 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1011_003** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1013_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1013_001
+
+- **FM / NFM tone squelch (TSQL) (#211).** Settings ▸ RX Audio ▸ FM gains
+  "Tone squelch (TSQL)": the speaker audio opens only while the selected CTCSS
+  tone is on the carrier, AND-ed with the carrier squelch, so a shared or noisy
+  channel stays quiet until the right repeater or station is heard. A dedicated
+  200 ms Goertzel gate opens about 0.2 s after the tone appears (0.3 s end to
+  end, measured through the loopback fixture), holds 250 ms through a fade,
+  resolves adjacent tones (100.0 vs 103.5 Hz, 67.0 vs 69.3 Hz) and ignores
+  speech, hum and open-squelch noise. Off by default; stored FM settings decode
+  with it off. A "TSQL" badge beside SQL in the control bar and console explains
+  a silent FM receiver; the tone picker is enabled for encode or tone squelch.
+  Applies to the sub receiver too, and FM bookmarks remember the setting.
+- **Waterfall zoom is discoverable (#213).** − / ×N / + zoom buttons sit right
+  above the waterfall beside the keyboard and capture icons in both Console
+  Layout banks; View ▸ Zoom In / Zoom Out now show ⌘= / ⌘- (the bare `=` /
+  `-` keys still work and stay rebindable); a trackpad pinch on the panadapter
+  zooms. The operator manual's display page lists every way to zoom.
+- **Ask The Crab gives directions for "how do I…" questions (#213).** A
+  question phrased "how do I / how do you / where is / which key" is answered
+  with the control(s) — zoom, tuning, mode, filter, band, bookmarks, recording,
+  palette, layout, volume, squelch, notch, 3D view, CRT glass and more — naming
+  the live key bindings and offering to do it, instead of silently doing it.
+  The on-device model is no longer handed the matching tool for such questions.
+- **Bookmarks remember CTCSS (#210).** Bookmarks saved in FM or NFM now carry
+  their CTCSS encode state, tone, FM deviation and tone-squelch setting, and
+  restore them on recall from the Bookmarks panel, the console star, a Stream
+  Deck bookmark key or the crab, so switching between repeater memories no
+  longer leaves the previous station's tone active. Bookmarks saved in other
+  modes never touch the FM settings, older saved bookmarks still load, and the
+  Bookmarks list shows the tone beside each FM entry that transmits one.
+- **Waterfall / Display menus keep their check marks current (#212).** On
+  macOS 26.6 the in-window paint-palette menu and the FX menu no longer rebuilt
+  their content at open, so after choosing a new palette the old one stayed
+  checked and an enabled CRT Glass showed unchecked — the "fish-eye waterfall"
+  report was CRT Glass hidden by that stale check. Both menus now follow the
+  same settings-only publisher as the View menu (operator changes only, never
+  meter traffic, so the #191 open-menu flicker cannot return), and the console
+  skin menu shows a check mark beside the current palette.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `bb46bdb7cafb0bbd4297b7a36841ba880c24cddbad5e408afb452fd12dfb6565`.
 
 ## New in 2026.1011_003
 
@@ -947,7 +988,7 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | Radios | Hermes-Lite 2 / SquareSDR (openHPSDR Protocol 1) · Apache Labs ANAN Orion-class, e.g. 7000DLE MK2 (Protocol 2) · every other ANAN on Protocol 2 — ANAN-10/100 (Hermes), ANAN-10E/100B, ANAN-100D (Angelia), ANAN-200D (Orion), ANAN-G2 (Saturn) and an Atlas/Metis backplane — is recognised by name and receives through its Alex filter and antenna relays, transmit closed until validated on the hardware · Protocol 1 Hermes, Griffin, Angelia, Orion and Orion MkII boards are named and receive-only · RFSpace NetSDR (receive-only direct-sampling HF receiver: TCP control + UDP I/Q on port 50000, its own LAN discovery, in-app static-IP/DHCP assignment) |
 | RX / TX | Receive + transmit live-validated on both openHPSDR protocols (dummy load; on-air QSOs user-gated) · the NetSDR is receive-only, so its sessions carry no TX banner, ARM, PTT, TUNE or drive controls at all |
 | Sample rates | 48–384 kHz (P1) · up to 1536 kHz (P2) · 48–768 kHz on the NetSDR (the radio streams 50–800 kHz, resampled 24/25 to the chain rate) |
-| Demod modes | USB, LSB, CW, AM, SAM, FM, NFM, DSB, DATA-U, DATA-L (USB / LSB for sound-card digital modes: 3 kHz filter from 100 Hz by default, own filter memory, selected by CAT PKTUSB / PKTLSB, TCI DIGU / DIGL and Kenwood MD 9 / 6) · separate wide/narrow FM deviation · CTCSS encode/decode · FM sub-audio filter (the repeater's CTCSS tone leaves the speaker audio; on by default) · AM, SAM and DSB filters to 20 kHz, with 10 kHz audio at the speakers above 11 kHz of width |
+| Demod modes | USB, LSB, CW, AM, SAM, FM, NFM, DSB, DATA-U, DATA-L (USB / LSB for sound-card digital modes: 3 kHz filter from 100 Hz by default, own filter memory, selected by CAT PKTUSB / PKTLSB, TCI DIGU / DIGL and Kenwood MD 9 / 6) · separate wide/narrow FM deviation · CTCSS encode/decode · CTCSS tone squelch (TSQL: FM / NFM audio opens only on the selected tone, ~¼ s to open, 250 ms hang) · FM sub-audio filter (the repeater's CTCSS tone leaves the speaker audio; on by default) · AM, SAM and DSB filters to 20 kHz, with 10 kHz audio at the speakers above 11 kHz of width |
 | FT8 / FT4 | Receive: waterfall spots, decode panel, stations-heard ADIF (FT4 exported as MFSK/FT4), PSKReporter uploads, 15 s / 7.5 s UTC slots, automatic station clock-drift estimation with bounded slot correction, time-machine replay. Transmit: native slot-clocked modulator + auto-sequencer behind ARM/TXCoordinator (native FT8 dummy-load validated; on-air validation pending), or WSJT-X via CAT PTT + audio routing · **native JS8 (normal) encoder** — clean-room port of JS8Call's varicode/CRC-12/LDPC(174,87) path, frame programs one slot at a time, decoded by JS8Call 3.0.3 |
 | SSTV | Martin M1, Martin M2, Scottie S1, Scottie S2, Scottie DX, Robot 36, Robot 72, PD50, PD90, PD120, PD160, PD180, PD240, PD290 — auto VIS + manual mode/start, slant/phase correction, PNG export |
 | WEFAX | IOC 576 · 120 LPM, IOC 576 · 90 LPM, IOC 576 · 60 LPM, IOC 288 · 120 LPM — polarity, slant/phase, crop/rotate, PNG with metadata |
