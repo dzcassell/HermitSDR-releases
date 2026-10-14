@@ -7,6 +7,73 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1014_003] — 2026-10-14
+
+### Features
+
+- Added named receive DSP presets with full preview, current-mode filter
+  adaptation, persistent rename/remove/undo and preserved hardware/TX domains
+  (#218). Corrupt libraries remain intact and read-only.
+- Added optional automatic AGC threshold from post-EQ/pre-AGC noise with
+  bounded slew, manual takeover and remembered manual gain; per-radio intent
+  persists, unsafe/replay states pause and independent SUB stays manual (#217).
+- Added 300–1000 Hz CW receive pitch shared by filter, APF, decoder, binaural
+  center and markers; RF dial and keyer sidetone remain independent (#219).
+
+### Changed
+
+- Replaced the small waterfall zoom buttons with a prominent full-width slider
+  above the waterfall, logarithmic ×1–×32 travel and a large readout. It stays
+  visible at narrow window widths; existing zoom/menu/pinch commands remain.
+  Native slider focus owns arrow adjustments instead of retuning the VFO;
+  held-action release continues to precede all focus gates.
+- UTC and local clocks share a single red seconds/hundredths group (`SS.hh`),
+  with smaller fractional digits; separate hour/minute rows retain zone/DST.
+
+### Fixes
+
+- Migrated package/CI/smoke tooling to Swift Build with products outside synced
+  source trees, automatic app-only exclusions and a smoke-probe linking adapter
+  for aggregate objects/modules. Source/fixture xattrs and app signing retained.
+
+### Verification and performance
+
+- Added bounded in-place percentile selection for Auto AGC analysis; selection
+  equivalence, manual preference ownership and lifecycle holds have production
+  fixture coverage. Receive-profile and SUB fixtures cover selected pitch,
+  automatic intent and legacy radio defaults.
+- Final full regression: 2672 tests, 7 skips, no failures; targeted receive/CW
+  tests passed under Address/Thread Sanitizer. Production smoke/audit gates and
+  optimized benchmark passed. Native Demo preset/zoom/clock checks and one
+  operator-assisted Square voice-net Auto AGC comparison are recorded separately
+  from software fixtures; the live voice test reported clear, steady speech.
+
+### Documentation
+
+- Added public operator guides for Auto AGC threshold, named receive presets
+  and CW listening pitch; release mirror validation includes all three.
+
+- Filed native Feld Hellschreiber transmit request #223; the current digital
+  Hell decoder remains receive-only.
+
+- Surveyed piHPSDR against current capabilities and existing issues; #222
+  catalogs five scoped additions (#217–#221), with pinned source evidence
+  and acceptance criteria. No upstream code imported.
+
+- Recorded first operator-assisted main Adaptive NR listening on a real 40 m
+  net: MMSE at 50% preferred to Minimum, no pumping/watery sound reported;
+  gain smoothing produced no noticeable difference. Single-net evidence,
+  broader #189 scope and SUB/weak-signal acceptance remain open.
+
+- Recorded operator-assisted SquareSDR 2 v75 receive acceptance: DATA-U/L CAT
+  mode/filter-edge readback and native UI, plus physical headphone output,
+  level reduction and codec switch-off. TX, HL2 and chip identity remain
+  unverified; #126/#209 retain their broader open scope.
+
+- Recorded the verified 2026.1014_002 publication, public hashes/scan verdict,
+  mirror/website update, closed issues and successful exact-source CI rerun in
+  the canonical handoff. The released runtime and dated changelog are frozen.
+
 ## [2026.1014_002] — 2026-10-14
 
 ### Fixes
