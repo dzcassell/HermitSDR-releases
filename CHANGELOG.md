@@ -7,6 +7,74 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1014_001] — 2026-10-14
+
+The first build on Xcode 27.0 / Swift 6.4 after the Mac's unattended macOS 27
+update, plus a review sweep over everything added since 2026-09-29.
+
+### Fixes
+
+- **Kenwood / PowerSDR CAT: two malformed AGC commands could crash the app.**
+  `ZZGT` with a non-ASCII numeral (one that counts as a digit in Unicode but
+  not to the parser) and a signed three-digit `GT-05;` in the PowerSDR
+  dialect both reached a force-unwrap and aborted the whole app, radio
+  stream included, from any trusted CAT peer. Both now answer `?;` like every
+  other bad argument. Found by the review sweep; regression tests added.
+- **Serial lines (station I/O): editing the port path by hand no longer
+  reopens the adapter on every keystroke.** The path field is a draft that
+  commits on Return or when it loses focus; before, each character closed the
+  port, drove both outputs inactive, tried to open the half-typed path and
+  saved it. Three more hardening fixes in the same device: when the app quits
+  it now waits (bounded) for the TX / TUNE outputs to be driven inactive and
+  the port closed before exiting, so a test pulse in flight or an inverted
+  output can never outlive the process; the inhibit input reads as INHIBITED
+  while its level is still unknown (just opened, or right after a
+  configuration change) instead of "clear"; and an unplugged adapter counts
+  as one loss, not one per output, so the reopen backoff no longer jumps
+  three rungs at once (the dead descriptor is released at once, too).
+- **Kenwood / Thetis CAT: filter edges in DATA-U / DATA-L.** `SL`/`SH` and
+  `ZZFL`/`ZZFH` treated the data modes as symmetric filters, so a 100…3100 Hz
+  request landed at 700…3700 Hz and cut the low FT8 / RTTY tones; they now use
+  the data modes' 100 Hz sideband edge like USB / LSB use their 300 Hz one.
+- **Web console:** the panadapter and waterfall resume after the page
+  reconnects (the spectrum subscription is per connection and was not
+  re-sent); ⌘ / Ctrl / Option shortcuts such as ⌘R or ⌘A reach the browser
+  instead of toggling RIT, ANF, NR, squelch or mute at the shack; automatic
+  reconnection now really retries five times with backoff (a failed first
+  retry used to end it); a shared link with a mangled fragment no longer
+  leaves a blank page; audio frames are not scheduled while the phone's audio
+  context is suspended (they piled up and played as a burst on resume); and
+  the panadapter no longer blocks page scrolling on a phone.
+- **OC outputs:** the panel's band label and "on the wire" bytes followed one
+  band step behind the dial (the bytes actually sent were always right); the
+  Full tune / Memory tune fields commit when they lose focus, not only on
+  Return, and show the stored value again after a rejected entry.
+- **CTCSS tone squelch** gains level hysteresis: once open it holds through a
+  tone sitting at the opening threshold (a loud talker on low CTCSS
+  deviation) instead of dropping audio for a quarter second every few
+  seconds. No listening test yet.
+- **Crash report prompt** only offers a report newer than the run that just
+  ended; a two-week-old unrelated crash was eligible after a power loss.
+- **MIDI mapping import** keeps one "before import" backup instead of a new
+  file per import, forever.
+- Two latent audio-device teardown bugs: the Media Deck process tap destroyed
+  its CoreAudio objects twice when its IO proc failed to start, and an audio
+  output released without being stopped could free its stereo scratch under
+  a running render.
+- The SSB carrier estimator's spectrum average no longer copies two spectrum
+  rows per update on the radio thread (a Swift copy-on-write trap).
+
+### Under the hood
+
+- **Built with Swift 6.4 (Xcode 27.0).** The toolchain update arrived
+  unattended on 2026-10-13; this release is the first compiled with it. One
+  expression the new compiler could no longer type-check (the OBS overlay's
+  event-stream header) was rewritten with identical bytes on the wire. Nothing
+  else in the app changed for the compiler. The build system now pins SwiftPM
+  to its native engine until the Swift Build migration (#214) lands.
+- A timing-sensitive Speaker Tracker test now waits for the last event
+  callback before asserting, so a parallel build no longer flakes it.
+
 ## [2026.1013_002] — 2026-10-13
 
 Four open feature issues advanced in one cycle: the browser console, NetSDR
