@@ -36,7 +36,17 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1014_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1014_002** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1014_002
+
+- **Software updates preserve failed recovery points.** If the previous app cannot be put back, its recovery folder survives the next launch and the replacement reports the failure once. The safeguard also covers folders left by older installed helpers; the startup handshake stays compatible.
+- **Serial adapters reopen in order.** Port-path changes, rapid disable/enable and demo transitions wait for the previous exclusive descriptor to close. Quit also drains a close that was already queued.
+- **JT65 receive uses circular FIR history.** Decoder output remains bit-identical across irregular input blocks. On the development Mac, the downconverter's median cost fell from 0.215 to 0.114 ms per second of input (46.9% lower stage cost; not a whole-app CPU claim).
+- **Xcode 27 verification expanded.** The serial actors use their existing queues through an explicit executor bridge that clears the reproduced sanitizer ordering reports without suppressions. The build retains the native SwiftPM workaround while the broader toolchain migration remains open.
+
+Validation: 2,662 regression tests, 7 optional skips, zero failures; signed Debug/Release builds, all 56 smoke scripts, native update rollback/recovery, benchmarks and sanitizer checks. This cycle did not operate a radio or perform RF validation.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `8fd4d43bf9bbaec8840655fbf02e64811f8ed10ed2f46894e23c12acc01b5fc6`.
 
 ## New in 2026.1014_001
 

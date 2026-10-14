@@ -7,6 +7,43 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1014_002] — 2026-10-14
+
+### Fixes
+
+- **Failed updater rollback preserves the recovery point (#215).** When the
+  previous app cannot be verified or moved back, the helper keeps it in a
+  uniquely named folder beside the app and includes that path in its recovery
+  notice. The replacement reports its own failed first start once. It also
+  protects unacknowledged backups left in `.update.*` by older installed
+  helpers from ordinary startup cleanup. Successful updates still clean up;
+  an interrupted, unacknowledged backup may require manual recovery/removal.
+  The startup handshake flags and required record keys remain compatible.
+- **Serial-line adapters reopen in order (#215).** Real-port path changes use
+  one runtime's close/open state machine. Rapid disable/enable, restore and
+  demo-source changes drain the previous exclusive descriptor before opening
+  another. Quit waits for an already queued close within its existing bound;
+  snapshots from superseded configurations are discarded. No staged keying
+  behavior or HUPCL polarity changes.
+
+- **Xcode 27 serial-actor sanitizer ordering (#214).** Serial-line actors keep their
+  existing queues but enqueue Swift jobs through an explicit Dispatch-backed
+  executor. A standalone async-actor probe reproduced TSan reports with exact
+  counters and no overlapping queue operations; the bridge cleared repeated
+  probe runs. No sanitizer suppression or transmitter behavior change.
+
+### Performance and verification
+
+- JT65 receive downconversion (#216) uses mirrored circular FIR history instead of
+  shifting four arrays per sample. The FIR coefficients, oldest-to-newest sum
+  order, phase and output pacing are unchanged; regression fixtures compare
+  every output bit with the prior implementation across irregular blocks and
+  copied state. An opt-in Release timing comparison records the local cost.
+- Added failed-rollback native checks with real signature rejection and
+  preserved/legacy folder layouts, deterministic delayed-exclusive-port and
+  queued-quit tests, plus the JT65 parity fixtures. Full sweep results and
+  remaining optimization opportunities are recorded in the release handoff.
+
 ## [2026.1014_001] — 2026-10-14
 
 The first build on Xcode 27.0 / Swift 6.4 after the Mac's unattended macOS 27
