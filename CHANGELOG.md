@@ -7,6 +7,109 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1015_001] — 2026-10-15
+
+### Features
+
+- Add **Harvest Vortex — Thanksgiving** and **Midnight Noel — Christmas**
+  dynamic waterfall underlays (#227): copper feather mandalas, sculpted
+  pumpkins, an emerald spiral tree, orbiting glass ornaments, wrapped gifts,
+  kaleidoscopic auroras and drifting leaves/snow crystals. Both are opt-in,
+  dark by default and independently configurable, with foreground signal and
+  scenery brightness controls, High contrast, Freeze and macOS Reduce Motion.
+  Procedural Metal uses fixed instance budgets and the existing signal overlay.
+
+
+### Fixes
+
+- Reject non-ASCII Maidenhead station grids before case conversion and
+  geometry calculations (#234). Preserve valid lowercase, four/six-character
+  grid centers and surrounding whitespace; cover all 32,400 four-character
+  cells and Unicode numeral/case-expansion regressions.
+- Preserve local SRT backups for long Unicode broadcast titles (#235). Bound
+  sanitized filename titles to 200 UTF-8 bytes while retaining whole graphemes
+  and the existing character cap; verify actual atomic writes and transcript
+  round trips, including emoji, combining marks and oversized graphemes.
+
+- Preserve Band Geology history at full retention (#232). New strata snapshots
+  save the newest 2,880 layers, including the open minute; recover older valid
+  2,881-layer files instead of rejecting the entire archive. The version-1
+  format and live accumulation behavior remain compatible.
+- Keep delayed DVR IQ appends out of replacement recordings after retunes,
+  rate changes, interruptions, restarts or Clear All (#233). Reject superseded
+  control generations before file effects and count dropped blocks; preserve
+  ordinary queued IQ, no-op controls and automatic duration rolls. Add real
+  recording-owner/file regression fixtures with default/ASan/TSan CI gates.
+
+- Remove a minute-long shortwave schedule first-query stall by normalizing
+  decoded string storage once before parsing (#230). Preserve all 9,289
+  bundled broadcasts and Unicode/newline behavior; add an optimized snapshot
+  equivalence and parse-time regression gate to CI.
+- Reject impossible UTC clock fields and non-finite shortwave frequencies
+  before they can qualify a malformed cache or downloaded schedule (#231).
+  Preserve valid midnight/all-day rows, fractional frequencies and fallback;
+  extend actual-owner cache fixtures and sanitizer checks.
+
+- Recover immediately from corrupt/truncated fresh shortwave schedule caches
+  and prevent pending refreshes retaining discarded schedule owners (#228).
+  Preserve the bundled first-query fallback and reject failed transports.
+- Validate LoTW activity HTTP status and parsed uploader contents before
+  replacing the cache or badges; invalid fresh caches now refresh immediately.
+  Keep one load cycle through bootstrap, download parsing and publication,
+  and reject cancelled generations before starting HTTP or committing (#229).
+  Actual-owner offline fixtures for both loaders run normally and under
+  AddressSanitizer/ThreadSanitizer in CI.
+
+- Serialize country-file bootstrap, validation, cache cleanup and refresh
+  publication (#226). Old work cannot overwrite a newer map or unlink its
+  cache; a fresh but invalid cache now falls back and refreshes in the same
+  startup. Downloaded data is parsed once off-main and atomically cached.
+  Inert production-owner fixtures reproduce the old races and run in CI,
+  including AddressSanitizer and ThreadSanitizer.
+
+- Xcode 27: explicitly isolate Metal-view setup, native window-chrome owners
+  and launch-notification ownership on the main actor; keep immutable logging,
+  keychain identifiers and schedule decoding accessible to background work
+  without suppressing diagnostics (#214). Removed redundant builder/unsafe
+  annotations and made intentionally discarded results explicit.
+- Correct outer callback captures in CAT, background data refresh and streaming
+  lifecycles. The keep-awake timer no longer retains its owner, and owner
+  destruction releases the active display-sleep assertion and heartbeat (#224).
+- Migrate receive decoders and speaker analysis to Accelerate's supported
+  discrete Fourier transform API, retaining split-complex geometry, buffers
+  and numerical behavior (#214). RF Vision uses the supported Metal math
+  options with the same safe arithmetic and precise functions as before.
+
+- Keep cancelled Clublog responses from publishing after an off/on toggle,
+  overwriting a newer cache, clearing the current loading flag or orphaning
+  the active request. Current-generation ownership is checked before any
+  callback effects; inert success/cancellation/cache fixtures cover the race
+  (#225).
+
+### Verification
+
+- Add holiday configuration/persistence/clock tests and an actual-renderer
+  Metal API validation gate for 1,164 frames, signal contrast, clipping,
+  bounded detail and animation/freeze/Reduce Motion. Run the GPU gate in CI;
+  refresh the generated feature inventory and bundled operator guidance.
+
+- Add exact transform-backend comparisons, including JS8's 3840-point transform,
+  cancelled CAT-peer lifetime checks and inert keep-awake resource tests. The
+  keep-awake lifetime fixture also runs in CI.
+
+### Research
+
+- Added an offline, SDK-only channel-filter latency/response probe and an
+  original minimum-phase prototype for #221. It reports Float32-coefficient
+  phase delay, magnitude error, impulse energy/ringing and delivery batching;
+  no receiver setting, default, audio buffer or transmitter filter changes.
+
+### Documentation
+
+- Recorded verified 2026.1014_003 publication, exact-source CI, public hashes,
+  notarization/scan, mirror/website receipts and the paused operator-testing
+  state. Runtime release notes and assets remain unchanged.
+
 ## [2026.1014_003] — 2026-10-14
 
 ### Features

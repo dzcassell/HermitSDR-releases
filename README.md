@@ -36,7 +36,78 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1014_003** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1015_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1015_001
+
+- Add **Harvest Vortex — Thanksgiving** and **Midnight Noel — Christmas**
+  dynamic waterfall underlays (#227): copper feather mandalas, sculpted
+  pumpkins, an emerald spiral tree, orbiting glass ornaments, wrapped gifts,
+  kaleidoscopic auroras and drifting leaves/snow crystals. Both are opt-in,
+  dark by default and independently configurable, with foreground signal and
+  scenery brightness controls, High contrast, Freeze and macOS Reduce Motion.
+  Procedural Metal uses fixed instance budgets and the existing signal overlay.
+- Reject non-ASCII Maidenhead station grids before case conversion and
+  geometry calculations (#234). Preserve valid lowercase, four/six-character
+  grid centers and surrounding whitespace; cover all 32,400 four-character
+  cells and Unicode numeral/case-expansion regressions.
+- Preserve local SRT backups for long Unicode broadcast titles (#235). Bound
+  sanitized filename titles to 200 UTF-8 bytes while retaining whole graphemes
+  and the existing character cap; verify actual atomic writes and transcript
+  round trips, including emoji, combining marks and oversized graphemes.
+- Preserve Band Geology history at full retention (#232). New strata snapshots
+  save the newest 2,880 layers, including the open minute; recover older valid
+  2,881-layer files instead of rejecting the entire archive. The version-1
+  format and live accumulation behavior remain compatible.
+- Keep delayed DVR IQ appends out of replacement recordings after retunes,
+  rate changes, interruptions, restarts or Clear All (#233). Reject superseded
+  control generations before file effects and count dropped blocks; preserve
+  ordinary queued IQ, no-op controls and automatic duration rolls. Add real
+  recording-owner/file regression fixtures with default/ASan/TSan CI gates.
+- Remove a minute-long shortwave schedule first-query stall by normalizing
+  decoded string storage once before parsing (#230). Preserve all 9,289
+  bundled broadcasts and Unicode/newline behavior; add an optimized snapshot
+  equivalence and parse-time regression gate to CI.
+- Reject impossible UTC clock fields and non-finite shortwave frequencies
+  before they can qualify a malformed cache or downloaded schedule (#231).
+  Preserve valid midnight/all-day rows, fractional frequencies and fallback;
+  extend actual-owner cache fixtures and sanitizer checks.
+- Recover immediately from corrupt/truncated fresh shortwave schedule caches
+  and prevent pending refreshes retaining discarded schedule owners (#228).
+  Preserve the bundled first-query fallback and reject failed transports.
+- Validate LoTW activity HTTP status and parsed uploader contents before
+  replacing the cache or badges; invalid fresh caches now refresh immediately.
+  Keep one load cycle through bootstrap, download parsing and publication,
+  and reject cancelled generations before starting HTTP or committing (#229).
+  Actual-owner offline fixtures for both loaders run normally and under
+  AddressSanitizer/ThreadSanitizer in CI.
+- Serialize country-file bootstrap, validation, cache cleanup and refresh
+  publication (#226). Old work cannot overwrite a newer map or unlink its
+  cache; a fresh but invalid cache now falls back and refreshes in the same
+  startup. Downloaded data is parsed once off-main and atomically cached.
+  Inert production-owner fixtures reproduce the old races and run in CI,
+  including AddressSanitizer and ThreadSanitizer.
+- Xcode 27: explicitly isolate Metal-view setup, native window-chrome owners
+  and launch-notification ownership on the main actor; keep immutable logging,
+  keychain identifiers and schedule decoding accessible to background work
+  without suppressing diagnostics (#214). Removed redundant builder/unsafe
+  annotations and made intentionally discarded results explicit.
+- Correct outer callback captures in CAT, background data refresh and streaming
+  lifecycles. The keep-awake timer no longer retains its owner, and owner
+  destruction releases the active display-sleep assertion and heartbeat (#224).
+- Migrate receive decoders and speaker analysis to Accelerate's supported
+  discrete Fourier transform API, retaining split-complex geometry, buffers
+  and numerical behavior (#214). RF Vision uses the supported Metal math
+  options with the same safe arithmetic and precise functions as before.
+- Keep cancelled Clublog responses from publishing after an off/on toggle,
+  overwriting a newer cache, clearing the current loading flag or orphaning
+  the active request. Current-generation ownership is checked before any
+  callback effects; inert success/cancellation/cache fixtures cover the race
+  (#225).
+- Recorded verified 2026.1014_003 publication, exact-source CI, public hashes,
+  notarization/scan, mirror/website receipts and the paused operator-testing
+  state. Runtime release notes and assets remain unchanged.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `d0f78c366a94a1a32ad83eec1b1f80da4620193d2ace0a5bc1666d8af7992507`.
 
 ## New in 2026.1014_003
 
@@ -1152,7 +1223,7 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | TX policy | Operator policy checked in TXCoordinator for every request source (UI, CAT, hardware PTT, keyboard, system) and kind (voice, CW, TUNE, two-tone, digital): IARU Region 1/2/3 or Custom tag as context only, one or more confirmed allowed ranges (inclusive bounds), Off / Warn / Inhibit enforcement, confirmation reset whenever region or ranges change, judged on the actual TX frequency (split/XIT, transverter RF) |
 | Spotting | DX cluster telnet client (multiple nodes at once, RBN-ready, waterfall labels + Times Square ticker) · LoTW user badges + TQSL sign-and-upload · PSKReporter uploads · live planetary K-index |
 | Logbook | ADIF import/export with preserved fields · editing, bulk changes, saved filters and backups · precise LoTW contact matching · DXCC/WAS/grid coverage · interactive worked-world globe, gray line and local DX radar · 100,000-contact performance fixture |
-| Feature catalog | Searchable inventory of 71 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
+| Feature catalog | Searchable inventory of 73 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
 | Extras | Sub-RX (VFO B) · diversity RX (P2) · radio audio output — the receiver through the radio's own headphone / speaker jacks (ANAN Orion MkII on P2; HL2 / SquareSDR with the AK4951 audio codec companion board announced to the gateware on P1; both off by default and not yet verified on a radio) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT (LAN peers pair before tuning or keying) · Kenwood TS-2000 / PowerSDR-Thetis `ZZ` CAT emulation for loggers and digital programs (TCP, pseudo-terminal or serial adapter; receive-side command set, every keying or transmit-side command refused) · transverter profiles (IF→RF dial/CAT/log mapping with per-profile drive ceiling) · Speaker Tracker (local voiceprint clustering and naming of received voices, off by default) · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · MIDI controllers (any CoreMIDI source: learn-mapped encoders with speed acceleration, pickup knobs, pads on the Stream Deck action model; off by default, keying assignments refused pending review) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) · **MAGNET HF Emergency** (magnethf.com watch/net availability, native JS8 transmit verified against JS8Call 3.0.3, JS8Call API hand-off, CW auto-key, voice script) |
 | OC outputs | Per-band open-collector matrix for the accessory connector (OC1–OC7 × band for receive, transmit and TUNE, tune pulse timers), stored per physical radio · the receive row drives Protocol 1 register 0 C2 and Protocol 2 high-priority byte 1401 while receiving · transmit/TUNE values stored, wire-side staged behind the transmit gate · all-zero default is byte-identical to the previous wire |
 | Band data to station devices | HermitSDR plays the radio side of a CAT or logger link so an amplifier or tuner follows the dial (Station › Control Devices › Station Devices): VK-Amps "CAT Yaesu" (`FA…;` on a serial port, polls answered) and "CAT Icom" (CI-V transceive frames) band switching, a Kenwood TS-2000 stream, and the Palstar HF-AUTO through W1TR's HF Auto app as N1MM `RadioInfo` or `USERDOC` XML over UDP · RF-side (transverter-mapped) frequency, pushed on change and repeated each poll interval · no device feedback is interpreted, nothing keys the radio · fixture-verified against virtual devices; not yet tried on the hardware |
