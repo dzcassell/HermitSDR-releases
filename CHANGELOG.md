@@ -11,10 +11,75 @@ batch of improvements ships as a new version.
 
 ### Documentation
 
-- Record verified 2026.1015_001 publication, issue #234/#235 closures,
-  exact-source CI, public checksums/notarization/scan, downloaded-app startup
-  and rollback, mirror/website receipts and Claude's remaining review and
-  hardware checks. Published release notes and assets remain immutable.
+- Record verified 2026.1015_002 publication, eight feature closures,
+  exact-source CI, native interval/JSON export evidence, public checksums,
+  notarization/scan and downloaded-app rollback, mirror/site receipts and
+  Claude's remaining paused/review-only work. Published release notes and
+  assets remain immutable.
+
+## [2026.1016_002] — 2026-10-16
+
+### Features
+
+- Include the earlier unpublished morning batch: bookmark CSV export (#243)
+  for the whole library or displayed results, with stable IF units and
+  formula-safe names; searchable Decoder Activity history with decoder/outcome
+  filters (#244); and live DVR export duration, IQ-pair and file-size previews
+  backed by complete on-disk samples (#245). JSON remains the bookmark restore
+  format, live decoder sessions remain visible, and DVR confirmation rechecks
+  the source before export.
+
+- Complete the browser receiver-control request (#201) with custom filter
+  width and shift in Hz, advertised mode bounds, Apply/Revert and native
+  numeric validation. In-progress fields survive state updates; only edited
+  fields are sent, and mode changes discard the old draft. Read-only and
+  disconnected sessions cannot edit. Existing receive-only pairing, grants,
+  server limits and tuning holds remain authoritative. Match the browser
+  receive footprint to the native geometry, including voice/data sideband
+  offsets and RIT.
+
+### Tests and documentation
+
+- Compare the page's actual receive-footprint JavaScript with the native
+  receiver geometry in every mode, with shifts and RIT.
+- Extend the real-page, production-server browser smoke over plaintext loopback
+  and throwaway TLS for custom filters, invalid values, draft preservation,
+  partial edits and mode/permission/session transitions.
+- Reconcile the deskHPSDR capability catalog (#139) with current source and
+  issue status, preserving separate TX-review and hardware acceptance work.
+  Document the completed browser scope and the broader #91 follow-ups. Record
+  successful exact-source CI, measured browser acceptance and both closure
+  receipts in the Claude handoff. Prepare the combined 2026.1016_002 release
+  with both morning batches and retain separate hardware/TX acceptance gates.
+
+## [2026.1016_001] — 2026-10-16
+
+### Features
+
+- Add bookmark CSV spreadsheet export (#243) for the whole saved library or
+  displayed search/sort results in either layout. Preserve IDs, stored IF
+  frequencies and all optional receiver/FM settings; use UTF-8, stable numeric
+  units, proper quoting and formula-safe user text. JSON remains the portable
+  backup/restore format. File writes use the existing atomic utility worker.
+- Add local Decoder Activity history search and decoder/outcome filters (#244),
+  with result counts, Reset and empty states. Search stored summaries,
+  diagnostics, bookmark labels and MHz/Hz frequencies; live sessions stay
+  visible and Clear all history explicitly clears the entire retained list.
+- Add live DVR export previews (#245): inspect complete on-disk samples off
+  the UI/audio paths, then show available/selected duration, IQ pairs and
+  estimated file size as offsets change. Invalid ranges have immediate
+  feedback and native save validation. Confirmation rechecks the source;
+  closing the DVR window cancels pending inspection without opening a late
+  panel, while an authorized export can finish independently.
+
+### Tests and documentation
+
+- Add pure CSV, history-query and actual-file preview fixtures; extend real
+  transfer-controller checks for CSV and asynchronous preview ownership.
+  Update the compiled operator manual, catalog and capability matrix; record
+  measured software/native acceptance, successful exact-source CI and closure
+  receipts for Claude. This version is prepared for the next release; no new
+  DMG was published in the morning batch.
 
 ## [2026.1015_002] — 2026-10-15
 
