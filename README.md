@@ -36,7 +36,51 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1015_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1015_002** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1015_002
+
+- Add session-only **SAT / Reverse SAT linked VFO tuning** (#220). Either
+  dial can lead; both IF values are validated together using displayed RF
+  deltas, including inverting transverters. Wheel/dial/key, B entry, SUB,
+  CAT and remote commands share the owner gate; remote steps acknowledge
+  refused pairs as refusals. Invalid pairs are refused
+  atomically; RIT/XIT remain independent. Band/bookmark recall, copy/swap,
+  transverter selection and new sessions restore independent dials. Linked
+  tuning holds while TX is armed or active and never arms or keys RF.
+- Add **portable bookmark JSON libraries** (#236): native import/export in
+  both layouts, whole-file validation, 1 MiB / 2,048-memory bounds,
+  duplicate-safe merge and conflicting-ID reassignment. Existing memories
+  are retained and import never tunes. Stored frequencies remain IF Hz;
+  no transverter profile, unrelated settings or credentials are exported.
+- Add **bookmark search** (#238) by name, mode and MHz/Hz frequency,
+  case/diacritic-insensitive all-word matching, result counts and empty-state
+  guidance. Filtering preserves stored order; add/import/export stay visible.
+- Add **bookmark display sorting** (#240): saved order, name or frequency,
+  combined with search and stable ties. Sorting never reorders persistence
+  or recalls a memory. The current ordering stays visible and accessible.
+- Add **in-place bookmark renaming** (#239) with native text editing and
+  Save/Cancel. Renaming preserves identity, position and every saved station
+  field; invalid names and missing/deleted memories cannot change the library.
+- Add **DVR segment export** (#237) through a native save panel. A bounded
+  utility-worker copy preserves v1/v2 headers and complete on-disk IQ pairs,
+  excluding later appends, incomplete pairs and buffered samples. Opened
+  segments survive pruning; failed/shortened copies preserve an existing
+  destination. Export outside the rolling shelf without stopping or replaying
+  the receiver.
+- Add optional **DVR export intervals** (#241): native start/end offsets,
+  validation against the opened on-disk snapshot, inward whole-pair rounding
+  and a timestamp advanced to the actual first retained sample. Whole exports
+  remain byte-identical; sample rate, IF center, transverter mapping and every
+  other header byte are preserved. Invalid intervals and timestamp overflow
+  leave any existing destination untouched.
+- Add **displayed-results bookmark export** (#242). The single-level export
+  menu offers the whole library or the current search/sort results with
+  counts; empty result export is disabled. Subset export preserves displayed
+  order and memory IDs while leaving the library and receiver unchanged.
+  Library imports use bounded regular-file reads and reject pipes/devices;
+  explicit transfer descriptors use close-on-exec.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `ba1ba63d20b62812d191a9f071e36ec986bbc92f4fbf03d2ba252de8715a6317`.
 
 ## New in 2026.1015_001
 
@@ -1219,6 +1263,7 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | Digital Modes | PSK31/63 · Olivia · MFSK16 · THOR · DominoEX · Hellschreiber · 300 Bd packet/APRS · JS8 · WSPR · JT65 · JT9 · Q65 — one hosted decoder at a time, receive only |
 | CW | Adaptive 8–60 WPM decoder at a selectable 300–1000 Hz receive pitch (700 Hz default) · **OmniSkimmer**: GPU polyphase channelizer skims every CW signal across the whole span at once (~375 Hz bins, per-signal decoders, waterfall labels + panel) |
 | Receive DSP | Optional automatic AGC threshold from post-EQ noise, bounded slew and manual takeover · named receive DSP presets with preview and recoverable removal · single/double-pole CW audio peak filter and binaural CW |
+| Tuning & memories | Session-only SAT / reverse-SAT linked VFO tuning in displayed RF units, either dial leading, atomic range refusal and TX-active hold; portable validated whole/displayed bookmark JSON import/export with duplicate-safe merge and local name/mode/frequency search with display-only sorting and in-place renaming; Band DVR segment/interval export to standalone .hiq recordings outside the rolling shelf |
 | CW keyer | Sample-clock keyer, straight / iambic A / iambic B · 5–80 WPM · 25–75 % weighting · paddle swap · 0–2000 ms TX hang · 200–1200 Hz sidetone riding the exact RF envelope · stuck-key watchdog (≤300 s, physical release to rearm) · keyboard paddles or hamlib CAT b / send_morse (≤256 bytes, CW mode only) — every key request goes through ARM + TXCoordinator |
 | TX policy | Operator policy checked in TXCoordinator for every request source (UI, CAT, hardware PTT, keyboard, system) and kind (voice, CW, TUNE, two-tone, digital): IARU Region 1/2/3 or Custom tag as context only, one or more confirmed allowed ranges (inclusive bounds), Off / Warn / Inhibit enforcement, confirmation reset whenever region or ranges change, judged on the actual TX frequency (split/XIT, transverter RF) |
 | Spotting | DX cluster telnet client (multiple nodes at once, RBN-ready, waterfall labels + Times Square ticker) · LoTW user badges + TQSL sign-and-upload · PSKReporter uploads · live planetary K-index |

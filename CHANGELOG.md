@@ -7,6 +7,73 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [Unreleased]
+
+### Documentation
+
+- Record verified 2026.1015_001 publication, issue #234/#235 closures,
+  exact-source CI, public checksums/notarization/scan, downloaded-app startup
+  and rollback, mirror/website receipts and Claude's remaining review and
+  hardware checks. Published release notes and assets remain immutable.
+
+## [2026.1015_002] — 2026-10-15
+
+### Features
+
+- Add session-only **SAT / Reverse SAT linked VFO tuning** (#220). Either
+  dial can lead; both IF values are validated together using displayed RF
+  deltas, including inverting transverters. Wheel/dial/key, B entry, SUB,
+  CAT and remote commands share the owner gate; remote steps acknowledge
+  refused pairs as refusals. Invalid pairs are refused
+  atomically; RIT/XIT remain independent. Band/bookmark recall, copy/swap,
+  transverter selection and new sessions restore independent dials. Linked
+  tuning holds while TX is armed or active and never arms or keys RF.
+- Add **portable bookmark JSON libraries** (#236): native import/export in
+  both layouts, whole-file validation, 1 MiB / 2,048-memory bounds,
+  duplicate-safe merge and conflicting-ID reassignment. Existing memories
+  are retained and import never tunes. Stored frequencies remain IF Hz;
+  no transverter profile, unrelated settings or credentials are exported.
+- Add **bookmark search** (#238) by name, mode and MHz/Hz frequency,
+  case/diacritic-insensitive all-word matching, result counts and empty-state
+  guidance. Filtering preserves stored order; add/import/export stay visible.
+- Add **bookmark display sorting** (#240): saved order, name or frequency,
+  combined with search and stable ties. Sorting never reorders persistence
+  or recalls a memory. The current ordering stays visible and accessible.
+- Add **in-place bookmark renaming** (#239) with native text editing and
+  Save/Cancel. Renaming preserves identity, position and every saved station
+  field; invalid names and missing/deleted memories cannot change the library.
+- Add **DVR segment export** (#237) through a native save panel. A bounded
+  utility-worker copy preserves v1/v2 headers and complete on-disk IQ pairs,
+  excluding later appends, incomplete pairs and buffered samples. Opened
+  segments survive pruning; failed/shortened copies preserve an existing
+  destination. Export outside the rolling shelf without stopping or replaying
+  the receiver.
+
+- Add optional **DVR export intervals** (#241): native start/end offsets,
+  validation against the opened on-disk snapshot, inward whole-pair rounding
+  and a timestamp advanced to the actual first retained sample. Whole exports
+  remain byte-identical; sample rate, IF center, transverter mapping and every
+  other header byte are preserved. Invalid intervals and timestamp overflow
+  leave any existing destination untouched.
+
+- Add **displayed-results bookmark export** (#242). The single-level export
+  menu offers the whole library or the current search/sort results with
+  counts; empty result export is disabled. Subset export preserves displayed
+  order and memory IDs while leaving the library and receiver unchanged.
+  Library imports use bounded regular-file reads and reject pipes/devices;
+  explicit transfer descriptors use close-on-exec.
+
+### Tests and documentation
+
+- Add focused pure-model/file tests and production-owner smoke coverage for
+  linked tuning, bookmark merging, provenance, publication and inert lifetime
+  behavior; register linked-VFO and file-transfer owner checks in CI. Adapt
+  the SUB DSP fixture to shared VFO B routing and verify its gesture source.
+  Update the compiled manual, feature catalog and generated capability matrix
+  for the new workflows.
+  Record software/native validation, remaining publication gates and Claude's
+  paused/review-only hardware and toolchain work in the handoff.
+
 ## [2026.1015_001] — 2026-10-15
 
 ### Features
