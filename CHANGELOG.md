@@ -7,10 +7,70 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
-## [Unreleased]
+## [2026.1018_001] — 2026-10-18
+
+### Features
+
+- Pin optional UTC time lines to acquired 2D waterfall rows: Off, 15/30 seconds,
+  1/5/10/15 minutes. Labels follow the history and captured Metal scene;
+  file replay uses the recording's original start time and playhead.
+- Save up to 30 named console layouts, including panel visibility, dimensions
+  and workspace tabs. Recall, replace and delete from View → Console Layout
+  Presets; radio settings and decoder enable states remain independent.
+- Add one-hour, in-memory performance history with 1/5/15/60-minute charts
+  for process CPU, resident memory and main-actor tick delay. Missing samples
+  and pauses remain visible as gaps; no telemetry service or dependency added.
+
+### Verification
+
+- Add regression coverage for layout validation/persistence scope, timestamp
+  interpolation/discontinuities/ring wrapping, bounded GPU labels, CPU deltas
+  and bounded chronological history. Hardware acceptance remains pending.
+
+### Features
+
+- Add Waterfall Postcard Studio to File, the capture popover and Features:
+  Clean / Observatory / Tabloid / Crab Emergency frames, editable local Crab
+  captions, crop/circle/arrow/text tools, crab/UFO/monster/goblin stickers,
+  recent logged-contact cards with optional grid-center distance, and labeled
+  before/after captures with independent acquisition timestamps. Captures
+  retain their displayed RF frequency/mode/span; decoration is export-only.
+- Record bounded 6- or 12-second waterfall animations (up to 24 frames),
+  preview the loop and export GIF through Save / Share. PNG export, clipboard,
+  configured Discord delivery and explicit Mastodon/Bluesky previews reuse
+  existing destinations. No account, background posting or RF operation is
+  enabled by opening the studio.
+
+### Tests and documentation
+
+- Add recipe validation and production bitmap/GIF export fixtures, invalid
+  input checks, visible-span comparison checks and studio operator guidance.
+  Physical radio capture and external-service delivery remain operator checks.
+
+
+### Features
+
+- Add session-approved Control API TX with local ARM, bounded PTT/TUNE leases,
+  microphone jitter buffering and protocol-queue MOX expiry (#122).
+- Add native Feld Hell text/raster TX, live ALE caller integration and finite
+  UTC WSPR schedules in Transmit → Native Transmit (#223, #72, #174).
+  Preserve coordinator/protection gates, exclusive input through RF tails,
+  generation-scoped audio cancellation and amplifier limits. Software checks
+  are separate from still-required operator-approved dummy-load acceptance.
+
 
 ### Documentation
 
+- Track the completed Postcard and console/runtime delivery in #246; add their
+  production render/session/runtime smoke scripts to routine CI.
+- Combine the completed Postcard, console/runtime and native TX software for
+  owner-authorized publication; retain hardware acceptance on all four TX issues.
+  Publish their operator guides and the revision-3 Control API contract.
+
+- Record verified combined 2026.1016_002 publication, exact-source CI,
+  notarization and 0/75 final-DMG scan, public checksums, downloaded-app startup
+  and updater rollback, mirror/website verification and Claude handoff.
+  Published version sections and immutable assets remain unchanged.
 - Record verified 2026.1015_002 publication, eight feature closures,
   exact-source CI, native interval/JSON export evidence, public checksums,
   notarization/scan and downloaded-app rollback, mirror/site receipts and

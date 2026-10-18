@@ -36,7 +36,52 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1016_002** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1018_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1018_001
+
+- Pin optional UTC time lines to acquired 2D waterfall rows: Off, 15/30 seconds,
+  1/5/10/15 minutes. Labels follow the history and captured Metal scene;
+  file replay uses the recording's original start time and playhead.
+- Save up to 30 named console layouts, including panel visibility, dimensions
+  and workspace tabs. Recall, replace and delete from View → Console Layout
+  Presets; radio settings and decoder enable states remain independent.
+- Add one-hour, in-memory performance history with 1/5/15/60-minute charts
+  for process CPU, resident memory and main-actor tick delay. Missing samples
+  and pauses remain visible as gaps; no telemetry service or dependency added.
+- Add Waterfall Postcard Studio to File, the capture popover and Features:
+  Clean / Observatory / Tabloid / Crab Emergency frames, editable local Crab
+  captions, crop/circle/arrow/text tools, crab/UFO/monster/goblin stickers,
+  recent logged-contact cards with optional grid-center distance, and labeled
+  before/after captures with independent acquisition timestamps. Captures
+  retain their displayed RF frequency/mode/span; decoration is export-only.
+- Record bounded 6- or 12-second waterfall animations (up to 24 frames),
+  preview the loop and export GIF through Save / Share. PNG export, clipboard,
+  configured Discord delivery and explicit Mastodon/Bluesky previews reuse
+  existing destinations. No account, background posting or RF operation is
+  enabled by opening the studio.
+- Add session-approved Control API TX with local ARM, bounded PTT/TUNE leases,
+  microphone jitter buffering and protocol-queue MOX expiry (#122).
+- Add native Feld Hell text/raster TX, live ALE caller integration and finite
+  UTC WSPR schedules in Transmit → Native Transmit (#223, #72, #174).
+  Preserve coordinator/protection gates, exclusive input through RF tails,
+  generation-scoped audio cancellation and amplifier limits. Software checks
+  are separate from still-required operator-approved dummy-load acceptance.
+- Track the completed Postcard and console/runtime delivery in #246; add their
+  production render/session/runtime smoke scripts to routine CI.
+- Combine the completed Postcard, console/runtime and native TX software for
+  owner-authorized publication; retain hardware acceptance on all four TX issues.
+  Publish their operator guides and the revision-3 Control API contract.
+- Record verified combined 2026.1016_002 publication, exact-source CI,
+  notarization and 0/75 final-DMG scan, public checksums, downloaded-app startup
+  and updater rollback, mirror/website verification and Claude handoff.
+  Published version sections and immutable assets remain unchanged.
+- Record verified 2026.1015_002 publication, eight feature closures,
+  exact-source CI, native interval/JSON export evidence, public checksums,
+  notarization/scan and downloaded-app rollback, mirror/site receipts and
+  Claude's remaining paused/review-only work. Published release notes and
+  assets remain immutable.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `b5950a3d519dab363d5b8d1b26dcfdb597f285e8cdb6006722f1e9f75d9731b0`.
 
 ## New in 2026.1016_002
 
@@ -1285,10 +1330,11 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | Receive DSP | Optional automatic AGC threshold from post-EQ noise, bounded slew and manual takeover · named receive DSP presets with preview and recoverable removal · single/double-pole CW audio peak filter and binaural CW |
 | Tuning & memories | Session-only SAT / reverse-SAT linked VFO tuning in displayed RF units, either dial leading, atomic range refusal and TX-active hold; portable validated whole/displayed bookmark JSON import/export and CSV spreadsheet export with duplicate-safe merge and local name/mode/frequency search with display-only sorting and in-place renaming; Band DVR segment/interval duration-size preview and export to standalone .hiq recordings outside the rolling shelf |
 | CW keyer | Sample-clock keyer, straight / iambic A / iambic B · 5–80 WPM · 25–75 % weighting · paddle swap · 0–2000 ms TX hang · 200–1200 Hz sidetone riding the exact RF envelope · stuck-key watchdog (≤300 s, physical release to rearm) · keyboard paddles or hamlib CAT b / send_morse (≤256 bytes, CW mode only) — every key request goes through ARM + TXCoordinator |
-| TX policy | Operator policy checked in TXCoordinator for every request source (UI, CAT, hardware PTT, keyboard, system) and kind (voice, CW, TUNE, two-tone, digital): IARU Region 1/2/3 or Custom tag as context only, one or more confirmed allowed ranges (inclusive bounds), Off / Warn / Inhibit enforcement, confirmation reset whenever region or ranges change, judged on the actual TX frequency (split/XIT, transverter RF) |
+| Native transmit tools | Feld Hell text/raster preview and TX · live ALE caller/handshake · finite UTC WSPR schedules · session-approved Control API PTT/TUNE and 48 kHz microphone uplink · local ARM, coordinator ownership, dead-man leases and STOP · hardware acceptance pending |
+| TX policy | Operator policy checked in TXCoordinator for every request source (UI, CAT, hardware PTT, keyboard, system, native program, Control API) and kind (voice, CW, TUNE, two-tone, digital): IARU Region 1/2/3 or Custom tag as context only, one or more confirmed allowed ranges (inclusive bounds), Off / Warn / Inhibit enforcement, confirmation reset whenever region or ranges change, judged on the actual TX frequency (split/XIT, transverter RF) |
 | Spotting | DX cluster telnet client (multiple nodes at once, RBN-ready, waterfall labels + Times Square ticker) · LoTW user badges + TQSL sign-and-upload · PSKReporter uploads · live planetary K-index |
 | Logbook | ADIF import/export with preserved fields · editing, bulk changes, saved filters and backups · precise LoTW contact matching · DXCC/WAS/grid coverage · interactive worked-world globe, gray line and local DX radar · 100,000-contact performance fixture |
-| Feature catalog | Searchable inventory of 73 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
+| Feature catalog | Searchable inventory of 76 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
 | Extras | Sub-RX (VFO B) · diversity RX (P2) · radio audio output — the receiver through the radio's own headphone / speaker jacks (ANAN Orion MkII on P2; HL2 / SquareSDR with the AK4951 audio codec companion board announced to the gateware on P1; both off by default and not yet verified on a radio) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT (LAN peers pair before tuning or keying) · Kenwood TS-2000 / PowerSDR-Thetis `ZZ` CAT emulation for loggers and digital programs (TCP, pseudo-terminal or serial adapter; receive-side command set, every keying or transmit-side command refused) · transverter profiles (IF→RF dial/CAT/log mapping with per-profile drive ceiling) · Speaker Tracker (local voiceprint clustering and naming of received voices, off by default) · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · MIDI controllers (any CoreMIDI source: learn-mapped encoders with speed acceleration, pickup knobs, pads on the Stream Deck action model; off by default, keying assignments refused pending review) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) · **MAGNET HF Emergency** (magnethf.com watch/net availability, native JS8 transmit verified against JS8Call 3.0.3, JS8Call API hand-off, CW auto-key, voice script) |
 | OC outputs | Per-band open-collector matrix for the accessory connector (OC1–OC7 × band for receive, transmit and TUNE, tune pulse timers), stored per physical radio · the receive row drives Protocol 1 register 0 C2 and Protocol 2 high-priority byte 1401 while receiving · transmit/TUNE values stored, wire-side staged behind the transmit gate · all-zero default is byte-identical to the previous wire |
 | Band data to station devices | HermitSDR plays the radio side of a CAT or logger link so an amplifier or tuner follows the dial (Station › Control Devices › Station Devices): VK-Amps "CAT Yaesu" (`FA…;` on a serial port, polls answered) and "CAT Icom" (CI-V transceive frames) band switching, a Kenwood TS-2000 stream, and the Palstar HF-AUTO through W1TR's HF Auto app as N1MM `RadioInfo` or `USERDOC` XML over UDP · RF-side (transverter-mapped) frequency, pushed on change and repeated each poll interval · no device feedback is interpreted, nothing keys the radio · fixture-verified against virtual devices; not yet tried on the hardware |
