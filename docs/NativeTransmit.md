@@ -1,7 +1,7 @@
 # Native transmit tools — #122, #223, #72 and #174
 
-Included in release candidate 2026.1018_001 with explicit owner publication
-authorization. Software validation does not establish hardware acceptance.
+Available since 2026.1018_001, published with explicit owner authorization.
+Software validation does not establish hardware acceptance.
 All four issues remain open for the operator checks below.
 
 Open **Transmit → Native Transmit…**. Opening the window never enables TX.

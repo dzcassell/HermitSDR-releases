@@ -36,7 +36,31 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1018_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1018_002** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1018_002
+
+- Add the Web Console's installable PWA/offline shell (#248, part of #91): local
+  manifest/icons, a single marked static-shell cache, explicit update/disconnect and
+  removable browser-local offline copy. Configuration, pairing responses and
+  receiver/audio/spectrum data are never cached. Secure-origin install/offline
+  requirements remain explicit; ordinary LAN HTTP continues to work online.
+- Disable browser receive editors while disconnected/read-only and until a new
+  full snapshot arrives; offline views clear receiver imagery and indications.
+- Cancel queued Web Audio on Listen-off, disconnect/offline and stream gaps;
+  bound pending sources and cancel old nodes before backlog rescheduling (#249).
+  Reject zero-length, oversized and unsupported-rate audio frames before Web Audio.
+- Measure the native updater smoke's health deadline from a monotonic child-
+  launch timestamp (#247), including deliberately delayed exec. Preserve the
+  production helper, frozen handshake, timing thresholds and all recovery cases.
+- Document browser install/offline/update/removal boundaries and production-pipeline
+  latency qualifications; mark the native TX guide as available since 001 while
+  retaining all operator acceptance requirements.
+- Record verified combined 2026.1018_001 publication, exact-source CI, signed/
+  notarized clean-scanned DMG, independent downloads and updater rollback,
+  issue disposition, public guides/mirror and HTTPS website verification.
+  Preserve published release notes and remaining hardware acceptance.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `e1f765b19b7b0d24072b3f397c80504969747b9f9c8e65a6915971bf871d8c53`.
 
 ## New in 2026.1018_001
 
@@ -1338,7 +1362,7 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | Extras | Sub-RX (VFO B) · diversity RX (P2) · radio audio output — the receiver through the radio's own headphone / speaker jacks (ANAN Orion MkII on P2; HL2 / SquareSDR with the AK4951 audio codec companion board announced to the gateware on P1; both off by default and not yet verified on a radio) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT (LAN peers pair before tuning or keying) · Kenwood TS-2000 / PowerSDR-Thetis `ZZ` CAT emulation for loggers and digital programs (TCP, pseudo-terminal or serial adapter; receive-side command set, every keying or transmit-side command refused) · transverter profiles (IF→RF dial/CAT/log mapping with per-profile drive ceiling) · Speaker Tracker (local voiceprint clustering and naming of received voices, off by default) · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · MIDI controllers (any CoreMIDI source: learn-mapped encoders with speed acceleration, pickup knobs, pads on the Stream Deck action model; off by default, keying assignments refused pending review) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) · **MAGNET HF Emergency** (magnethf.com watch/net availability, native JS8 transmit verified against JS8Call 3.0.3, JS8Call API hand-off, CW auto-key, voice script) |
 | OC outputs | Per-band open-collector matrix for the accessory connector (OC1–OC7 × band for receive, transmit and TUNE, tune pulse timers), stored per physical radio · the receive row drives Protocol 1 register 0 C2 and Protocol 2 high-priority byte 1401 while receiving · transmit/TUNE values stored, wire-side staged behind the transmit gate · all-zero default is byte-identical to the previous wire |
 | Band data to station devices | HermitSDR plays the radio side of a CAT or logger link so an amplifier or tuner follows the dial (Station › Control Devices › Station Devices): VK-Amps "CAT Yaesu" (`FA…;` on a serial port, polls answered) and "CAT Icom" (CI-V transceive frames) band switching, a Kenwood TS-2000 stream, and the Palstar HF-AUTO through W1TR's HF Auto app as N1MM `RadioInfo` or `USERDOC` XML over UDP · RF-side (transverter-mapped) frequency, pushed on change and repeated each poll interval · no device feedback is interpreted, nothing keys the radio · fixture-verified against virtual devices; not yet tried on the hardware |
-| Web console | Browser receiver and remote console (#154, first slice of #91): one static page served by the overlay HTTP server at `/console`, pairing with the Control API over `wss://` with the same code, certificate and grants — panadapter + waterfall, S-meter, dial, 12 kHz receiver audio through Web Audio, click-to-tune, step / arrow keys, mode, filter presets and custom width/shift in Hz, bands, AGC, VFO A⇄B, phone-width layout · browser-session cap (1–4) and optional time limit · no transmit control anywhere; off by default |
+| Web console | Browser receiver and remote console (#154, first slice of #91): one static page served by the overlay HTTP server at `/console`, pairing with the Control API over `wss://` with the same code, certificate and grants — panadapter + waterfall, S-meter, dial, 12 kHz receiver audio through Web Audio, click-to-tune, step / arrow keys, mode, filter presets and custom width/shift in Hz, bands, AGC, VFO A⇄B, phone-width layout · installable secure-origin PWA with a removable static offline shell (no cached receiver or pairing data) · browser-session cap (1–4) and optional time limit · no transmit control anywhere; off by default |
 | Serial lines | USB-serial adapter modem-control lines as station I/O (#128): footswitch PTT and TX-inhibit inputs on CTS/DSR/DCD/RI, TX and TUNE outputs on DTR/RTS, 20 ms TIOCMGET poll with debounce, invert, lead/tail and pulse settings, reopen on loss, demo adapter · this build displays and logs the inputs and pulses an output only on the manual test button; keying and interlock wiring staged behind the transmit gate |
 | Platform | macOS 15+, Apple silicon only |
 

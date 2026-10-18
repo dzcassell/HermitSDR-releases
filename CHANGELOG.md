@@ -7,6 +7,47 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1018_002] — 2026-10-18
+
+### Features
+
+- Add the Web Console's installable PWA/offline shell (#248, part of #91): local
+  manifest/icons, a single marked static-shell cache, explicit update/disconnect and
+  removable browser-local offline copy. Configuration, pairing responses and
+  receiver/audio/spectrum data are never cached. Secure-origin install/offline
+  requirements remain explicit; ordinary LAN HTTP continues to work online.
+- Disable browser receive editors while disconnected/read-only and until a new
+  full snapshot arrives; offline views clear receiver imagery and indications.
+
+### Fixes
+
+- Cancel queued Web Audio on Listen-off, disconnect/offline and stream gaps;
+  bound pending sources and cancel old nodes before backlog rescheduling (#249).
+  Reject zero-length, oversized and unsupported-rate audio frames before Web Audio.
+- Measure the native updater smoke's health deadline from a monotonic child-
+  launch timestamp (#247), including deliberately delayed exec. Preserve the
+  production helper, frozen handshake, timing thresholds and all recovery cases.
+
+### Research and verification
+
+- Extend #221 with an offline production-source RX pipeline/minimum-phase probe,
+  source-identity comparisons, decoder/adjacent-signal cases and modeled Mac/radio
+  output queues. Keep the application filter and default unchanged; modeled
+  sample-clock results are separate from physical latency and listening.
+- Add PWA routing/cache-policy, delayed-response cloning, and real-browser
+  offline/update/reconnect/cache-eviction checks,
+  and the updater timing regression to routine CI. No new dependency or service.
+
+### Documentation
+
+- Document browser install/offline/update/removal boundaries and production-pipeline
+  latency qualifications; mark the native TX guide as available since 001 while
+  retaining all operator acceptance requirements.
+- Record verified combined 2026.1018_001 publication, exact-source CI, signed/
+  notarized clean-scanned DMG, independent downloads and updater rollback,
+  issue disposition, public guides/mirror and HTTPS website verification.
+  Preserve published release notes and remaining hardware acceptance.
+
 ## [2026.1018_001] — 2026-10-18
 
 ### Features
