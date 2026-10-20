@@ -7,6 +7,89 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [Unreleased]
+
+## [2026.1020_001] — 2026-10-20
+
+### Features
+
+- Add observed NOAA noon F10.7 solar flux (SFI) beside Kp, with UTC observation
+  time, units, hourly refresh and a 48-hour freshness limit (#251). Crab can
+  read both observations through its existing band-conditions tool.
+
+### Ask The Crab
+
+- Add searchable, paged capability discovery and typed app settings/commands for
+  both AI providers, with navigation to every feature and real execution receipts.
+  Match natural words and common aliases to native camel-cased control names.
+- Connect Media Deck URL/pad playback, transport and capture/TX status. Handle
+  explicit video requests without model generation; refuse unrelated receiver
+  changes, invented URLs and accidental local-to-air/stream routing.
+- Add explicit-request integration commands and locally enabled native Hell/ALE/
+  single-attempt WSPR operations. Preserve ARM, policy, ownership, protection and
+  wire leases; expire temporary media Auto PTT authorization with the clip.
+- Keep unregistered workflows honest, public chat isolated and how-to questions
+  free of mutations. Add focused and isolated actual-owner regression coverage.
+
+### Fixes
+
+- Keep fixed-black console header and glowing instrument controls readable in
+  Light, including weather chips and disabled/hover/pressed faces; retain Light
+  colors in the classic header and auxiliary windows (#258).
+
+- Make Pause/Resume All reach captured YouTube players, keep requested resume
+  pending until confirmed Playing, and silence/discard captured ring data across
+  transport transitions with a consumer-owned atomic generation (#257). Preserve
+  a pause requested before the embedded player becomes ready.
+
+- Reject non-finite and oversized YouTube/pad trim times before native player
+  integer conversion, preserving valid share times and explicit overrides (#256).
+
+- Bound embedded YouTube startup to 30 seconds and surface script-load errors;
+  bind player callbacks, command sinks and timeouts to each exact play attempt,
+  including same-pad restarts. Progress cannot manufacture playback (#255).
+
+- Preserve sanitizer build arguments when locating the remote-session smoke
+  binary, so extended ASan/TSan checks use the product actually built (#252).
+- Wait for P1 receiver/rate/frequency registers before test sample generation;
+  pin the RUN-before-register race without changing wire behavior or relaxing
+  exact sample assertions (#250).
+- Reject typographic negation, deferred send requests and incidental route
+  words in Crab media titles/URLs. Honor explicit on-stream routing, refuse
+  unrequested inherited stream routes on resume, and reject negative or
+  decimal/exponent-suffix WSPR power matches, including separated minus signs
+  and written negative values (#254).
+- Give Native Transmit a narrow immutable presentation snapshot, suppress
+  duplicate updates and keep receiver/meter traffic out of the form (#60).
+
+- Make Transmit the menu home for sending tools: direct Feld Hell, ALE and WSPR
+  tabs; FT8/FT4 workspace; JS8/MAGNET; Media Deck/Auto PTT and audio-source controls.
+  Label waterfall save/share and local-only image experiments distinctly.
+  Menu navigation cannot retarget an active native program or start sending.
+
+- Let Native Transmit mode checkboxes work while SAFE so messages and schedules
+  can be prepared before ARM. Pin mode selection and live send-readiness guidance
+  above the scrolling form, add Open TX Controls, and disable send actions until
+  ready. ARM and all transmission-time interlocks remain required; selection or
+  later arming never starts a transmission.
+
+### Research
+
+- Pin current WDSP 2.11 NNR sources for #189 and document model/rate, latency,
+  initialization and distribution questions. An isolated M4 Pro probe measures
+  four models (p99 2.02–4.33 ms per inference frame), with manifests and original
+  probe glue; FFT/resampling, full-chain cost and listening remain unmeasured.
+  No application dependency, model weights or receive-processing change is added.
+
+### Documentation
+
+- Synchronize menu maps, operator/Crab directions and feature guides with the
+  Transmit navigation; LUMEN now links directly to its local setup controls.
+
+- Record verified autonomous 2026.1018_002 publication, exact-source CI and clean
+  signed/notarized DMG, independent native rollback, three scoped issue closures,
+  production-chain research, public guide/mirror and HTTPS website verification.
+
 ## [2026.1018_002] — 2026-10-18
 
 ### Features

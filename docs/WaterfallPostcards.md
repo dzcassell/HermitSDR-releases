@@ -1,6 +1,6 @@
 # Waterfall Postcard Studio
 
-Open **File → Waterfall Postcard Studio**, the photo button's **Postcard Studio**
+Open **Transmit → Waterfall Images — Save & Share → Waterfall Postcard Studio**, the photo button's **Postcard Studio**
 action in either console layout, or its entry in **Station → Features**.
 Opening the studio takes a local capture if no draft exists; it never posts.
 Keep the main waterfall visible: a minimized/occluded renderer cannot capture

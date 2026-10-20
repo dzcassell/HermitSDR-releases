@@ -36,7 +36,52 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1018_002** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1020_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1020_001
+
+- Add observed NOAA noon F10.7 solar flux (SFI) beside Kp, with UTC observation
+  time, units, hourly refresh and a 48-hour freshness limit (#251). Crab can
+  read both observations through its existing band-conditions tool.
+- Keep fixed-black console header and glowing instrument controls readable in
+  Light, including weather chips and disabled/hover/pressed faces; retain Light
+  colors in the classic header and auxiliary windows (#258).
+- Make Pause/Resume All reach captured YouTube players, keep requested resume
+  pending until confirmed Playing, and silence/discard captured ring data across
+  transport transitions with a consumer-owned atomic generation (#257). Preserve
+  a pause requested before the embedded player becomes ready.
+- Reject non-finite and oversized YouTube/pad trim times before native player
+  integer conversion, preserving valid share times and explicit overrides (#256).
+- Bound embedded YouTube startup to 30 seconds and surface script-load errors;
+  bind player callbacks, command sinks and timeouts to each exact play attempt,
+  including same-pad restarts. Progress cannot manufacture playback (#255).
+- Preserve sanitizer build arguments when locating the remote-session smoke
+  binary, so extended ASan/TSan checks use the product actually built (#252).
+- Wait for P1 receiver/rate/frequency registers before test sample generation;
+  pin the RUN-before-register race without changing wire behavior or relaxing
+  exact sample assertions (#250).
+- Reject typographic negation, deferred send requests and incidental route
+  words in Crab media titles/URLs. Honor explicit on-stream routing, refuse
+  unrequested inherited stream routes on resume, and reject negative or
+  decimal/exponent-suffix WSPR power matches, including separated minus signs
+  and written negative values (#254).
+- Give Native Transmit a narrow immutable presentation snapshot, suppress
+  duplicate updates and keep receiver/meter traffic out of the form (#60).
+- Make Transmit the menu home for sending tools: direct Feld Hell, ALE and WSPR
+  tabs; FT8/FT4 workspace; JS8/MAGNET; Media Deck/Auto PTT and audio-source controls.
+  Label waterfall save/share and local-only image experiments distinctly.
+  Menu navigation cannot retarget an active native program or start sending.
+- Let Native Transmit mode checkboxes work while SAFE so messages and schedules
+  can be prepared before ARM. Pin mode selection and live send-readiness guidance
+  above the scrolling form, add Open TX Controls, and disable send actions until
+  ready. ARM and all transmission-time interlocks remain required; selection or
+  later arming never starts a transmission.
+- Synchronize menu maps, operator/Crab directions and feature guides with the
+  Transmit navigation; LUMEN now links directly to its local setup controls.
+- Record verified autonomous 2026.1018_002 publication, exact-source CI and clean
+  signed/notarized DMG, independent native rollback, three scoped issue closures,
+  production-chain research, public guide/mirror and HTTPS website verification.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `85424593694765732e7c9ba62382c3f68777ce0a5e5bb5b9000ef88f4e4e541b`.
 
 ## New in 2026.1018_002
 

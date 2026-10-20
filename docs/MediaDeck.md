@@ -1,6 +1,6 @@
 # Media Deck
 
-Open **Station ▸ Audio & Streaming ▸ Media Deck** for a resizable, page-based soundboard. Decks are
+Open **Transmit ▸ Media Deck / Auto PTT** for a resizable, page-based soundboard. Decks are
 saved automatically in Application Support and can also be exported as JSON
 for backup or transfer.
 
@@ -175,3 +175,30 @@ FX rack and its switch, per-pad FX, waveform thumbnails and durations. Every
 FX field is optional and clamped on load; an unknown press policy plays as
 Restart. HermitSDR refuses documents with a future schema version instead of
 guessing at fields it does not understand.
+
+
+## Embedded-player startup and transport (2026.1020_001)
+
+A failed YouTube API script now produces a visible pad failure. If neither
+playing nor a deliberate paused state arrives within 30 seconds, startup fails
+with network/autoplay/provider guidance instead of remaining Preparing forever.
+Retry the pad after resolving the cause. Each play attempt has a fresh session
+identity, including a restart of the same pad, so old messages and delayed work
+cannot update its replacement. Progress updates never imply Playing. The shared
+account storage remains persistent; provider media is never downloaded. These
+software failure checks do not prove live account playback or captured TX audio.
+
+YouTube start/end times are validated before the player is created: non-finite
+values and times beyond 2,147,483,647 seconds are rejected. Valid share-link
+`start`/`t` values support seconds or h/m/s; an explicit positive pad start still
+overrides the share time. The optional end must follow the resolved start.
+
+Pause All reaches the embedded player even when its captured-audio session is
+registered alongside local clips. Pause/preparing/buffering gate new captured
+samples at the render boundary through an atomic control value; only the render consumer
+discards queued frames at the transport boundary. Resume remains Buffering
+until the player reports Playing, and a resume request gets a new startup
+deadline. A pause requested before the native player attaches or becomes ready
+is retained. This does not
+change ARM, TX ownership or protection policy, and live capture/listening remains
+a separate operator check.

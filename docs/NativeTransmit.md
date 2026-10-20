@@ -4,8 +4,28 @@ Available since 2026.1018_001, published with explicit owner authorization.
 Software validation does not establish hardware acceptance.
 All four issues remain open for the operator checks below.
 
-Open **Transmit → Native Transmit…**. Opening the window never enables TX.
+Open **Transmit → Feld Hell Text…**, **ALE Calling…** or **WSPR Beacon…**.
+Each launcher reveals its matching tab in the same Native Transmit window.
+Other tabs cannot be selected through the menu during an active program.
+Opening the window never enables TX.
+
+The Transmit menu is also the home for **FT8 / FT4 Workspace…**, **JS8 Messages /
+MAGNET…**, **Media Deck / Auto PTT…** and **TX Controls — Voice / File / App Audio…**.
+The workspace launcher reveals the panel without enabling decoders. TX Controls
+opens without changing the audio source. These are navigation actions, not Send,
+Play or ARM. Decode retains receive toggles and decoder tools.
+**Waterfall Images — Save & Share** opens Postcard Studio or capture/export;
+these are image sharing tools, not RF image transmission. **Experimental Lab —
+Local Only** opens the local modem/image laboratories. SSTV is receive-only;
+no waterfall-image or SSTV RF sender is introduced by these menu entries.
+
 ARM remains in TX Controls. Each mode requires an explicit, session-only enable;
+the checkbox can be selected while SAFE, disconnected or in another receive mode.
+It only selects the mode: it never arms, starts or queues a transmission. Prepare
+the message/settings first, then ARM locally and explicitly press Send, Call or
+Start finite schedule. The pinned readiness notice explains blocked sending and
+offers Open TX Controls; send actions remain disabled until the transmitter is
+ready. Failed start requests never resume automatically when ARM becomes available.
 STOP clears all three enables and cancels synthesis, audio, retries and slots.
 Closing the window stops its program. USB or DATA-U is required. Changing radio,
 dial, mode, sample rate or filter invalidates the program. Split TX uses the
