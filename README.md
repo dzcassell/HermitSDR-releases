@@ -36,7 +36,164 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1020_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1022_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1022_001
+
+- FT8/FT4 decode panel: live-list **filters** (CQ, directed to me, new
+  call / new DXCC / new grid from the logbook, minimum S/N; shown-of-total
+  count, Show all), **WSJT-X-style row colours** with a Light/Dark-aware
+  palette and a legend (my call, new DXCC, new grid, CQ, logged — classified
+  by a pure function against the logbook), a **cycle indicator** (EVEN/ODD
+  plus seconds into the slot on the sequencer's corrected clock), a saved
+  **CQ ON Next / Even / Odd** parity preference (resolved in the panel; the
+  sequencer's parity hand-off is staged separately) and an opt-in **FOLLOW**
+  that moves the panel's receive offset (never the VFO or the TX offset) to
+  the caller's tone on Reply (#271). Filters and colours never change what
+  is decoded, exported, uploaded or sequenced. `docs/DigitalModes-Window.md`.
+- Add an opt-in **Filter phase** control to the receive filter popover (Linear /
+  Low latency (experimental), also Crab `rx.filterPhase`, saved per radio) (#221).
+  Low latency rebuilds the 513-tap channel filter as a minimum-phase filter of
+  the same design — same width, skirts and stopband (magnitude within 1e-5 dB)
+  — so SSB audio reaches the speaker about 20 ms sooner (measured 47 → 27 ms to
+  the audio callback at 96 kHz) and a 100 Hz CW filter about 6 ms sooner. It
+  applies to USB/LSB, CW and DATA on the main receiver only; AM/SAM, DSB, FM,
+  the SUB receiver, diversity and every decoder keep the linear-phase filter,
+  and the default is unchanged. Buffering, network and audio-device latency are
+  not affected; a listening comparison is still owed. `docs/ReceiveFilterPhase.md`.
+- Export a contest log as **Cabrillo 3.0** from the QSO Log's Export menu
+  (#269): a persisted per-contest header form (CALLSIGN, CONTEST, every
+  CATEGORY-* line, CLAIMED-SCORE, CLUB, LOCATION, NAME, ADDRESS, OPERATORS,
+  SOAPBOX, CREATED-BY), contacts chosen by the current or a saved filter plus
+  a UTC day range, fixed-width QSO lines with kHz frequencies and the
+  CW / PH / FM / RY / DG mode mapping, and a preview that lists every contact
+  whose exchange or RST had to be left empty or defaulted — nothing is
+  invented silently. ADIF export is unchanged.
+- A **Statistics** window off the QSO Log (#270): contacts per UTC day, month
+  and year, per band, per mode, per DXCC entity and continent, worked versus
+  confirmed (LoTW, recorded QSL, or either), for the full log or the
+  workspace's current or a saved filter, as native bar/line charts in the
+  active palette (Light and Dark) with a table beneath each chart and CSV
+  export of every table. The computation (`LogbookStatistics`, package-
+  compiled and pinned against an independent tally across UTC day / month /
+  year boundaries) runs on its own serial queue off the main actor and is
+  cached per log revision, so an unchanged log never recomputes; the
+  100,000-contact fixture computes in about 0.15 s optimised. Logbook
+  persistence is unchanged. `docs/Logbook.md` › Statistics.
+- SSTV now decodes 41 modes: Martin M3/M4, Scottie S3/S4, Robot 8/12/24
+  black-and-white, Wraase SC2-60/120/180, Pasokon P3/P5/P7, the MMSSTV
+  MP73–175, MR73–175 and ML180–320 families (16-bit VIS words) and FAX480
+  join the original fourteen as table entries with three new colour plans
+  (luma-only, line-sequential RGB, 4:2:2 YCrCb). The VIS detector reads the
+  MMSSTV 16-bit header; the manual-mode picker, Decoder Activity, slant/
+  phase correction and PNG export cover every mode; every new mode has a
+  synthesize→decode fixture, damaged standard/16-bit headers are rejected
+  and recovered from, and the original fourteen are pinned bit-identical
+  (#263). AVT 90 (header-based sync, no line sync) is not included.
+- **WSPR decodes on the Stations Heard map, with great-circle paths** (#272).
+  Each WSPR decode from the Digital Modes window (call, grid, dBm, S/N, drift,
+  slot UTC) now feeds the same bounded heard-grid store as FT8/FT4, tagged with
+  its source, and the map gains FT8 / FT4 / WSPR layer checkboxes plus a
+  **Paths** layer: great-circle lines from the station grid (validated as in
+  #234; no grid, no paths) to each heard station, shaded by S/N from blue
+  (−30 dB) to orange (+10 dB), fading over 30 minutes. Paths crossing the
+  antimeridian are split at ±180° so nothing is drawn the long way round.
+  Bounds: 4,096 grid pins (unchanged), 256 station paths (oldest decode
+  evicted), at most 67 coordinates per path. The WSPR decoder also reports
+  frequency drift. Optional **Upload WSPR reports to wsprnet.org** sits under
+  Settings › Station beside the PSKReporter switch: off by default, needs a
+  callsign and a valid grid, posts the fields the public WSJT-X and
+  rtlsdr-wsprd clients send (`function=wspr`, `rcall`, `rgrid`, `rqrg`,
+  `date`, `time`, `sig`, `dt`, `drift`, `tqrg`, `tcall`, `tgrid`, `dbm`,
+  `version`, `mode=2`), exactly once per decode with three bounded attempts,
+  never from a replay or the time machine, and never on the decoder's thread.
+- QPSK31 / QPSK63 / QPSK125 receive beside PSK31/63/125 in the Digital Modes
+  window (#260): rate-1/2 K=5 convolutional code (0x17/0x19) with a 16-state
+  soft Viterbi, upper- or lower-sideband phase sense (LSB-sense switch), a
+  coarse ±50 Hz carrier search on top of the fine AFC, and gates that keep a
+  BPSK text or the other phase sense from printing garbage. Decoder Activity
+  names the variant (PSK31 … QPSK125); "monitor qpsk63" picks it. Receive only.
+- RSID receive detection (#261): the Reed-Solomon mode identifier that
+  fldigi, MultiPSK and iDigi send before a transmission (16 tones, 10.766 Bd,
+  172 Hz, RS(15,3) over GF(16)) is read across the whole audio passband
+  whenever a hosted text decoder or the Contestia decoder is on. Each
+  identifier is reported with mode, audio frequency, UTC time and S/N in the
+  Digital Modes window and Decoder Activity; **Switch here** selects the
+  matching decoder with its parameters (Olivia/Contestia tones and bandwidth,
+  MFSK preset, PSK rate, THOR/DominoEX speed, RTTY baud) centred on the
+  identifier's frequency, and an **Auto-switch** setting (off by default,
+  `decode.rsidAutoSwitch` for the Crab) follows them. Only the decoder centre
+  moves — never the VFO. Codes without a hosted decoder are shown by name. QPSK31/63/125 identifiers hand off to the new QPSK decoder.
+- **Callsign lookup** from QRZ.com (XML interface) or HamQTH (XML) fills
+  station details into the logbook (#265): name, QTH, grid, country/DXCC,
+  state, QSL manager, email and CQ/ITU zones. Runs after every logged contact
+  (LOG IT, FT8/FT4 auto-log, Crab quick log) and on demand from the contact
+  editor's new **Look up** button; only fields that are still empty are
+  written, and the provider plus UTC lookup time are recorded on the contact
+  (`APP_HERMITSDR_LOOKUP_SRC` / `_TIME`, exported with the ADIF). Settings ›
+  Station gains the switch (off by default), a QRZ.com / HamQTH picker,
+  username and a Keychain-only password with a status row that reports
+  no-account, not-found, login-rejected and session-expired states; the
+  editor shows the same states. One session per provider with automatic
+  re-login on "Session Timeout" / expired-session replies (HamQTH renewed at
+  55 minutes), at most one request per second and 60 per 10 minutes, a
+  512-entry 24-hour LRU cache, a bounded queue and cancellation on disable
+  or quit. ADIF imports are not looked up automatically. Fixtures replay
+  recorded QRZ/HamQTH XML (success, not found, expiry → re-login, malformed,
+  HTTP error) through a scripted transport; no network. `docs/Logbook.md`.
+- **Logger broadcasts** (#267, Settings › Station › Logger broadcasts, both
+  feeds off by default): the **WSJT-X UDP protocol** — Heartbeat, Status,
+  Decode (FT8/FT4 from the native decode panel; JS8 never), Clear, QSO Logged,
+  Logged ADIF and Close — to a unicast host or multicast group (127.0.0.1:2237
+  by default, multicast TTL 1) so GridTracker2, JT-Bridge, MacLoggerDX,
+  RUMlogNG and any WSJT-X-aware logger see HermitSDR like WSJT-X; inbound
+  **Reply** selects the decoded station exactly as a click on its row does
+  and **Halt Tx** presses the panel's STOP (both behind a second switch, off
+  by default; nothing can key, arm or enable TX). **N1MM Logger+**
+  `contactinfo` / `contactreplace` / `contactdelete` XML on every logged,
+  edited or deleted contact (port 12060 by default; imports and restores are
+  not broadcast). Own owning queue with a bounded (256) send queue, a
+  bounds-checked inbound decoder that refuses malformed frames, and a Settings
+  status row with sent / received / dropped counts. Byte-exact fixtures in
+  `LoggerBroadcastTests`; `docs/LoggerBroadcasts.md`.
+- **MFSK picture reception** (#262): the Digital Modes MFSK decoder now
+  receives the pictures fldigi and Shortwave Radiogram embed in MFSK16/32/64/
+  128 text. The fldigi `Pic:WxH[C][p4|p2];` header in the decoded text
+  switches the modem to analog-FM pixel sampling at 1000 / 2000 / 4000
+  pixels per second (deviation ±bandwidth/2, colour line-sequential RGB or
+  greyscale, fldigi's picture passband), the first pixel is derived from the
+  coder pipeline to the sample, the picture paints row by row under the
+  text, auto-saves as `MFSK-<mode>-<date>.png` with reception metadata
+  through the SSTV/WEFAX PNG path, appears in Decoder Activity as its own
+  session with a time-machine bookmark, and can be re-rendered with slant /
+  shift sliders and saved again; text resumes cleanly afterwards. New
+  MFSK64 and MFSK128 presets and an MFSK16/32/64/128/8/4 variant picker
+  (persisted `digitalMFSK`, also `monitor mfsk32` for the crab); the MFSK
+  default centre is now 1500 Hz as documented. Fixtures cover clean, noisy
+  (documented to 0 dB) and ±5 Hz-off pictures in three modes with text on
+  both sides; `docs/DigitalModes-Window.md` § MFSK pictures.
+- **Decode a Recording…** (Decode menu, #264): run a `.hiq` IQ recording
+  (including Band DVR segments) or a WAV audio recording through FT8/FT4,
+  SSTV, Weather Fax, CW, RTTY, Contestia, ALE or any Digital Modes decoder
+  faster than real time (Max / 10× / 1×) on a private copy of the receive
+  chain, with pause, cancel and progress. Slot-clocked decoders take their
+  slot boundaries, and every session its timestamps, from the recording's
+  clock, not wall time; results are badged REPLAY in Decoder Activity and
+  never reach PSKReporter, wsprnet, the FT8 sequencer, Discord or the
+  transmitter. A fixture decoded at 1×/10× and Max is result-identical
+  (`OfflineDecodeTests`; a 61 s 48 kHz four-slot FT8 IQ recording decodes
+  in 0.13 s Release / 2.2 s Debug on an M4 Pro, ≈470× / ≈27× real time;
+  PSK31 audio ≈320× in Debug). The FT8 engine now keeps a bounded list of undelivered slot
+  results instead of one, so several slots decoded between two main-queue
+  turns are all presented. `docs/DigitalModes-Window.md`.
+- Quick repeated clicks on a dial digit no longer have to open the MHz entry:
+  the step menu gains **Double-click a digit types a frequency** (on by
+  default). Off, every click on a digit steps, and a double-click on the
+  decimal point or the MHz label still types a frequency (#259).
+- Record verified 2026.1020_001 publication, exact-source CI/Extended recovery,
+  fresh clean notarized DMG, independent public startup/full rollback, public
+  guides/HTTPS synchronization and nine scoped software issue closures.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `0ace24c75282ac5d767488cf78beacbe44da7a6354f250210b88f0a3733a1c06`.
 
 ## New in 2026.1020_001
 
@@ -1389,11 +1546,11 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | Sample rates | 48–384 kHz (P1) · up to 1536 kHz (P2) · 48–768 kHz on the NetSDR (the radio streams 50–800 kHz, resampled 24/25 to the chain rate) |
 | Demod modes | USB, LSB, CW, AM, SAM, FM, NFM, DSB, DATA-U, DATA-L (USB / LSB for sound-card digital modes: 3 kHz filter from 100 Hz by default, own filter memory, selected by CAT PKTUSB / PKTLSB, TCI DIGU / DIGL and Kenwood MD 9 / 6) · separate wide/narrow FM deviation · CTCSS encode/decode · CTCSS tone squelch (TSQL: FM / NFM audio opens only on the selected tone, ~¼ s to open, 250 ms hang) · FM sub-audio filter (the repeater's CTCSS tone leaves the speaker audio; on by default) · AM, SAM and DSB filters to 20 kHz, with 10 kHz audio at the speakers above 11 kHz of width |
 | FT8 / FT4 | Receive: waterfall spots, decode panel, stations-heard ADIF (FT4 exported as MFSK/FT4), PSKReporter uploads, 15 s / 7.5 s UTC slots, automatic station clock-drift estimation with bounded slot correction, time-machine replay. Transmit: native slot-clocked modulator + auto-sequencer behind ARM/TXCoordinator (native FT8 dummy-load validated; on-air validation pending), or WSJT-X via CAT PTT + audio routing · **native JS8 (normal) encoder** — clean-room port of JS8Call's varicode/CRC-12/LDPC(174,87) path, frame programs one slot at a time, decoded by JS8Call 3.0.3 |
-| SSTV | Martin M1, Martin M2, Scottie S1, Scottie S2, Scottie DX, Robot 36, Robot 72, PD50, PD90, PD120, PD160, PD180, PD240, PD290 — auto VIS + manual mode/start, slant/phase correction, PNG export |
+| SSTV | Martin M1, Martin M2, Martin M3, Martin M4, Scottie S1, Scottie S2, Scottie S3, Scottie S4, Scottie DX, Robot 36, Robot 72, PD50, PD90, PD120, PD160, PD180, PD240, PD290, Robot 8 B/W, Robot 12 B/W, Robot 24 B/W, Wraase SC2-60, Wraase SC2-120, Wraase SC2-180, Pasokon P3, Pasokon P5, Pasokon P7, MP73, MP115, MP140, MP175, MR73, MR90, MR115, MR140, MR175, ML180, ML240, ML280, ML320, FAX480 — auto VIS + manual mode/start, slant/phase correction, PNG export |
 | WEFAX | IOC 576 · 120 LPM, IOC 576 · 90 LPM, IOC 576 · 60 LPM, IOC 288 · 120 LPM — polarity, slant/phase, crop/rotate, PNG with metadata |
 | RTTY | 45.45/50/75/100 Bd · 170/200/425/850 Hz shifts · normal/reverse polarity · bounded AFC |
 | Contestia | 4–64 tones · 125–2000 Hz · Walsh-FEC block sync with S/N gating · normal/reverse · receive only |
-| Digital Modes | PSK31/63 · Olivia · MFSK16 · THOR · DominoEX · Hellschreiber · 300 Bd packet/APRS · JS8 · WSPR · JT65 · JT9 · Q65 — one hosted decoder at a time, receive only |
+| Digital Modes | PSK31/63/125 · QPSK31/63/125 (upper/lower phase sense, receive only) · Olivia · MFSK16/32/64/128 (+ MFSK8/4) with fldigi picture reception — Shortwave Radiogram images paint in the window, auto-save as PNG and re-render with slant/shift · THOR · DominoEX · Hellschreiber · 300 Bd packet/APRS · JS8 · WSPR · JT65 · JT9 · Q65 — one hosted decoder at a time, receive only |
 | Decoder Activity | Live decoder status plus local recent-history search by mode, frequency and stored text, decoder/outcome filters, result counts and Reset; live sessions remain unfiltered |
 | CW | Adaptive 8–60 WPM decoder at a selectable 300–1000 Hz receive pitch (700 Hz default) · **OmniSkimmer**: GPU polyphase channelizer skims every CW signal across the whole span at once (~375 Hz bins, per-signal decoders, waterfall labels + panel) |
 | Receive DSP | Optional automatic AGC threshold from post-EQ noise, bounded slew and manual takeover · named receive DSP presets with preview and recoverable removal · single/double-pole CW audio peak filter and binaural CW |
@@ -1402,11 +1559,12 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | Native transmit tools | Feld Hell text/raster preview and TX · live ALE caller/handshake · finite UTC WSPR schedules · session-approved Control API PTT/TUNE and 48 kHz microphone uplink · local ARM, coordinator ownership, dead-man leases and STOP · hardware acceptance pending |
 | TX policy | Operator policy checked in TXCoordinator for every request source (UI, CAT, hardware PTT, keyboard, system, native program, Control API) and kind (voice, CW, TUNE, two-tone, digital): IARU Region 1/2/3 or Custom tag as context only, one or more confirmed allowed ranges (inclusive bounds), Off / Warn / Inhibit enforcement, confirmation reset whenever region or ranges change, judged on the actual TX frequency (split/XIT, transverter RF) |
 | Spotting | DX cluster telnet client (multiple nodes at once, RBN-ready, waterfall labels + Times Square ticker) · LoTW user badges + TQSL sign-and-upload · PSKReporter uploads · live planetary K-index |
-| Logbook | ADIF import/export with preserved fields · editing, bulk changes, saved filters and backups · precise LoTW contact matching · DXCC/WAS/grid coverage · interactive worked-world globe, gray line and local DX radar · 100,000-contact performance fixture |
-| Feature catalog | Searchable inventory of 76 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
+| Logbook | ADIF import/export with preserved fields · Cabrillo 3.0 contest export (persisted per-contest header, UTC day / saved-filter selection, flagged missing exchanges) · editing, bulk changes, saved filters and backups · precise LoTW contact matching · DXCC/WAS/grid coverage · interactive worked-world globe, gray line and local DX radar · QRZ.com / HamQTH callsign lookup that fills empty station fields on commit and from the editor (Keychain credentials, off by default) · 100,000-contact performance fixture · statistics window (contacts per UTC day / month / year, band, mode, DXCC entity and continent, worked versus confirmed, charts + tables, CSV) · 100,000-contact performance fixture |
+| Feature catalog | Searchable inventory of 78 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
 | Extras | Sub-RX (VFO B) · diversity RX (P2) · radio audio output — the receiver through the radio's own headphone / speaker jacks (ANAN Orion MkII on P2; HL2 / SquareSDR with the AK4951 audio codec companion board announced to the gateware on P1; both off by default and not yet verified on a radio) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT (LAN peers pair before tuning or keying) · Kenwood TS-2000 / PowerSDR-Thetis `ZZ` CAT emulation for loggers and digital programs (TCP, pseudo-terminal or serial adapter; receive-side command set, every keying or transmit-side command refused) · transverter profiles (IF→RF dial/CAT/log mapping with per-profile drive ceiling) · Speaker Tracker (local voiceprint clustering and naming of received voices, off by default) · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · MIDI controllers (any CoreMIDI source: learn-mapped encoders with speed acceleration, pickup knobs, pads on the Stream Deck action model; off by default, keying assignments refused pending review) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) · **MAGNET HF Emergency** (magnethf.com watch/net availability, native JS8 transmit verified against JS8Call 3.0.3, JS8Call API hand-off, CW auto-key, voice script) |
 | OC outputs | Per-band open-collector matrix for the accessory connector (OC1–OC7 × band for receive, transmit and TUNE, tune pulse timers), stored per physical radio · the receive row drives Protocol 1 register 0 C2 and Protocol 2 high-priority byte 1401 while receiving · transmit/TUNE values stored, wire-side staged behind the transmit gate · all-zero default is byte-identical to the previous wire |
 | Band data to station devices | HermitSDR plays the radio side of a CAT or logger link so an amplifier or tuner follows the dial (Station › Control Devices › Station Devices): VK-Amps "CAT Yaesu" (`FA…;` on a serial port, polls answered) and "CAT Icom" (CI-V transceive frames) band switching, a Kenwood TS-2000 stream, and the Palstar HF-AUTO through W1TR's HF Auto app as N1MM `RadioInfo` or `USERDOC` XML over UDP · RF-side (transverter-mapped) frequency, pushed on change and repeated each poll interval · no device feedback is interpreted, nothing keys the radio · fixture-verified against virtual devices; not yet tried on the hardware |
+| Logger broadcasts | WSJT-X UDP protocol output for GridTracker2, JT-Bridge, MacLoggerDX, RUMlogNG and any WSJT-X-aware logger — Heartbeat, Status, Decode (FT8 / FT4 only), Clear, QSO Logged, Logged ADIF, Close to a unicast host or a multicast group (127.0.0.1:2237 by default, multicast TTL 1), with optional inbound Reply (selects the decoded station exactly like a click on its row) and Halt Tx (the panel's STOP) · N1MM Logger+ `contactinfo` / `contactreplace` / `contactdelete` XML for every logged, edited or deleted contact (port 12060 by default; imports and restores excluded) · both off by default, one owning queue with a bounded send queue, nothing here can key or arm the radio (docs/LoggerBroadcasts.md) |
 | Web console | Browser receiver and remote console (#154, first slice of #91): one static page served by the overlay HTTP server at `/console`, pairing with the Control API over `wss://` with the same code, certificate and grants — panadapter + waterfall, S-meter, dial, 12 kHz receiver audio through Web Audio, click-to-tune, step / arrow keys, mode, filter presets and custom width/shift in Hz, bands, AGC, VFO A⇄B, phone-width layout · installable secure-origin PWA with a removable static offline shell (no cached receiver or pairing data) · browser-session cap (1–4) and optional time limit · no transmit control anywhere; off by default |
 | Serial lines | USB-serial adapter modem-control lines as station I/O (#128): footswitch PTT and TX-inhibit inputs on CTS/DSR/DCD/RI, TX and TUNE outputs on DTR/RTS, 20 ms TIOCMGET poll with debounce, invert, lead/tail and pulse settings, reopen on loss, demo adapter · this build displays and logs the inputs and pulses an output only on the manual test button; keying and interlock wiring staged behind the transmit gate |
 | Platform | macOS 15+, Apple silicon only |
