@@ -36,7 +36,300 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1022_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1023_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1023_001
+
+- **ALE Skimmer, folder-watch batch decode and ALE Nets** (Decode menu,
+  #281). SKIM in the new ALE Skimmer window runs a 2G-ALE decoder on every
+  channel across the whole sampled span at once — a 1 kHz or 500 Hz grid,
+  dials aligned to the grid whatever the radio's centre, a channel bound
+  you choose (nearest the centre first) — so a 384 kHz span watches up to
+  377 (1 kHz) or 760 (500 Hz) channels. Each channel's audio comes from an
+  oversampled polyphase bank (vDSP) that delivers exactly the 12 kHz USB
+  audio the single-channel monitor decodes; an energy gate plus an
+  eight-tone signature decides which channel a sounding was really sent on
+  before a decoder is committed, so a 3 kHz signal lighting five
+  overlapping channels costs one decoder. Soundings (TWAS/TIS) and calls
+  (TO + TIS/TWAS) are logged as whole addresses — extended addresses
+  rebuilt from their DATA/REP words, repetitions folded with a count — into
+  the ALE heard log tagged with the channel frequency and UTC, listed in
+  the window (click to tune), sparked on the waterfall and reported as an
+  "ALE SKIM" session in Decoder Activity with a bookmark per address. The
+  window shows hosted channels, active decoders and the measured CPU
+  figure. Decode a Recording gains the same ALE Skimmer over any `.hiq` or
+  Band DVR segment (results dated by the recording's clock, badged REPLAY,
+  logged to the heard log). Folder watch (lower half of the window): choose
+  a folder and every new IQ recording that finishes writing is skimmed one
+  at a time, a `<name>.ale.txt` log written beside it; processed files are
+  kept by default, or moved / deleted after a once-per-session
+  confirmation; nothing starts at launch. The ALE Nets window folds the
+  heard log into caller → called pairs, sounding counts, who-calls-whom nets
+  and a per-address table, each exportable as CSV. Crab: `decode.aleSkimmer`,
+  `decode.aleSkimStep`. Receive only — the skimmer never touches the ALE
+  caller or the transmitter. `docs/ALE.md`.
+- **Carrier Sleuth** (Decode menu, #282): sub-hertz carrier waterfalls of
+  every medium-wave channel in a Band DVR segment or `.hiq` recording. Pick
+  the 9 kHz (ITU Regions 1/3, long and medium wave) or 10 kHz (Region 2)
+  raster or type your own kHz list, the window width (±50…±200 Hz), the FFT
+  length (2^14…2^24 points) and the speed-up (⅛×…8× overlap or skip), press
+  Analyse: one pass channelises the file, long Hann-windowed FFTs then draw
+  one narrow waterfall per channel — 0.5 mHz to 34 mHz per bin, 4096 columns
+  of at most 0.1 Hz — stacked in a scrollable grid with hour / ten-minute /
+  minute UTC markers from the recording clock, a cursor readout (Hz offset
+  and UTC), Min/Max dB sliders, a click-to-open detail view, a note per
+  channel, a carrier-offset table (median of each row's peak bin, copy as
+  TSV), PNG export and Copy with the recording facts in the PNG Description.
+  Results are cached under Application Support (512 MB, least recently
+  loaded evicted, Clear Cache) keyed by a file fingerprint and the
+  parameters, so reopening a segment is instant; notes survive a clear.
+  The job runs on its own queue, streams the file (spill files for the
+  decimated channels, at most 256 MB of rows), reports progress and
+  cancels cleanly; it never touches the live receiver and nothing leaves
+  the Mac. `CarrierSleuthTests` synthesizes a 20-minute MW recording with
+  three carriers 0.3 Hz apart (one signing off at minute 10) and a 2 Hz
+  drifter and pins resolution, drift tracking, sign-off time, cache
+  hit/miss/eviction, cancellation and a byte-reproducible export.
+  `docs/CarrierSleuth.md`.
+- **Radiofax Schedules** window (Decode menu) over HermitSDR's own JSON
+  transcription of the public-domain NWS *Worldwide Marine Radiofacsimile
+  Broadcast Schedules* (rfax.pdf, March 7, 2025): 21 stations and 640
+  scheduled charts from Tokyo, Kagoshima, Seoul, Bangkok, Guangzhou, Kyodo
+  News, Pevek, Valparaíso, Punta Arenas, Sydney NS, Kodiak, Point Reyes, New
+  Orleans, Boston, Charleville, Wiluna, Honolulu, Athens, Murmansk,
+  Hamburg/Pinneberg and Northwood, each with assigned frequencies, UTC start
+  times, product, RPM/IOC, valid time, map area and the document's own
+  "information dated" line. Now / Next / All, search by station, place, chart
+  or kHz, filter by region or station, the outlets open at the chart's start
+  with the recommended one in bold, your distance from the transmitter, and
+  double-click or Tune to put the dial on it in USB 1.9 kHz below the
+  assigned frequency (the listed carrier for Athens). Tick **Capture** on any
+  chart and switch on **Timed capture**: at the published minute HermitSDR
+  tunes, selects the matching IOC/LPM profile, starts the Weather Fax decoder
+  and stops it at the chart's end (the next chart or 20 minutes), exactly once
+  per occurrence (a bounded in-memory fired map; only a relaunch inside the
+  three-minute grace can start one again), restoring the decoder's previous
+  state afterwards; a start is skipped while the
+  transmitter is keyed, RF-hot or owned by a transmit program, with no radio
+  connected, or more than three minutes late. The crab's named-station fax
+  tune ("Northwood fax") now knows every station in the table. A file at
+  `~/Library/Application Support/HermitSDR/rfax-schedule.json` overrides the
+  bundled table so the schedule can be refreshed without an app update;
+  rows with impossible clocks or frequencies are dropped and counted (#286).
+  Documented in `docs/Radiofax.md`; APT satellite imagery is out of scope.
+- **Recording Schedule** (Radio menu, #289): record a broadcast, a net or a
+  band segment while you are away. Each entry has a name, a UTC start time
+  and duration, the days it applies to (daily, chosen weekdays or one
+  date), what to record (audio WAV, IQ `.hiq` or both), an optional receive
+  preset (dial and mode) applied at the start and restored afterwards, and
+  a file-size roll-over that continues into numbered parts; the table
+  shows each entry's next run and last outcome, the window and the header
+  chip show the running capture with a Stop button, and the log lists
+  starts, refusals, misses and roll-overs. Entries are kept per radio.
+  Each occurrence fires exactly once from the minute clock; a start is
+  refused — and logged — while the transmitter is armed, keyed or owned by
+  a program, or while a recorder is already in use; a start missed while
+  the app was asleep is logged, never back-filled. The crab's
+  `recording_schedule` tool adds ("record 9.420 MHz AM at 0300Z for 30
+  minutes"), lists, toggles, deletes and stops entries. `docs/Recording.md`.
+- **Shortwave Schedules** window (Radio menu) over the bundled EiBi broadcast
+  database: search by station, kHz, UTC hour, country, language or target;
+  Now / Next / All; stations on the air now in bold; utility rows (EiBi code
+  ≥ 90) hidden unless asked for and tagged; star favourites (kept across
+  season refreshes) and tick **Remind** for a toast and a crab line five
+  minutes before a favourite comes on the air, exactly once per occurrence;
+  double-click or Tune puts the dial on the channel in AM (SAM kept) (#279).
+  **View → Shortwave Broadcast Labels** names the broadcasters EiBi says are
+  transmitting now inside the visible span, in the same layer as the cluster
+  spots — at most 24, favourites first, click to tune, off by default; the
+  crab's `shortwave_schedule` answers "what is on the dial" and time-of-day
+  questions. EiBi (eibispace.de) is credited in About › Licenses, the window
+  and `docs/ShortwaveSchedules.md`.
+- **NCDXF/IARU beacon tracker** (#278): Log ▸ NCDXF Beacons lists the five
+  beacon frequencies (14.100 / 18.110 / 21.150 / 24.930 / 28.200 MHz) with
+  the beacon transmitting now, its place and grid, a slot countdown, the next
+  beacon and a Listen button that tunes in CW; a `NOW: <callsign>` label sits
+  over the beacon frequency on the panadapter whenever one is in the visible
+  span (click to listen). The eighteen-beacon, three-minute, ten-second-slot
+  schedule is modelled from the published NCDXF table and pinned by tests
+  across slot boundaries and a UTC day. With Log S/N on, each ten-second slot
+  of a beacon inside the sampled span is measured from the existing spectrum
+  rows (peak carrier over the median band noise, referred to 500 Hz; the
+  10 W / 1 W / 100 mW steps inferred from the peak) into a 24-hour
+  per-beacon, per-band history (512 slots per series at most) with a
+  sparkline per beacon, saved locally and reloaded at launch, and the band
+  scout quotes the beacons heard in the last 30 minutes as propagation
+  evidence. Crab controls `beacons.labels` / `beacons.logSNR`. Receive only;
+  nothing is uploaded. `docs/NCDXFBeacons.md`.
+- **Space Weather** window (Log ▸ Space Weather) with the NOAA SWPC picture
+  beyond the Kp and SFI chips: 3-hourly Kp, daily A-index and sunspot number,
+  GOES X-ray flux with its flare class and the seven-day flare list, solar wind
+  speed / density / Bz, proton and electron flux, NOAA R / S / G scale badges
+  with the three-day outlook, the 27-day outlook, the 45-day AP forecast and the
+  SWPC alert / watch / warning feed, plus one-month and one-day plots and the
+  WWV / WCY line relayed by a DX cluster beside the fetched values (#277).
+  Twelve fixed public HTTPS requests, hourly, with per-product freshness limits
+  (minute products 2 h, daily products 48 h like SFI, outlooks 10 d); a stale,
+  unreadable or unreachable product shows a dash and never an old number.
+  Crab watches now also cover a flare of a class or stronger, an R / S / G
+  level and a proton event — each fires exactly once per event (a flare by its
+  begin time; a scale level or proton event on onset, re-armed when it
+  clears) — with an optional spoken alert (off by default), and the crab's
+  `band_conditions` tool reports the same values. `docs/SpaceWeather.md`.
+- **GMDSS DSC** in Decode › Digital Modes (#276): an ITU-R M.493 digital
+  selective calling decoder for the six HF distress channels (2187.5,
+  4207.5, 6312, 8414.5, 12577 and 16804.5 kHz, a channel menu that tunes
+  USB 1.7 kHz below) — 100 Bd FSK, dot-pattern and phasing detection,
+  ten-bit zero-count symbols, DX/RX time-diversity recovery, check
+  character, every format specifier parsed (distress, all ships,
+  individual, group, area, automatic; categories, telecommands, distress
+  nature, position, time, frequency/channel, EOS, M.1082 expansion) with
+  MMSI classification and ITU MID → country. Calls go to a per-radio
+  searchable database (2,000 calls, saved across launches; bad check
+  characters kept but hidden unless "Show bad ECC"), a coast-station
+  summary with counts per station and country, and the Stations Heard map
+  under a DSC layer (coast stations at their site or country, ships at
+  reported distress positions). Also available in Decode a Recording.
+  Fixture floor 0 dB S/N in 2.5 kHz; not yet heard off the air; one hosted
+  decoder on the selected receiver (no parallel DDC monitors yet).
+  `docs/DigitalModes-Window.md`.
+- RTTY decoder: **Detect** measures the tuned FSK signal from the decoder's
+  last 3 s of audio — the two tones, shift, baud (snapped to 45.45 / 50 / 75 /
+  100 / 110 / 150 / 200 / 300 Bd when within 4.5 %, otherwise the free
+  estimate), polarity, the weaker tone's S/N and a confidence — and **Apply**
+  writes them into the decoder's mark / shift / baud / REV with one click;
+  nothing changes until Apply, and voice, noise or CW report "No FSK found"
+  (#284). Ask the Crab: `rtty-detect` (value `apply`). Fixtures: every baud
+  preset × 170 / 425 / 850 Hz × both polarities at +10 dB S/N (2.5 kHz) land
+  within 2 Hz and 2 Bd; measured floor +2 dB (45.45 Bd / 170 Hz) and +6 dB
+  (100 Bd / 850 Hz). The estimator (`FSKParameterEstimator`) is a package type
+  with a narrow feed / analyze API for the maritime 100 Bd decoders.
+  `docs/DigitalModes-Window.md` › RTTY parameter auto-detect.
+- **NAVTEX / SITOR-B / SITOR-A receive** (#275): Decode › NAVTEX / SITOR
+  decodes the 518 / 490 / 4209.5 kHz maritime safety broadcasts (one-click
+  presets tune DATA-U with the 170 Hz tone pair on the chosen audio centre)
+  through a 100 Bd FSK front end with bit sync and bounded AFC and a CCIR 476
+  4-of-7 decoder: SITOR-B FEC with DX/RX time diversity, phasing and `*` / `_`
+  error marking, and a SITOR-A listener that prints both sides of a simplex
+  ARQ exchange and drops repeated blocks. Messages are framed `ZCZC B1B2B3B4 …
+  NNNN` into a searchable list with station (NAVAREA I / IV / XII tables),
+  subject, serial, error rate against the 4 % criterion and 72-hour duplicate
+  suppression (serial 00 always prints), with plain-text export; a now / next
+  strip models the IMO timetable (ten-minute slots by B1 letter every four
+  hours) for the selected NAVAREA and frequency, click to tune. Sessions
+  appear in Decoder Activity with a bookmark per message, the decoder is
+  available to Decode a Recording, Ask the Crab can start it ("monitor
+  NAVTEX"), and the fixture decodes a NAVTEX message bit-exact down to +6 dB
+  S/N in 300 Hz. Receive only; nothing transmits.
+- **QRSS Grabber** window (Decode menu, #283): a sub-hertz, minutes-per-screen
+  waterfall of the demodulated audio for QRSS / DFCW / FSKCW beacons. Bin
+  width 0.73–0.046 Hz (the 12 kHz-equivalent FFT 2^14–2^18, exact after
+  power-of-two decimation to a 375 / 750 Hz complex window), Hann /
+  Blackman-Harris / flat-top windows, ×1–×8 overlap speed-up, 100–500 Hz
+  span around an audio centre, 2–30 minutes per screen, left / right / down
+  scroll, dB floor and ceiling, UTC minute ticks and a cursor readout in Hz,
+  MHz and UTC. Band presets from the public QRSS frequency table
+  (swharden.com/qrss: 160 m 1.8379, 80 m 3.5699, 40 m 7.0399, 30 m 10.1400,
+  20 m 14.0969, 17 m, 15 m, 12 m, 10 m 28.1257 and 28.322 MHz) put the
+  window at 1500 Hz audio and **Tune** sets the dial 1.5 kHz below it in
+  USB. **Snapshot** writes a stamped PNG (call, grid, UTC, dial, RF window,
+  bin width, seconds per row; the same text in the PNG Description) to a
+  capture folder; **Timed capture** writes one at every 2 / 5 / 10 / 15 /
+  30-minute UTC boundary while the window is open, keeps at most N of its
+  own files, is off by default and never restores as on. The FFT work runs
+  on its own bounded worker queue off the audio thread (a 4 s input FIFO
+  that drops the oldest audio when starved, one pending drain, a 2048-row ×
+  4096-bin history, renders coalesced to two a second); `feed` is a single
+  flag read while the window is closed. Ask The Crab controls `qrss.preset`,
+  `qrss.bin`, `qrss.scroll`, `qrss.minutes` and `qrss.timedCapture`. Tests
+  pin every bin width and row period, a 0 dBFS tone in its bin, a
+  synthesized QRSS6 "CQ" rendered as readable dashes with the expected
+  column gap, a two-tone 0.2 Hz DFCW separation at the finest bin, the
+  exact-once capture schedule and the file bound, FIFO drops, worker cost
+  and the stamp text. `docs/QRSS.md`.
+- **MW Stations** window (Radio › MW Stations) — medium-wave broadcasters
+  from the FCC's public AM Query extract and, optionally, a CSV of your own
+  (#288). One search field: call letters match fuzzily (a misheard "WBZZ"
+  finds WBZ), a frequency in kHz lists every station on the channel nearest
+  your station grid first, and words match city, state, country or licensee;
+  the table shows day / night power with the directional flag, class, licence
+  status (CP / APP tagged), distance and bearing from your grid; Tune or
+  double-click puts the dial on the channel in AM, Plot on Map sends the rows
+  (at most 200) to a new MW layer of the Stations Heard map. Nothing is
+  bundled and nothing downloads by itself: Refresh fetches the FCC extract
+  (one HTTPS request, about 10 MB, cached under Application Support), the
+  Refresh-weekly switch is off by default, and a download that is too large,
+  not the FCC format or implausibly short is refused with the reason while the
+  previous copy keeps serving; Import CSV… reads an MWList-style file by
+  column name (mapping in `docs/MWStations.md`) and refuses a file without a
+  frequency column. **View › Medium-Wave Station Labels** names the station
+  most likely heard on each 10 kHz (or 9 kHz) channel inside the visible span
+  — nearest your grid, or the most powerful at this daypart without one — in
+  the same panadapter layer as the shortwave labels, at most 24, click to
+  tune. The crab's new `mw_station` tool answers "what's on 1030 kHz" and
+  "who is WBZZ"; `display.mwLabels` and `data.mwFCCAutoRefresh` are
+  crab-settable. The FCC's public data is credited in About › Licenses and
+  the fetch is described under Privacy in the README.
+- **Tone-signalling decoders** in Decode › Digital Modes (#285): **DTMF**
+  (ITU-T Q.23 tone pairs with the Q.24 receiver limits — 40 ms accepted,
+  23 ms rejected, 10 ms interruptions bridged, −8 … +4 dB twist; digits
+  print as they arrive and close into a sequence after 1 s), **ICAO
+  SELCAL** (all 32 tones of Annex 10 Vol III Table 3-1 including SELCAL
+  32, two ≈1 s pulses with a 0.2 s gap decoded to the four-letter code) and
+  **EAS/SAME** (47 CFR 11.31: 520.83 Bd AFSK, 0xAB preamble, the ZCZC
+  header voted byte by byte across its three bursts, originator / event /
+  state tables, NNNN end of message, 853 + 960 Hz and 1050 Hz attention
+  signals). Each is its own Decoder Activity session with a bookmark and
+  waterfall marker per detection, a log of UTC, dial, code and reading that
+  is kept across relaunches (last 500), and a **SELCAL watch** — type a code
+  in the window or tell the Crab “alert me on SELCAL AB-CD” — that toasts
+  and notes the call when it is heard. Receive only; the FM sub-audio
+  filter and CTCSS squelch are unchanged. `docs/DigitalModes-Window.md`.
+- **Import third-party I/Q recordings** (#280): File ▸ Open IQ Recording…
+  and Decode ▸ Decode a Recording… now open two-channel I/Q WAV files from
+  other receivers and programs — RIFF/WAVE with the RFSpace `auxi` chunk
+  (SpectraVue, SdrDx, HDSDR, SDRuno, Elad SW2: centre, start/stop time,
+  A/D rate, bandwidth), SDR# (`SDRSharp_…Z_<Hz>_IQ.wav`) and SDR++
+  (`baseband_<Hz>Hz_…`) names, Perseus files (`rcvr` chunk or a kHz token in
+  the name), KiwiSDR browser / kiwirecorder captures (`kiwi` GPS stamps, one
+  `data` chunk per packet, or the `…Z_<kHz>_iq.wav` name) and any other
+  stereo WAV, for which a small open sheet shows the whole-file overview
+  (format, encoding, rate, duration, chain rate) and asks once for the
+  centre frequency and UTC start, with an I/Q swap for mirrored recorders.
+  Whatever was learned is kept beside the file in a `.hiqmeta` sidecar, so
+  the recording then replays, scrubs on the Band DVR timeline and decodes
+  offline exactly like a `.hiq`. 8/16/24/32-bit PCM and 32-bit float,
+  WAVE_FORMAT_EXTENSIBLE, odd-sized chunks and overrun or zero `data` sizes
+  are handled; RIFX, RF64, other encodings and mono files are refused with
+  the reason. Files are streamed in 20 ms blocks (a 2 GiB file probes in a
+  few reads) and resampled to the nearest 48 kHz × 2ⁿ chain rate (KiwiSDR
+  12 kHz → 48 kHz, Perseus 125 kHz → 192 kHz, SDR# 2.4 MHz → 1.536 MHz);
+  `.hiq` is unchanged. `docs/IQImport.md` lists the layouts and limits.
+- **1200 Bd packet and parsed APRS on the heard map** (#287): the Packet /
+  APRS decoder in Digital Modes now runs at 300 Bd (HF, 1600/1800 Hz) or
+  1200 Bd Bell 202 (1200/2200 Hz) — a speed picker beside the mode menu,
+  persisted, and a Preset menu for 6 m APRS (50.620 MHz NFM, 1200 Bd) and
+  30 m APRS (10.1476 MHz LSB, 300 Bd); 2 m APRS is reachable only through a
+  transverter profile. Both speeds share a new analytic-signal front end
+  (mix to the tone-pair centre, 21-tap low-pass, one-bit correlators) that
+  bought about 3 dB at 1200 Bd: fixture frames decode at 8 dB S/N in 3 kHz,
+  at 12 dB C/N through the production NFM discriminator and clean through
+  the USB detector; 300 Bd fixtures are unchanged. Every APRS UI frame is
+  parsed per the Protocol Reference 1.0.1 — uncompressed, compressed and
+  Mic-E positions, timestamps, course/speed, PHG/RNG/DFS, altitude, weather
+  (positional and positionless), messages/acks/rejects/bulletins, objects
+  and items (live or killed), status with locator, raw telemetry, queries,
+  third-party and NMEA — into a summary column in the packet panel, a
+  Decoder Activity diagnostic per frame and an **APRS** layer on Stations
+  Heard: stations, objects and items at their exact positions with a glyph
+  per symbol class, hover for symbol, age, motion, weather, comment and
+  digipeater path, fading over two hours, bounded to 512 with Clear APRS.
+  Crab: `decode.packetSpeed`. Receive only.
+- Record the verified 2026.1022_001 publication (release run 39793481845, DMG
+  sha256 0ace24c7…1c06, VirusTotal 0/75, mirror e0391f9/0451ad9, website
+  14:42Z) and mirror the two new operator guides (receive filter phase, logger
+  broadcasts) to the public repository.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `9f5385daaee059e1def9eaab499edf063238986bfbfec3cc526adc5bfe74e7d6`.
 
 ## New in 2026.1022_001
 
@@ -1548,19 +1841,30 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | FT8 / FT4 | Receive: waterfall spots, decode panel, stations-heard ADIF (FT4 exported as MFSK/FT4), PSKReporter uploads, 15 s / 7.5 s UTC slots, automatic station clock-drift estimation with bounded slot correction, time-machine replay. Transmit: native slot-clocked modulator + auto-sequencer behind ARM/TXCoordinator (native FT8 dummy-load validated; on-air validation pending), or WSJT-X via CAT PTT + audio routing · **native JS8 (normal) encoder** — clean-room port of JS8Call's varicode/CRC-12/LDPC(174,87) path, frame programs one slot at a time, decoded by JS8Call 3.0.3 |
 | SSTV | Martin M1, Martin M2, Martin M3, Martin M4, Scottie S1, Scottie S2, Scottie S3, Scottie S4, Scottie DX, Robot 36, Robot 72, PD50, PD90, PD120, PD160, PD180, PD240, PD290, Robot 8 B/W, Robot 12 B/W, Robot 24 B/W, Wraase SC2-60, Wraase SC2-120, Wraase SC2-180, Pasokon P3, Pasokon P5, Pasokon P7, MP73, MP115, MP140, MP175, MR73, MR90, MR115, MR140, MR175, ML180, ML240, ML280, ML320, FAX480 — auto VIS + manual mode/start, slant/phase correction, PNG export |
 | WEFAX | IOC 576 · 120 LPM, IOC 576 · 90 LPM, IOC 576 · 60 LPM, IOC 288 · 120 LPM — polarity, slant/phase, crop/rotate, PNG with metadata |
-| RTTY | 45.45/50/75/100 Bd · 170/200/425/850 Hz shifts · normal/reverse polarity · bounded AFC |
+| Radiofax schedules | Worldwide marine radiofax schedule (bundled JSON transcribed from the public-domain NWS rfax.pdf, operator override file honoured) · Radiofax Schedules window (Decode menu): now / upcoming by station and region, search by station, place, chart or kHz, outlets open at the start with the recommended one, RPM/IOC, distance from the station grid, double-click to tune in USB at assigned − 1.9 kHz · timed capture: ticked charts tune, start the WEFAX decoder on the published minute and stop at the chart's end, exactly once per occurrence, skipped while the transmitter is keyed, RF-hot or owned · the crab's named-station fax tune knows every listed station |
+| QRSS Grabber | Sub-hertz waterfall of the demodulated audio for QRSS / DFCW / FSKCW (Decode menu): 0.73–0.046 Hz bins (12 kHz-equivalent FFT 2^14–2^18 after power-of-two decimation), Hann / Blackman-Harris / flat-top windows, ×1–×8 overlap speed-up, 100–500 Hz span around a chosen audio centre, 2–30 min per screen, left / right / down scroll, dB range, UTC minute ticks and a Hz / MHz / UTC cursor readout · band presets from the public QRSS frequency table (160 m to 10 m, USB dial 1.5 kHz below the window) · stamped PNG snapshots (call, grid, UTC, dial, window, bin width; PNG Description metadata) · optional timed capture every 2–30 min on the UTC grid with a bounded file count, off by default · own bounded worker queue, receive only |
+| RTTY | 45.45/50/75/100 Bd · 170/200/425/850 Hz shifts · normal/reverse polarity · bounded AFC · one-click parameter auto-detect (tone pair, shift, baud, polarity, confidence) |
 | Contestia | 4–64 tones · 125–2000 Hz · Walsh-FEC block sync with S/N gating · normal/reverse · receive only |
-| Digital Modes | PSK31/63/125 · QPSK31/63/125 (upper/lower phase sense, receive only) · Olivia · MFSK16/32/64/128 (+ MFSK8/4) with fldigi picture reception — Shortwave Radiogram images paint in the window, auto-save as PNG and re-render with slant/shift · THOR · DominoEX · Hellschreiber · 300 Bd packet/APRS · JS8 · WSPR · JT65 · JT9 · Q65 — one hosted decoder at a time, receive only |
+| NAVTEX / SITOR | 518 / 490 / 4209.5 kHz presets (USB, tone pair at the configured audio centre) · 100 Bd 170 Hz FSK with bit sync and bounded AFC · CCIR 476 4-of-7 · SITOR-B FEC (DX/RX time diversity, phasing, error marking) · SITOR-A ARQ listener (both sides of a simplex exchange, repeat suppression) · ZCZC … NNNN messages with station, subject and serial, the 4 % error criterion and 72 h duplicate suppression · now / next NAVAREA schedule · plain-text export · receive only |
+| Digital Modes | PSK31/63/125 · QPSK31/63/125 (upper/lower phase sense, receive only) · Olivia · MFSK16/32/64/128 (+ MFSK8/4) with fldigi picture reception — Shortwave Radiogram images paint in the window, auto-save as PNG and re-render with slant/shift · THOR · DominoEX · Hellschreiber · packet/APRS at 300 Bd (HF, 1600/1800 Hz) and 1200 Bd Bell 202 (1200/2200 Hz — 6 m APRS inside the radio's range, 2 m through a transverter profile) with the APRS fields parsed per the Protocol Reference 1.0.1 (uncompressed, compressed and Mic-E positions, timestamps, PHG, symbols, weather, messages/acks, objects/items, status, raw telemetry), a summary column in the panel and APRS stations with symbol and age on the heard map · GMDSS DSC (ITU-R M.493 100 Bd FSK on the six HF distress channels, DX/RX time diversity, every format specifier field-parsed with MMSI → country, per-radio searchable message database, coast-station summary, stations and reported positions on the heard map) · JS8 · WSPR · JT65 · JT9 · Q65 — one hosted decoder at a time, receive only |
+| Tone signalling | DTMF (ITU-T Q.23 pairs, Q.24 timing and twist limits: ≥ 40 ms accepted, ≤ 23 ms rejected, ≤ 10 ms interruption bridged, −8 … +4 dB twist) · ICAO SELCAL (Annex 10 Vol III Table 3-1, all 32 tones incl. SELCAL 32, two 1 s pulses with a 0.2 s gap → "AB-CD", crab / window watch alert) · EAS/SAME (47 CFR 11.31: 520.83 Bd AFSK 2083.3 / 1562.5 Hz, 0xAB preamble, ZCZC header voted over its three bursts, event / originator / state tables, NNNN end of message, 853 + 960 Hz and 1050 Hz attention signals) — Goertzel bank on the hosted-decoder thread, Decoder Activity sessions, waterfall marker per detection, bounded persisted log · receive only |
 | Decoder Activity | Live decoder status plus local recent-history search by mode, frequency and stored text, decoder/outcome filters, result counts and Reset; live sessions remain unfiltered |
+| Carrier Sleuth | Sub-hertz carrier waterfalls of a Band DVR segment or `.hiq` recording (#282): every 9 kHz (ITU R1/R3, LW + MW) or 10 kHz (R2) channel inside the recorded span, or a custom kHz list · ±50/±100/±150/±200 Hz per channel · one streamed pass channelises the file (1.46 Hz FFT bins, tapered bin selection, ~140–560 Hz per channel on disk), then Hann-windowed 2^14–2^24-point FFTs with ⅛×–8× speed-up give rows at 0.5 mHz–34 mHz resolution, max-pooled into 4096 columns (≤ 0.1 Hz) · hour / ten-minute / minute UTC markers from the recording clock, cursor Hz + UTC readout, Min/Max dB, detail view, per-channel notes, carrier-offset table (TSV), annotated PNG export and clipboard with the facts in the PNG Description · results cached under Application Support (512 MB, oldest-touched evicted, Clear Cache) keyed by file fingerprint + parameters · one private queue, bounded memory (≤ 256 MB of spectrogram rows, spill files for the decimated streams), cancel and progress; never touches the live chain |
 | CW | Adaptive 8–60 WPM decoder at a selectable 300–1000 Hz receive pitch (700 Hz default) · **OmniSkimmer**: GPU polyphase channelizer skims every CW signal across the whole span at once (~375 Hz bins, per-signal decoders, waterfall labels + panel) |
 | Receive DSP | Optional automatic AGC threshold from post-EQ noise, bounded slew and manual takeover · named receive DSP presets with preview and recoverable removal · single/double-pole CW audio peak filter and binaural CW |
 | Tuning & memories | Session-only SAT / reverse-SAT linked VFO tuning in displayed RF units, either dial leading, atomic range refusal and TX-active hold; portable validated whole/displayed bookmark JSON import/export and CSV spreadsheet export with duplicate-safe merge and local name/mode/frequency search with display-only sorting and in-place renaming; Band DVR segment/interval duration-size preview and export to standalone .hiq recordings outside the rolling shelf |
+| I/Q import | Third-party I/Q recordings open in replay, the time machine and Decode a Recording (#280): RIFF/WAVE with the RFSpace `auxi` chunk (SpectraVue, SdrDx, HDSDR, SDRuno, Elad SW2), SDR# and SDR++ file names, Perseus (`rcvr` chunk / name), KiwiSDR browser captures (`kiwi` GPS stamps / name) and any stereo WAV with an operator-entered centre and start kept in a `.hiqmeta` sidecar · 8/16/24/32-bit PCM and 32-bit float, WAVE_FORMAT_EXTENSIBLE accepted, RIFX/RF64 refused with a reason · streamed in 20 ms blocks, never loaded; resampled to the nearest 48 kHz × 2ⁿ chain rate · `.hiq` stays the native format, unchanged |
 | CW keyer | Sample-clock keyer, straight / iambic A / iambic B · 5–80 WPM · 25–75 % weighting · paddle swap · 0–2000 ms TX hang · 200–1200 Hz sidetone riding the exact RF envelope · stuck-key watchdog (≤300 s, physical release to rearm) · keyboard paddles or hamlib CAT b / send_morse (≤256 bytes, CW mode only) — every key request goes through ARM + TXCoordinator |
+| ALE | 2G-ALE monitor (MIL-STD-188-141 8-FSK word decode, Golay FEC, self-sync), channel scanner with park-on-signal and a persisted heard log with link-quality scores · **ALE Skimmer** (#281): one decoder on every 500 Hz / 1 kHz channel across the whole sampled span (vDSP oversampled polyphase bank → 12 kHz USB audio per channel, energy + 8-tone-signature pre-gate, operator-bounded channel count and active decoders, CPU figure in the window), live from the radio or offline through Decode a Recording on any `.hiq` / Band DVR segment, every address group logged with its channel and UTC · folder watch: new IQ recordings in a chosen folder are skimmed one at a time with a text log per file; processed files kept, moved or deleted (off by default, confirmed once per session) · ALE Nets window: caller → called pairs, sounding counts, who-calls-whom nets and a per-address table from the heard log, CSV export · receive only |
 | Native transmit tools | Feld Hell text/raster preview and TX · live ALE caller/handshake · finite UTC WSPR schedules · session-approved Control API PTT/TUNE and 48 kHz microphone uplink · local ARM, coordinator ownership, dead-man leases and STOP · hardware acceptance pending |
 | TX policy | Operator policy checked in TXCoordinator for every request source (UI, CAT, hardware PTT, keyboard, system, native program, Control API) and kind (voice, CW, TUNE, two-tone, digital): IARU Region 1/2/3 or Custom tag as context only, one or more confirmed allowed ranges (inclusive bounds), Off / Warn / Inhibit enforcement, confirmation reset whenever region or ranges change, judged on the actual TX frequency (split/XIT, transverter RF) |
-| Spotting | DX cluster telnet client (multiple nodes at once, RBN-ready, waterfall labels + Times Square ticker) · LoTW user badges + TQSL sign-and-upload · PSKReporter uploads · live planetary K-index |
+| Spotting | DX cluster telnet client (multiple nodes at once, RBN-ready, waterfall labels + Times Square ticker) · LoTW user badges + TQSL sign-and-upload · PSKReporter uploads · live planetary K-index · NCDXF/IARU beacon tracker (18 beacons × 5 bands on the published 3-minute cycle: NOW label on the waterfall, countdown panel with click-to-listen, 24 h per-beacon S/N history from the spectrum, read by the band scout) |
+| Shortwave schedules | EiBi broadcast database (bundled season, weekly refresh) · Shortwave Schedules window: search by station / kHz / UTC hour / ITU country / language / target, Now · Next · All, on-air rows in bold, utility rows tagged, favourites with a reminder five minutes before air (toast + crab line), double-click to tune in AM · on-air broadcaster labels on the panadapter (View menu; at most 24 in the visible span, favourites first, click to tune) · Crab `shortwave_schedule` answers "what is on the dial" and time-of-day questions |
+| Scheduled recording | Recording Schedule window (Radio menu): timed audio (WAV) / IQ (.hiq) / both captures by UTC time — daily, weekday set or one date — optional receive preset (dial + mode) applied at start and restored afterwards, file-size roll-over into numbered parts, next-run column, scheduler log, per-radio persistence · exact-once per occurrence from the 60 s clock; refused while the transmitter is armed, keyed or owned by a program or while a recorder is in use; a start missed while asleep is logged, never back-filled · crab `recording_schedule` ("record 9.420 MHz AM at 0300Z for 30 minutes", list / toggle / stop) |
+| MW stations | FCC AM Query extract (US Government public domain; fetched only on Refresh or by opt-in weekly refresh, cached under Application Support, never bundled) plus an optional operator CSV (MWList-style column names) · MW Stations window (Radio menu): fuzzy call-letter search (WBZZ finds WBZ), every station on a channel nearest the station grid first, city / state / licensee search, day / night power and directional flag, class, licence status, distance and bearing, Tune in AM, Plot on the Stations Heard map (at most 200 pins) · 9 / 10 kHz channel labels on the panadapter naming the likely station per channel (View menu; at most 24 in the visible span, nearest the display centre) · Crab `mw_station` answers "what's on 1030 kHz" and resolves misheard call letters |
+| Space weather | Header Kp + SFI chips · Space Weather window (Log menu) with NOAA SWPC public products: 3-hourly Kp, daily A-index and sunspot number, GOES X-ray flux + flare list, solar wind speed/density/Bz, proton and electron flux, R/S/G scales with three-day outlook, 27-day outlook, 45-day AP forecast, SWPC alert/watch/warning feed · one-month and one-day plots · twelve fixed HTTPS GETs hourly with per-product freshness limits (2 h minute products, 48 h daily, 10 d outlooks), stale or unreadable products show a dash · crab watches that fire once per event (flare ≥ class, Kp ≥ n, R/S/G ≥ n, proton event) with optional spoken alerts, off by default · the crab's `band_conditions` tool reads the same values |
 | Logbook | ADIF import/export with preserved fields · Cabrillo 3.0 contest export (persisted per-contest header, UTC day / saved-filter selection, flagged missing exchanges) · editing, bulk changes, saved filters and backups · precise LoTW contact matching · DXCC/WAS/grid coverage · interactive worked-world globe, gray line and local DX radar · QRZ.com / HamQTH callsign lookup that fills empty station fields on commit and from the editor (Keychain credentials, off by default) · 100,000-contact performance fixture · statistics window (contacts per UTC day / month / year, band, mode, DXCC entity and continent, worked versus confirmed, charts + tables, CSV) · 100,000-contact performance fixture |
-| Feature catalog | Searchable inventory of 78 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
+| Feature catalog | Searchable inventory of 89 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
 | Extras | Sub-RX (VFO B) · diversity RX (P2) · radio audio output — the receiver through the radio's own headphone / speaker jacks (ANAN Orion MkII on P2; HL2 / SquareSDR with the AK4951 audio codec companion board announced to the gateware on P1; both off by default and not yet verified on a radio) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT (LAN peers pair before tuning or keying) · Kenwood TS-2000 / PowerSDR-Thetis `ZZ` CAT emulation for loggers and digital programs (TCP, pseudo-terminal or serial adapter; receive-side command set, every keying or transmit-side command refused) · transverter profiles (IF→RF dial/CAT/log mapping with per-profile drive ceiling) · Speaker Tracker (local voiceprint clustering and naming of received voices, off by default) · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · MIDI controllers (any CoreMIDI source: learn-mapped encoders with speed acceleration, pickup knobs, pads on the Stream Deck action model; off by default, keying assignments refused pending review) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) · **MAGNET HF Emergency** (magnethf.com watch/net availability, native JS8 transmit verified against JS8Call 3.0.3, JS8Call API hand-off, CW auto-key, voice script) |
 | OC outputs | Per-band open-collector matrix for the accessory connector (OC1–OC7 × band for receive, transmit and TUNE, tune pulse timers), stored per physical radio · the receive row drives Protocol 1 register 0 C2 and Protocol 2 high-priority byte 1401 while receiving · transmit/TUNE values stored, wire-side staged behind the transmit gate · all-zero default is byte-identical to the previous wire |
 | Band data to station devices | HermitSDR plays the radio side of a CAT or logger link so an amplifier or tuner follows the dial (Station › Control Devices › Station Devices): VK-Amps "CAT Yaesu" (`FA…;` on a serial port, polls answered) and "CAT Icom" (CI-V transceive frames) band switching, a Kenwood TS-2000 stream, and the Palstar HF-AUTO through W1TR's HF Auto app as N1MM `RadioInfo` or `USERDOC` XML over UDP · RF-side (transverter-mapped) frequency, pushed on change and repeated each poll interval · no device feedback is interpreted, nothing keys the radio · fixture-verified against virtual devices; not yet tried on the hardware |
