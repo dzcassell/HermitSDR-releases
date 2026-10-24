@@ -47,7 +47,11 @@ on its own queue, and writes pictures.
   nominal carrier and the UTC time of that row.
 - **Min / Max dB** set the palette's floor and ceiling (dBFS of a unit
   carrier); *Auto* puts the floor 6 dB under the median cell and the ceiling
-  at the strongest. **N across** chooses the grid width.
+  at the strongest, bounded to the sliders' -160…+20 dB range with at least
+  10 dB of contrast. Silence therefore stays inside the native controls
+  (#292). **Up to N across** chooses the maximum columns; the grid
+  uses fewer when the window or the offsets pane leaves less space. Every
+  channel stays inside the scrollable grid.
 - Click a cell for the **detail** view underneath: the channel at one pixel
   per column (4096 columns, ≤ 0.1 Hz each) with the same markers and readout.
 - **Offsets** opens the carrier-offset table (kHz, offset, strongest level,

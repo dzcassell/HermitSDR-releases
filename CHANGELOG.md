@@ -7,6 +7,73 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1024_001] — 2026-10-24
+
+### Features
+
+- Rebuild Harvest Vortex and Midnight Noel as moonlit woodland dioramas with
+  four fog-separated forest planes, a rippling stream, warm cabin windows,
+  shaded harvest objects and a volumetric evergreen with individual lights.
+  Leaves tumble through different depth planes; snowfall mixes fine distant
+  crystals with soft near flakes. Add occasional waving crab visitors,
+  Christmas sleigh/reindeer and meteors, with an independent saved toggle.
+  Keep signal overlays, high contrast, Freeze and Reduce Motion independent
+  of the scenery; expand actual GPU checks to exercise the cameos (#227).
+
+### Documentation
+
+- Publish a [DSP comparison page](https://hermitsdr.com/dsp-comparison.html)
+  covering HermitSDR and Warren Pratt's WDSP
+  2.11, verified adoption, measured inference limits and the optional NNR
+  roadmap. Mark NNR as coming soon, not included in this release (#299).
+- Mirror the comparison page with the public release documentation and link
+  it from the website and README; deploy the tagged page atomically with
+  the release card. This installer also includes the recording
+  memory, Carrier Sleuth and optional QSO upload changes in 2026.1023_002/003.
+
+## [2026.1023_003] — 2026-10-23
+
+### Fixes
+
+- Keep Carrier Sleuth's Auto contrast inside the native sliders' -160…+20 dB
+  range, including silence, hot recordings and invalid summaries (#292).
+  Share the bounds and preserve the minimum ten dB automatic contrast span.
+
+### Features
+
+- Optional QRZ Logbook, eQSL, Club Log real-time and Wavelog contact uploads
+  (#266), off by default. Upload only after the local log save; preserve LoTW
+  and imports/restores. Add Keychain account settings, a durable bounded
+  outbox, per-contact service receipts, selected/failed upload, paced bounded
+  retries and explicit review of interrupted delivery. Pin queued contacts to
+  their original account and credential reference; never follow POST redirects.
+- Add scripted HTTP/outbox fixtures, Light/Dark minimum-size production-view
+  rendering in CI, and operator documentation for uploads;
+  include the upload and logbook guides in the release mirror inventory.
+
+
+## [2026.1023_002] — 2026-10-23
+
+### Fixes
+
+- Bound bulk-read memory during Decode a Recording for native `.hiq`, audio
+  WAV and imported I/Q WAV files (#290). Drain Foundation's autoreleased
+  read buffers after each chunk instead of keeping them until the job ends.
+  Add opt-in 1 GiB peak-memory regressions for all three paths, plus exact
+  final-chunk clock and truncated-file cleanup checks.
+- Keep Carrier Sleuth's channel grid inside its window after analysis (#160).
+  The split pane fills the available space and the column count adapts to
+  the pane width, including when the carrier-offset table is open.
+
+### Documentation
+
+- Synchronize the validated #290/#160 patch to main as source version
+  2026.1023_002; the latest published installer remains 2026.1023_001.
+- Record the local #290 memory proof, focused recording-tool GUI validation
+  and remaining #160 operator acceptance in the project handoff.
+- Record the verified 2026.1023_001 publication (release run 39961983540, DMG
+  sha256 9f5385da…e7d6, VirusTotal 0/75, mirror 9e90e12, website 13:44Z).
+
 ## [2026.1023_001] — 2026-10-23
 
 ### Features

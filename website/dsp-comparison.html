@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="How HermitSDR's native DSP compares with Warren Pratt's WDSP 2.11, and what's coming next for neural noise reduction.">
+  <title>HermitSDR DSP and WDSP 2.11</title>
+  <link rel="canonical" href="https://hermitsdr.com/dsp-comparison.html">
+  <style>
+    :root { color-scheme:dark; --bg:#090f16; --panel:#101b27; --line:#283a4b; --text:#e6edf4; --muted:#b2c3d2; --cyan:#75dded; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font:17px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main,nav,footer { max-width:1080px; margin:auto; padding:24px; }
+    nav { display:flex; flex-wrap:wrap; gap:24px; justify-content:space-between; border-bottom:1px solid var(--line); font-size:14px; }
+    a { color:var(--cyan); text-underline-offset:4px; }
+    a:focus-visible { outline:3px solid var(--cyan); outline-offset:5px; }
+    .brand { color:var(--text); font-weight:750; text-decoration:none; font-size:20px; }
+    .eyebrow { color:var(--cyan); font:13px/1.5 ui-monospace,monospace; letter-spacing:.08em; text-transform:uppercase; margin-top:36px; }
+    h1 { font-size:clamp(34px,5.5vw,60px); line-height:1.1; letter-spacing:-.035em; max-width:850px; }
+    h2 { font-size:27px; line-height:1.3; margin-top:48px; }
+    h3 { font-size:20px; line-height:1.4; }
+    p,li { max-width:880px; }
+    .lead { font-size:21px; color:var(--muted); }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:24px; margin:28px 0; }
+    .planned { border-left:4px solid var(--cyan); }
+    .badge { display:inline-block; color:var(--cyan); font:700 13px/1.5 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.05em; }
+    .table-scroll { overflow-x:auto; border:1px solid var(--line); border-radius:12px; }
+    table { width:100%; min-width:660px; border-collapse:collapse; font-size:15px; }
+    th,td { padding:18px; text-align:left; vertical-align:top; border-bottom:1px solid var(--line); }
+    th { background:var(--panel); } td:first-child { width:20%; font-weight:650; }
+    tr:last-child td { border-bottom:0; }
+    .small,footer { color:var(--muted); font-size:14px; }
+    footer { border-top:1px solid var(--line); margin-top:40px; }
+    @media(max-width:600px) {
+      main,nav,footer { padding:20px; } .card { padding:20px; } .lead { font-size:19px; }
+      table { min-width:0; } thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+      tr,td { display:block; } td { border-bottom:0; padding:14px 18px; }
+      td:first-child { width:100%; background:var(--panel); border-top:1px solid var(--line); }
+      tr:first-child td:first-child { border-top:0; }
+      td:nth-child(2)::before,td:nth-child(3)::before { display:block; font-weight:700; color:var(--cyan); margin-bottom:6px; }
+      td:nth-child(2)::before { content:"HermitSDR today"; } td:nth-child(3)::before { content:"WDSP 2.11"; }
+    }
+    @media(prefers-reduced-motion:reduce) { * { scroll-behavior:auto; } }
+  </style>
+</head>
+<body>
+  <nav aria-label="Main navigation"><a class="brand" href="/">HermitSDR</a><a href="https://github.com/dzcassell/HermitSDR-releases/releases/latest">Download &amp; release notes</a></nav>
+  <main id="main">
+    <p class="eyebrow">DSP notes · Reviewed October 24, 2026</p>
+    <h1>HermitSDR DSP and Warren Pratt’s WDSP 2.11</h1>
+    <p class="lead">HermitSDR has its own native receive and transmit DSP engine. WDSP is a separate, widely used SDR library. They solve many of the same problems, but feature overlap does not establish identical sound or performance.</p>
+    <div class="card">
+      <h2 style="margin-top:0">Our recommendation</h2>
+      <p>Keep HermitSDR’s native engine and evaluate WDSP’s neural noise reduction as an optional receiver tool. We have measured encouraging isolated inference costs on Apple silicon. A complete audio adapter and matched listening comparisons are still needed before we can say how much it improves reception.</p>
+    </div>
+
+    <h2>What you can use today</h2>
+    <div class="table-scroll" role="region" aria-label="DSP comparison table" tabindex="0">
+      <table>
+        <thead><tr><th scope="col">Area</th><th scope="col">HermitSDR today</th><th scope="col">WDSP 2.11</th></tr></thead>
+        <tbody>
+          <tr><td>Receiver foundation</td><td>Native filtering, decimation, demodulation, AGC, noise blanking, notches and audio processing, integrated with the main and SUB receivers.</td><td>A comprehensive DSP library offering corresponding receiver building blocks. Matching job descriptions do not imply identical implementations or measured results.</td></tr>
+          <tr><td>Statistical noise reduction</td><td>Spectral gate and native Adaptive reduction. Adaptive offers Minimum and MMSE noise estimation, optional gain smoothing and level-matched A/B listening.</td><td>Includes enhanced spectral noise reduction (EMNR / NR2) alongside other processing. HermitSDR’s Adaptive belongs to the same broad statistical family; it is not a bit-for-bit port or a demonstrated quality match.</td></tr>
+          <tr><td>Neural voice reduction</td><td>RNNoise v0.1.1 is available. Its general voice model and resampling wrapper differ from WDSP NNR.</td><td>Standard and Premium NNR voice models, with Premium introduced in 2.10. These are distinct models, not interchangeable labels for RNNoise or Adaptive.</td></tr>
+          <tr><td>Neural CW reduction</td><td>WDSP NNR CW is not shipped. Current CW filters and receive tools remain available.</td><td>2.11 adds separate Standard and Premium CW NNR models. A voice denoiser is not a substitute for a CW model.</td></tr>
+          <tr><td>Predistortion</td><td>Native predistortion work has its own algorithms and validation requirements.</td><td>PureSignal 3.0 uses NURBS-based calibration and other changes introduced in 2.00. We have not established equivalence to HermitSDR’s implementation.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>What changed in 2.11?</h2>
+    <p>Warren Pratt’s library is officially named <strong>WDSP</strong> (sometimes called “WinDSP” in conversation). The October 15, 2026 release adds CW neural models, shutdown/lifecycle improvements, portability changes and fixes affecting several DSP components. Premium voice NNR arrived in 2.10; PureSignal 3.0, free-curve audio controls and broadcast FM stereo arrived in 2.00. These are different release milestones. See the <a href="https://github.com/TAPR/OpenHPSDR-wdsp/blob/e69de50d1d702216098019013899ad87534c64e0/README.md">official version history</a>.</p>
+
+    <h2>Have other SDR packages adopted it?</h2>
+    <p>Yes, with important version differences:</p>
+    <ul>
+      <li><a href="https://github.com/dl1ycf/pihpsdr/commit/5d46affacb61ab3b87bf5398c1171a79305d8daf">piHPSDR’s development tree</a> and <a href="https://github.com/dl1bz/deskhpsdr/commit/15b08c858cd0638f71e5cbff11b77205dd77edcc">deskHPSDR</a> integrated 2.11 in October.</li>
+      <li><a href="https://github.com/aethersdr/AetherSDR/blob/v26.10.3/third_party/wdsp/README.md">AetherSDR 26.10.3</a> bundles WDSP 2.10, with voice NNR; that does not establish adoption of 2.11’s CW models.</li>
+      <li>The <a href="https://github.com/ericcamerato/OpenHPSDR-Thetis-PY2ECM/releases/tag/py2ecm-v2.10.3.16">Thetis PY2ECM fork’s October release</a> includes 2.10-based neural voice reduction. This is a specific fork, not a claim about every Thetis distribution.</li>
+    </ul>
+
+    <h2>What have we measured?</h2>
+    <p>On an M4 Pro, our October 20 offline probe measured four upstream NNR inference slots at approximately <strong>2.02, 4.33, 2.22 and 2.60 milliseconds p99</strong>, within their respective 16, 16, 16 and 8 millisecond hop budgets. The probe used synthetic spectra and excluded FFTs, sample-rate conversion, audio queues and radio operation.</p>
+    <p>That supports further engineering work. It does <strong>not</strong> prove end-to-end latency, full receiver deadline safety or better intelligibility. HermitSDR’s current post-detector audio runs at 12 kHz; the neural model path needs a carefully measured 16 kHz bridge or another suitable insertion point. We have not completed a matched, blind recorded-audio comparison against Adaptive/MMSE or RNNoise.</p>
+
+    <section class="card planned" id="nnr" aria-labelledby="nnr-title">
+      <span class="badge">Coming soon · Planned</span>
+      <h2 id="nnr-title" style="margin-top:12px">Optional NNR for HermitSDR</h2>
+      <p>The NNR build-out is on the roadmap. <strong>It is not included in the current DMG, and no delivery date is promised.</strong> Voice models come first; the new CW models require their own acceptance work.</p>
+      <p>Before shipping: resolve source/model distribution requirements, build the complete bounded audio adapter, measure CPU, memory and added latency under main/SUB load, and compare real recordings for intelligibility and artifacts. Model selection, missing-model handling and overload fallback must be clear to the operator.</p>
+      <p>Existing reducers remain available. The goal is a useful additional choice, with evidence about when it helps.</p>
+    </section>
+    <p class="small">This comparison describes the reviewed versions and HermitSDR’s current implementation. Upstream quality claims are not an independent HermitSDR benchmark. No whole-engine migration or PureSignal 3.0 performance parity is claimed.</p>
+  </main>
+  <footer><a href="/">Back to HermitSDR</a> · <a href="https://github.com/dzcassell/HermitSDR-releases">Public documentation</a></footer>
+</body>
+</html>
