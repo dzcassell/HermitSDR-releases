@@ -1,4 +1,4 @@
-# Importing third-party I/Q recordings (#280)
+# Importing and exporting I/Q recordings (#280, #296)
 
 HermitSDR's own I/Q format is `.hiq` (`HermitSDR/Recording/IQFile.swift`: a
 28/40-byte header — rate, centre, start time, transverter mapping — then
@@ -7,7 +7,8 @@ Other receivers and programs record I/Q as a **two-channel RIFF/WAVE file**
 (I left, Q right) and keep the centre frequency and start time somewhere
 else: a chunk, the file name, or nowhere. This document says which of those
 HermitSDR reads, how a foreign file is mapped onto the `.hiq` replay path,
-and the limits.
+and the limits. Local **SigMF** metadata/sample sibling pairs are also
+supported; the scoped import/export behavior is described below.
 
 Everything in `HermitSDR/Recording/IQImport.swift` was written from the
 public layouts cited below. No code, table, string or interface was taken
@@ -17,7 +18,8 @@ were surveyed from their public web pages only and never run.
 ## Where the files open
 
 - **File ▸ Open IQ Recording…** (and the connect sheet's *Open IQ
-  Recording…*) now accepts `.hiq` and `.wav`. A WAV replays through the
+  Recording…*) accepts `.hiq`, `.wav`, and either member of a conventional
+  `.sigmf-meta` / `.sigmf-data` pair. An imported file replays through the
   full receiver exactly like a `.hiq`: the dial tunes anywhere in the
   recorded span, the Band DVR timeline scrubs it, the time machine and the
   live decoders see it as live IQ.
@@ -147,6 +149,11 @@ The receiver's chains run at 48 kHz × 2ⁿ (`HPSDRSampleRate`: 48, 96, 192,
 - ratios needing more than 1024 polyphase branches, and rates outside
   1 kHz–100 MHz, are refused with the reason.
 
+The 0.2% nominal-rate tolerance applies to WAV only. SigMF's declared clock
+is authoritative: its exact rational ratio is used, or refused when it needs
+more than 1024 branches. A 48,001 Hz SigMF file is therefore refused rather
+than silently played as 48,000 Hz. Fractional sample rates are not supported.
+
 `IQImportStream` reads the body in 20 ms blocks (seeking per block, so
 KiwiSDR's chunk list and any `data` chunk layout are handled alike),
 unpacks to Float planes, resamples through `ComplexRationalResampler`
@@ -166,6 +173,98 @@ seek resets the resampler history, a ≤ 64-sample transient. On top of it:
 
 A `.hiqmeta` sidecar next to a `.hiq` is never consulted; `.hiq` files are
 read exactly as before.
+
+## SigMF sibling pairs
+
+SigMF separates interleaved samples (`name.sigmf-data`) from a small JSON
+description (`name.sigmf-meta`). Keep the two files together with the same
+base name when moving or sharing them. Either member can be selected in
+**File ▸ Open IQ Recording…** or **Decode ▸ Decode a Recording…**. This is
+local file interchange; HermitSDR does not fetch datasets or upload samples.
+
+The first implementation reads the SigMF core 1.0–1.2 subset, writes 1.2.6,
+and supports:
+
+- One complex channel: little-endian Float32 I,Q (`cf32_le`) or signed
+  Int16 I,Q (`ci16_le`, divided by 32768). The first scalar is I; Q follows.
+  Float NaN/Inf values are zeroed by the existing import unpacker.
+- One fixed whole-number sample rate, 1 kHz–100 MHz, within the exact
+  resampling-ratio limit above. The declared rate is never guessed.
+- Zero or one capture entry. A capture starts at `core:sample_start`, relative
+  to the absolute index `core:offset` of the first sample stored in the dataset.
+  Samples preceding that capture are skipped. Its `core:datetime` dates the
+  retained first sample; no offset is added to that timestamp a second time.
+  An empty captures array needs operator-supplied frequency and UTC.
+- `core:frequency` in nonnegative RF Hz (up to 7.5 THz), and a UTC `Z`
+  timestamp with optional fractional seconds, between 1980 and 2200. Missing
+  values open the existing confirmation sheet; invalid supplied values fail
+  with a reason. The file's declared frequency/time win over a sidecar.
+  Values supplied by the capture are read only in that completion sheet.
+  SigMF UTC fields accept `2027-01-15T08:00:14.1234567Z` as well as the
+  ordinary `yyyy-MM-dd HH:mm:ss` input.
+
+Fractional UTC is retained to Foundation `Date` precision (approximately a
+microsecond across this date range); writing nine fractional digits does not
+claim nanosecond clock precision.
+
+Only a matching conventional data sibling is opened. Metadata is capped at
+1 MiB and validated before the sample file is opened. Metadata and samples
+must be regular files, not symlinks or named pipes. A dataset field may name
+only that exact sibling: absolute paths, alternate filenames and URLs are
+refused. Sample bytes must contain complete I/Q pairs; a replacement or
+size change between probe and stream open requires reopening, and a short
+read while streaming fails. Bounds checks cover offset/capture/annotation
+indices and resampler arithmetic.
+
+Multiple captures (including retunes), multiple channels, per-capture rates,
+nonzero header/trailing bytes, metadata-only records, other datatypes and
+unknown **required** extensions are refused explicitly. Optional extensions
+and valid annotation entries are ignored; annotations are not mapped into
+decoder bookmarks. Optional checksums are not verified. Collections, archives
+and remote datasets are unsupported; leap-second timestamps are not represented.
+Export one constant-frequency interval from a more complex dataset first.
+
+Only confirmed missing values and the I/Q swap choice are remembered in
+`name.sigmf-meta.hiqmeta`; fractional UTC is preserved. A complete pair opens
+without writing a sidecar. A remembered SigMF sidecar must match its format
+and sample rate. Correction files must also be bounded regular files; links
+and named pipes are ignored without blocking. Read-only folders can still be
+used for the current session.
+
+### Export a portable interval
+
+Choose **File ▸ Export IQ Recording as SigMF…** for an existing `.hiq`, or
+use a Band DVR segment's export menu and choose **SigMF**. Start/end offsets
+use the same inward whole-pair rounding as native `.hiq` export; blank end
+means all complete samples currently on disk. The save panel previews
+duration, sample count, combined pair size, RF center and first-sample UTC.
+
+The new pair contains `cf32_le` IQ, one capture starting at zero, sample
+rate, RF center, first-sample UTC and the software name HermitSDR. Callsign,
+location, receiver identity, hardware details and annotations are omitted.
+For a transverter recording the IF center is mapped to RF; an inverted
+mapping conjugates Q so the imported spectrum has the same RF orientation.
+The original `.hiq` header, mapping, samples and timestamps are preserved.
+
+Choose a new basename: **neither sibling may already exist**, even if the
+save panel offers replacement. Export uses a bounded buffer and an opened
+snapshot of complete on-disk samples. Later appends are excluded; DVR pruning
+of the original name does not invalidate an already-open snapshot. Buffered
+recorder samples are excluded. DVR exports must be outside its rolling shelf.
+
+Samples and metadata are written and synchronized in temporary files in the
+destination folder. Exclusive hard links publish data first and metadata
+last; the metadata name is the completion marker. On a write error or task
+cancellation, the worker removes its temporary files and any data sibling
+it published. Existing files are never overwritten. The destination filesystem
+must support hard links. An abrupt process or power loss can leave temporary
+files or an orphan data sibling; it cannot promise a two-file filesystem
+transaction. A finished pair is readable only after metadata publication.
+
+This is original native Swift code written from the
+[SigMF specification/schema v1.2.6](https://github.com/sigmf/SigMF/tree/v1.2.6).
+No libsigmf, SDRangel code, schema assets or third-party dependencies are
+bundled. The `.hiq` recorder remains the canonical live recording format.
 
 ## Limits
 

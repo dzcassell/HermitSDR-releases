@@ -7,6 +7,50 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [Unreleased]
+
+## [2026.1025_001] — 2026-10-25
+
+### Features
+
+- Select Both / Upper / Lower RF sidebands in the main SAM receive filter. Keep the
+  original Both/C-QUAM default, restore the saved stereo choice on return, show the
+  selected RF footprint and remember the choice in receive presets. Selected audio
+  adds 10.7 ms; bench validation and deep-fade limits are documented, with live
+  listening kept as operator acceptance ([SAM
+  guide](https://github.com/dzcassell/HermitSDR-releases/blob/main/docs/SAMSideband.md),
+  #297).
+- Open local SigMF metadata/sample sibling pairs in IQ replay and Decode a
+  Recording: one complex channel, `cf32_le` or `ci16_le`, exact fixed-rate
+  adaptation, capture offsets and fractional UTC. Prompt for missing frequency
+  or time; refuse unsupported geometry and required extensions before reading
+  samples. Stream recordings with bounded memory and refuse blocking or linked
+  correction sidecars (#296).
+- Export a selected `.hiq` or Band DVR interval as a new `cf32_le` SigMF pair.
+  Preview RF center, first-sample UTC, sample count, size and privacy defaults;
+  normalize inverted transverter IQ, preserve originals and clean up failed or
+  cancelled exports. Native `.hiq` recording remains unchanged (#296).
+
+### Fixes
+
+- Restore the SAM sideband through the actual named receive-preset Recall action, with a production-facade regression check (#297).
+- Keep SAM audio-waterfall notch toggles and paint on the selected RF side while preserving opposite-side notches. Clamp selected passband paint at the real IF edge, and fit the 20 kHz readout and Filter phase label in the native popover (#297).
+
+### Documentation
+
+- Document SAM sideband operation, original DSP design, acceptance bounds, deep-fade limits, main/SUB scope and native control layout checks (#297).
+
+- Record #296 implementation, local acceptance, successful main CI, closure
+  evidence and temporary-product cleanup receipts.
+
+- Render explicit private source-issue links as plain references in public
+  operator guides, including the QSO upload acceptance reference. Keep other
+  private links blocked and historical changelogs byte exact; add focused
+  publication checks in CI (#300).
+
+- Record verified 2026.1024_001 publication, public-asset/native-launch checks,
+  mirror synchronization and live website receipts.
+
 ## [2026.1024_001] — 2026-10-24
 
 ### Features
