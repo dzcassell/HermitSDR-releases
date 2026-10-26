@@ -9,6 +9,31 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.1026_001] — 2026-10-26
+
+### Features
+
+- Scan named lists of up to 128 existing bookmarks from Radio → Bookmark
+  Scanner: bounded settle/dwell, receive-power hold with hysteresis/hang,
+  Pause/Resume/Stop/Skip and temporary lockout. Fresh DSP-tagged meter windows
+  reject prior-hop reports; manual edits, session changes and unsafe
+  owners pause/refuse scanning. Stop offers a guarded restore; restart never
+  resumes a scan automatically. Bounded UTC activity and native Dark/Light
+  controls; live radio settling/listening remains operator acceptance (#295).
+
+### Fixes
+
+- Automated scanner hops preserve saved per-mode filter memories and band
+  stacks. FM scanning applies receive deviation/tone squelch without applying
+  bookmark transmit tones. Show scan frequencies in MHz with a pinned unit
+  conversion; restore cannot overwrite an intervening operator edit.
+
+### Documentation
+
+- Add the bookmark scanner guide, scope/limits and a receive-only hardware
+  acceptance procedure; synchronize the manual, feature catalog and public
+  guide mirror.
+
 ## [2026.1025_001] — 2026-10-25
 
 ### Features
