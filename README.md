@@ -36,7 +36,23 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1026_002** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1027_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1027_001
+
+- Automatically discover recent HermitSDR macOS crash reports at startup and
+  after delayed report creation; deliver redacted summaries to the website
+  feedback collector with durable incident IDs and automatic offline retry
+  (#306). Settings exposes the automatic-report switch and delivery status;
+  prior crash-report opt-outs and individual refusals are preserved. Enabled
+  by default otherwise: check the last 14 days, retry once a minute while
+  running, and retain a local copy until the collector confirms receipt.
+- Attach bounded, private audio-output lifecycle breadcrumbs to crash reports:
+  starts, device transport/binding codes, configuration changes, failures and
+  failovers. No audio, device names/UIDs, station data or credentials are logged.
+- Exercise real startup collection in CI with its unsigned Debug fixture;
+  signed Release startup is checked locally and again against the public ZIP.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `663d009ee2be3dd8ec86feab1be1457817b8d74bc93cb564a455d400bb7bd794`.
 
 ## New in 2026.1026_002
 
