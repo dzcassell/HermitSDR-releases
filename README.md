@@ -36,7 +36,15 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1026_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1026_002** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1026_002
+
+- DVR and SigMF exports keep the sample selection shown in the save preview, even if the recording grows while the panel is open. Replaced, shortened or changed-header recordings are refused before saving.
+- Automatic uploads wait for the current complete local contact save, so a late older save cannot publish superseded report or location fields. Wavelog boolean counts cannot falsely claim acceptance, and busy replies now understand HTTP-date retry delays within the existing bounds.
+- Linked or nonregular QSO outboxes are preserved as unavailable, with reads capped at 32 MiB. Local contacts remain available for deliberate recovery.
+- Fix five newly reproduced software bugs (#301–#305). Existing hardware, peer-CAT and real-account acceptance remains separate. No transmitter behavior changes.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `f674ae7b0b69c5d89c41cac14be9d65ca207ce9d6267d7a725035ff1f1e2de80`.
 
 ## New in 2026.1026_001
 

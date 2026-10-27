@@ -9,6 +9,31 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.1026_002] — 2026-10-26
+
+### Fixes
+
+- Keep DVR and SigMF exports bound to the previewed recording and sample
+  prefix. Later appends cannot silently expand a confirmed export; replaced,
+  changed-header and shortened sources are refused before publication (#301).
+- Wait for the current contact's complete local save before automatic upload.
+  An older save cannot consume upload intent or publish superseded reports,
+  location or other contact fields (#302).
+- Require numeric Wavelog receipt counts; JSON booleans cannot falsely mark
+  a contact Accepted. Unrecognized counts remain unconfirmed (#303).
+- Honor HTTP-date Retry-After on busy upload replies, including legacy HTTP
+  date spellings, within the existing 30-second to one-hour bounds (#304).
+- Preserve unavailable QSO outboxes, including dangling symbolic links.
+  Read regular files through one bounded descriptor and refuse linked or
+  nonregular persistence targets rather than forgetting receipts (#305).
+
+### Validation and documentation
+
+- Add regressions for save ordering, receipt types, deterministic retry dates,
+  descriptor bounds, source replacement and append races. Exercise the actual
+  export controller with private file panels and reject outbox FIFOs in a
+  bounded subprocess. Update recording/export and QSO upload guides.
+
 ## [2026.1026_001] — 2026-10-26
 
 ### Features

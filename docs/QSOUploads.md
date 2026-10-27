@@ -1,6 +1,6 @@
 # QSO uploads
 
-Source version **2026.1023_003**, issue #266. Open **Log → QSO Log →
+Source version **2026.1026_002**, issues #266, #302–#305. Open **Log → QSO Log →
 Uploads…**, or **Settings → Station → QSO upload settings…**. QRZ Logbook,
 eQSL, Club Log and Wavelog are independently **off by default**. LoTW/TQSL
 and logger broadcasts remain separate.
@@ -32,7 +32,9 @@ operator; HermitSDR does not bundle another application's key.
 
 ## What is sent
 
-A fresh contact is queued after its local log file is saved. Existing contacts,
+A fresh contact is queued after its current complete record is saved locally.
+If a report, location or other field changes while an older save is pending,
+that older completion cannot queue the superseded version. Existing contacts,
 ADIF imports and backup restores do not automatically upload. Select older
 contacts in the logbook and use **Upload selected** to submit them explicitly.
 The batch limit is 2,000 contacts. Already accepted contacts for the same
@@ -74,7 +76,10 @@ with increasing delays, a maximum of five attempts and a minimum ten seconds
 between requests to each service. A timeout, lost reply or restart with an
 in-flight marker is not automatically retried: HTTP cannot promise exactly-once
 remote delivery after an ambiguous failure. Explicit retry can submit again;
-the service's duplicate rules apply. Wavelog merges duplicates itself.
+the service's duplicate rules apply. Wavelog merges duplicates itself. Its
+acceptance counts must be JSON numbers; boolean or otherwise unrecognized
+counts remain **Check service**. Busy replies accept numeric or HTTP-date
+Retry-After values within the existing 30–3,600-second retry bounds.
 
 Changing an account or installation URL cannot redirect old queued contacts.
 Saving credentials creates a new non-secret Keychain reference and cancels
@@ -94,7 +99,9 @@ receipts remain. Each ADIF payload is capped at 128 KiB and each response at 64 
 HTTP encoding and credential fields add their normal request overhead.
 **Cancel waiting** frees pending capacity without deleting contacts or receipts.
 A full or unreadable outbox leaves the log local with a visible status; an
-unreadable file is preserved rather than replaced. Retain it with logbook backups.
+unreadable file is preserved rather than replaced. Symbolic links (including
+dangling links) and nonregular outbox paths are refused; reads are capped at
+32 MiB through the opened file, even if it grows. Retain it with logbook backups.
 Shutdown flushes pending contacts synchronously after the local log's final save.
 
 ## Protocol references and validation

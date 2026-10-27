@@ -15,6 +15,18 @@ public layouts cited below. No code, table, string or interface was taken
 from any other program; the Black Cat Systems products named in the issue
 were surveyed from their public web pages only and never run.
 
+## Confirmed export selection (#301)
+
+The native DVR and SigMF export panels show the complete on-disk sample
+prefix captured for their preview. Leaving End blank saves that previewed
+prefix; samples appended while the panel is open are excluded. Partial
+selections use the same preview and retain their first-sample UTC.
+
+The export worker rechecks the recording identity, header and available
+sample count before copying. If the source was replaced, its header changed,
+or it became shorter than the preview, saving is refused and the destination
+is preserved. Preview the recording again to choose from its current content.
+
 ## Where the files open
 
 - **File ▸ Open IQ Recording…** (and the connect sheet's *Open IQ
