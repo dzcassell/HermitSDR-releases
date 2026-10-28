@@ -7,7 +7,24 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
-## [Unreleased]
+## [2026.1028_001] — 2026-10-28
+
+### Features
+
+- Add Input Mixer as the fourth TX source: simultaneous microphone and direct
+  Media Deck audio with per-channel faders/mute, seven-band EQ and effects.
+  Use the existing final profile/limiter and coordinator, preserve the mixer
+  through Deck Auto PTT, and bypass channel processing for Digital programs.
+  Software-validated; RF and physical-controller acceptance remain pending.
+- Extend MIDI Learn to both mixer strips: levels, mute buttons, each EQ band,
+  effect selection and FX amount. Absolute faders use pickup/crossing protection
+  and reacquire after a software change; relative encoders use fixed audio steps.
+  Mapping documents use version 2 for these targets; old mappings remain readable.
+  MIDI keying stays refused. Physical controller acceptance remains pending.
+- Add dedicated Korg nanoKONTROL2 Mix + FX and Full EQ profiles, with a CC/channel
+  preview, disabled-input guard, atomic backup/Undo and setup instructions.
+  Profiles configure audio settings only; transport/keying buttons are unassigned.
+  Device CC assignments must match the preview; physical verification awaits arrival.
 
 ## [2026.1027_001] — 2026-10-27
 

@@ -8,6 +8,42 @@ In Edit mode the page grid, Rename, Delete, Export and Import tools occupy a
 separate compact footer row so narrow windows keep their labels readable.
 Toolbar toggles and empty-pad outlines follow the active palette immediately.
 
+## Microphone + Media Deck Input Mixer (staged #307)
+
+This feature is staged for transmitter review and is **not included in
+2026.1027_001**. The existing Microphone, Audio file and App audio sources
+are exclusive; Deck Auto PTT normally replaces microphone capture temporarily.
+
+In the staged build, choose the fourth source, **Input Mixer**, in TX Controls
+(or Console TX settings), then **Open Input Mixer…**. The Microphone and Media
+Deck strips each have a fader (−60 to +6 dB, bottom = silence), mute, seven-band
+EQ (±12 dB), effect selector and FX amount. Settings persist across launches;
+ARM and PTT do not. Start with mic 0 dB and Deck −6 dB and adjust their balance.
+The mic device/channel remain in TX Controls. **MIDI controls…** opens MIDI
+Learn for physical faders, mute buttons, EQ and FX; see [MIDIController.md](MIDIController.md). There is one channel effect per
+strip; the pad's existing effects and Deck master level precede the Deck strip.
+
+The combined stereo program passes through the existing master TX gain, EQ,
+effects, profile filtering and final limiter. The Digital profile bypasses the
+strip EQ/effects as well as the existing voice processing. Native digital TX
+programs temporarily replace the voice mix and discard mic backlog/effect tails
+at the handoff. SSB still folds to mono; existing stereo-capable modes retain
+stereo.
+
+The Deck feed is direct, independent of receiver/speaker mute and the streaming
+route. Local pads do not need loopback capture or Screen Recording. YouTube
+still needs its existing media-process tap/System Audio Recording permission;
+a pad marked **speakers only** cannot feed the mixer. **Open URL** launches an
+external browser and supplies no mixer PCM. App audio and the standalone Audio
+file source are separate choices, not additional mixer strips.
+
+Selecting/editing the mixer never arms or keys the radio. For a clip during a
+manually held over, leave Deck Auto PTT off and use the existing PTT controls.
+If Deck Auto PTT is enabled, its existing admission/ownership
+rules apply and both mixer inputs stay active for the over; releasing the Deck
+leaves Input Mixer selected. An operator's source change during the over wins.
+No RF acceptance has yet been performed for #307.
+
 ## Pad sources
 
 | Source | What it does | Output |
