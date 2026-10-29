@@ -309,3 +309,13 @@ The previous JSON document is saved as mappings-before-import-<UUID>.json
 before the new file is atomically written and published. **Undo import**
 restores that backup while input is disabled; backups remain available on disk.
 A failed write leaves the active mapping document unchanged.
+
+### Call-in Mixer prototype
+
+The **Call-in Mixer** nanoKONTROL2 layout adds three faders (Mic, Deck, Guests),
+three FX-amount knobs and M1/M2/M3 channel mute toggles: nine mappings. Guest EQ,
+effect selection and FX amount are also available through MIDI Learn. Admission
+to the transmit mix and private talkback stay in Remote Guests & Call Setup;
+there are no caller-admission or RF bindings. Existing Mix + FX / Full EQ layouts
+retain their original 14 / 18 mappings. See [Remote Guests](RemoteGuests.md) for
+the two virtual routes, headphone preview, return sends and call-app setup.

@@ -7,6 +7,30 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1029_001] — 2026-10-29
+
+### Features
+
+- Added a local external-app call-in prototype: a Remote Guests mixer strip, private headphone preview, explicit guest admission, private host talkback and a separate mix-minus return with selectable microphone, Deck and receiver sends. Two distinct virtual audio routes connect Zoom or a SIP calling app; HermitSDR does not place/answer calls or embed a meeting SDK.
+- Added three-route setup/help, a persistent admission/talkback banner, exact caller-device binding with no default fallback, session-only routing and fresh capture epochs across admission/talkback. Master instances share admitted audio; followers do not open a second call bridge. ARM/PTT and final transmitter protections remain local.
+- Added optional per-strip voice compression and nanoKONTROL2 Call-in Mixer mapping for three levels, three FX amounts and three momentary mutes. Existing two-channel layouts and old saved mixer settings remain readable. External call, physical device/controller and RF acceptance remain pending.
+
+- Added named station instances on one Mac with separate settings, files, Keychain services and default CAT/control ports. Main station settings retain their established domain and paths. New stations begin with MIDI input, automatic reporting and update checks off.
+- Added a local Master/Follower shared program: publish the Input Mixer's microphone and Media Deck mix while SAFE, or receive it through a new Shared program TX input. Radios keep independent local ARM/PTT, mode, drive and final TX processing. Consumed PCM renews a short existing host TX lease; a stopped source or stalled consumer cannot hold that leased voice key.
+- Added guided setup, offline operator help, contextual TX-source guidance, recovery instructions and a persistent sharing/stop banner. Roles start off on launch; LAN followers and linked group PTT remain future phases.
+- Added per-radio ownership and discovery coordination so another local instance cannot connect/release the same radio or broadcast probes over an active ANAN stream. Passive known-radio entries remain available while probing pauses.
+- Registered shared-program codec/transport in the SwiftPM test target and added regression/CI coverage for isolated defaults and radio catalogs, bounded local IPC, stalled-consumer expiry, production engine handoffs, three concurrent app instances and light/dark setup/help rendering.
+- Multi-radio hardware/audio acceptance remains pending. No RF verification is claimed by software/loopback checks.
+
+### Documentation and validation
+
+- Added guided Remote Guests setup, a persistent privacy/admission banner, offline operator help and public call-in/shared-program guides. Zoom/SIP apps own calls, phone numbers and hold/hang-up; all guests share one channel in this first prototype.
+- Software validation: 3,339 tests, 13 intentional skips, zero failures; engine lifecycle and three-source TX processing fixtures; ASan/TSan; native/offscreen UI and MIDI tests. Real calls, physical audio routes/controller behavior and multi-radio RF remain operator-assisted acceptance.
+
+### Build and CI
+
+- The launch-agent runner checks three-instance process survival, independent settings/ports/consent and clean shutdown in explicit headless mode. Full three-window verification remains mandatory locally in both signed configurations before release; CI's lack of desktop-window visibility does not bypass that release gate.
+
 ## [2026.1028_001] — 2026-10-28
 
 ### Features
