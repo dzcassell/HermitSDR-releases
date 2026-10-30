@@ -96,8 +96,11 @@ mixer targets. Motorized-fader position output, encoder rings and mixer-mute LED
 feedback are not implemented; the existing supported deck-action lamps remain.
 
 New mapping documents use format version 2; adding a mixer target upgrades an
-older document to v2 so older apps refuse it clearly. Existing v0/v1 mappings
-remain readable. Existing MIDI keying refusals remain in force.
+older document to v2 so older apps refuse it clearly, and an imported or
+hand-edited file that already carries mixer rows is stamped v2 when it is read.
+Existing v0/v1 mappings remain readable. The pre-import backup is a copy of the
+mapping file on disk, so a file this build could not read is still preserved.
+Existing MIDI keying refusals remain in force.
 
 ## Korg nanoKONTROL2 presets (2026.1028_001)
 

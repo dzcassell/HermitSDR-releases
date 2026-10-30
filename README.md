@@ -36,7 +36,16 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1029_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1030_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1030_001
+
+- Add a detailed Claude handoff for the multi-radio/DJ mixer, Korg controller,
+  shared audio and call-in work, with commit/release boundaries, portable
+  validation evidence, an illustrative UI preview and remaining acceptance.
+  The new transmit audit remains on stage/309-shared-program for review;
+  no new public DMG or transmitter implementation is promoted by this sync.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `4731fe9d4fd029a5e2bd61656efa16b5b19a353dd3c078d9419a568543f1e0e7`.
 
 ## New in 2026.1029_001
 

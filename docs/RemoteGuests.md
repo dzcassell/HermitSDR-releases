@@ -21,6 +21,13 @@ one virtual device used in both directions creates a feedback loop.
 | HermitSDR private guest preview | Physical headphones |
 | Host microphone | Input Mixer microphone, selected in TX Controls |
 
+The host microphone is the fourth device in this loop. Setup refuses a caller
+input or return device that is the host microphone selected in TX Controls (or
+the system default input when none is selected). While the bridge runs, the host
+microphone is pinned to that exact device: if it disappears, the Input Mixer
+reports the failure and disarms rather than silently capturing whatever macOS
+makes the default input, which could be the caller route itself.
+
 Keep system output/notification sounds on another device. If using Loopback app
 capture instead of selecting a virtual speaker in the calling app, capture only
 that calling app; do not include HermitSDR's full output or your host microphone.

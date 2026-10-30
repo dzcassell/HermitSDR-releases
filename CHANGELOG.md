@@ -7,6 +7,43 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1030_001] — 2026-10-30
+
+### DJ booth and shared audio
+
+- Add voice-over ducking to the Input Mixer: the Media Deck strip dips by a chosen depth (up to 30 dB) while the post-fader microphone sits above a chosen threshold, dipping within about 15 ms and swelling back within about a second. It is a level control ahead of the profile filtering and final limiter; private talkback and Digital leave the Deck level alone, guests are never ducked, and the setting persists with the mixer.
+- Pin the host microphone to one exact device for the whole life of a call bridge and refuse setup routes that use the host microphone as the caller input or return. A stale or "system default" host input could previously fall back to whatever macOS made the default, including the caller's own virtual route, which would have put a private guest on the program and into their own ear. A host microphone that fails to restart on a talkback change now reports the failure and disarms instead of running on silently; the banner shows "guests on air" during talkback.
+- Tell followers at once when a master stops sharing: cushions drop, any leased shared-input voice key expires immediately and the status says why. Hide a crashed master's stale listing once the kernel shows its process is gone (the advertisement records the process start time, so a reused PID is never mistaken for the old master). Never restore Shared program as the TX input at launch after a crash while following.
+- Give every Media Deck clip session its own TX program ring. Re-pressing a pad during its fade-out used to leave the fading tail and the new clip writing one ring, which garbled the air for the length of the fade.
+- Keep the DJ booth overlay's trace colours stable: a manual A/B choice survives a brief report gap, automatic slots are reassigned only after a station has been absent for a few seconds, and a polling outage is drawn as a gap instead of a straight line. Move the 10 Hz display feed off the center that the main-window banner, TX Controls and Console settings observe, so those stop re-rendering ten times a second for the whole session.
+- Instances: a Main station lease that is already held no longer aborts the app (parallel Dev copies and a second `open -n` keep working; named profiles are still refused when open), connecting waits briefly for another instance's discovery probe instead of reporting the radio busy, only a Protocol 2 owner pauses other instances' discovery (an HL2 owner leaves it running), the feedback outbox is per profile and named profiles get their own TCI port.
+- MIDI: a follower session restores the operator's previous MIDI setting when the link stops instead of leaving the preference off for every later launch; the follower refusal is enforced inside the transport start as well; preset apply and Undo also look at the live port of the copy, not only the shared preference; imported mapping files with mixer rows are stamped version 2; the pre-import backup is the file on disk; a fast knob sweep after an on-screen fader move now crosses and picks up; effect processors are built outside the mixer lock.
+- Pack and unpack shared-program audio blocks in place (one allocation per block instead of 960 appends), make the wire codec safe for sliced data, count rejected microphone callback formats in the real-time diagnostics, and keep a guest strip's fader where it was when the processing mode changes.
+- Add Work offline to connection setup so a disconnected master can operate Media Deck and shared audio without a blocking connection dialog; no connection is cancelled or started.
+- Add a two-color, solid/dashed audio-envelope overlay for two station instances, with shared-input and actual processed-TX RMS views, transmit-frequency/mode/SAFE-state legends, stale-report expiry, local Neon glow and Freeze picture controls. The processed display is blank while SAFE or when no recent voice audio exists; it never claims RF power or AM modulation percentage. Keep display polling active during mouse fader/menu tracking. Put the monitor at the top of setup, add a direct Transmit menu entry and offline help.
+- Fix selected microphone startup using the device's native rate/channel count instead of the stale default client format. Explicit discrete channel layouts support the four-channel M4; fixed-44.1-kHz inputs are extracted to mono before resampling. Retain format rechecks, Objective-C assertion guards, strict caller-device/channel binding and delivery watchdogs; reject changed callback formats before copying.
+- Keep Media Deck hold/reorder gestures limited to the playback policies and modes that use them. Give configured pads explicit accessibility activation through the same click/keyboard policy, and add a named-pad selector with a Trigger selected pad control as a keyboard/accessibility alternative to the grid. Preserve focus on existing pads when assigning new files.
+- Convert mono/stereo local Deck files to a stereo 48-kHz effects bus before the rack. Bypassed effects could reject mono input with an uncaught AVFAudio format assertion, leaving pads stuck at Ready. Guard graph setup/start and surface typed playback failures; render-test both common sample rates.
+- Apply microphone device changes to SAFE shared/call capture immediately, replacing capture epochs so delayed old-device audio cannot be relabeled as the new input.
+- Disable inactive channel strips, guest setup and mixer reset when Shared program is selected; explain that the master owns the channel mix while each radio retains its final processing. Correct the unavailable-profile recovery menu path.
+- Ask for microphone access before advertising a shared master, expose actionable startup errors at the top of setup, expire stale audio/readings, and remove departing followers immediately with bounded lease expiry as fallback. Audio display reports are optional, bounded, session-bound and local-only; they cannot control another radio. No group ARM/PTT or automatic re-key is added.
+
+### Release tooling
+
+- Tolerate VirusTotal's short window after an upload in which the new analysis answers "not found": the scan gate now retries that case for up to two minutes and accepts a finished file report in the meantime. Both 2026.1030_001 publication attempts had failed on the first poll 20 seconds after upload while the analyses completed with zero detections moments later. Any other API failure or any detection still stops publication.
+
+### Validation
+
+- Full package regression: 3,347 tests, 13 intentional skips, zero failures. Production mixer lifecycle/real TX-chain, separate-process IPC, ASan/TSan, Deck tap/TX, AppKit tracking-mode polling, follower-control lock/unlock and Light/Dark rendering checks pass. Final signed Debug/Release builds and strict signature checks pass. Actual final-source M4/FM-1 captures and two disconnected GUI instances verified shared audio levels and controls; physical speech/call/MIDI and dual-radio RF acceptance remain pending.
+
+### Documentation
+
+- Add a detailed Claude handoff for the multi-radio/DJ mixer, Korg controller,
+  shared audio and call-in work, with commit/release boundaries, portable
+  validation evidence, an illustrative UI preview and remaining acceptance.
+  The new transmit audit remains on stage/309-shared-program for review;
+  no new public DMG or transmitter implementation is promoted by this sync.
+
 ## [2026.1029_001] — 2026-10-29
 
 ### Features
