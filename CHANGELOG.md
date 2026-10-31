@@ -7,6 +7,42 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1031_001] — 2026-10-31
+
+### UI
+
+- Retain the full receive-filter options beside inline Width/Shift: SAM RF
+  sideband and filter-phase selection remain accessible in both console banks.
+  Give the shared filter popover an opaque palette background so waterfall
+  colors cannot obscure its labels in Light.
+
+- Replace chunky rounded meter segments with slim square divisions: 5 pt high,
+  at least double the standard density, adapting to the available width.
+
+- Add TX Meters processing detail: live expander/de-esser attenuation, signed
+  platform AGC gain, 3/5-band compressor reduction, SSB CESSB envelope clipping
+  and pre-limiter octave-band energy. Show OFF/BYP/DIGITAL/IDLE/RAMP/WAIT TX
+  instead of fake zero readings; clear meters on disarm and require fresh input.
+  Keep RF diagnostics ahead of the new section in the scrolling meter window.
+
+- Correct shared TX Controls Drive and telemetry hover tips that incorrectly
+  identified every connected radio as an HL2; use radio-neutral descriptions.
+
+- Default new installations to Chakra Petch Bold Italic with blue main digits
+  and red final three digits; retain saved font/color choices. Reset colors
+  restores the same blue/red defaults.
+- Put UTC/LOCAL labels and local-clock settings to the left of the digits;
+  center the clock bank vertically beside the tuning controls.
+- Share the console display row between Zoom, Floor and Ref with identical
+  label/track/value styling, retaining Auto and manual-override behavior. Put a
+  labeled Space weather group with always-visible Kp/SFI in the bottom strip;
+  missing readings display an unavailable dash.
+- Expose mode-aware Width and Shift tracks with shift reset in both console
+  control banks, retaining quick presets and the classic filter popover.
+- Verify the existing 6 m band key follows the connected radio's tuning limit
+  and retains band memory; no new RF or transmitter behavior.
+
+
 ## [2026.1030_001] — 2026-10-30
 
 ### DJ booth and shared audio
@@ -32,9 +68,35 @@ batch of improvements ships as a new version.
 
 - Tolerate VirusTotal's short window after an upload in which the new analysis answers "not found": the scan gate now retries that case for up to two minutes and accepts a finished file report in the meantime. Both 2026.1030_001 publication attempts had failed on the first poll 20 seconds after upload while the analyses completed with zero detections moments later. Any other API failure or any detection still stops publication.
 
+### Fixes
+
+- Show unavailable ANAN temperature as a dash in TX Meters and Multimeter; preserve real
+  zero-degree HL2 readings and withhold untrusted profile telemetry. Reconcile
+  the snapshot after Published setters commit, so ARM/key/test-source and
+  telemetry changes do not lag one event. Observe profile changes directly.
+- Apply the same committed-state reconciliation to TX Latency Map so a profile,
+  mode or connection edit does not wait for a second event to refresh.
+
 ### Validation
 
+- Make optional recorded-speech checks require HERMITSDR_TX_VOICE_FIXTURE.
+  Default/CI runs no longer open a hardcoded personal Documents recording,
+  which blocked the headless runner in AVAudioFile.open. Keep every DSP
+  assertion and threshold; retain explicit local real-voice validation.
+  Add fixture-selection regressions and keep CI's ambient fixture path empty.
 - Full package regression: 3,347 tests, 13 intentional skips, zero failures. Production mixer lifecycle/real TX-chain, separate-process IPC, ASan/TSan, Deck tap/TX, AppKit tracking-mode polling, follower-control lock/unlock and Light/Dark rendering checks pass. Final signed Debug/Release builds and strict signature checks pass. Actual final-source M4/FM-1 captures and two disconnected GUI instances verified shared audio levels and controls; physical speech/call/MIDI and dual-radio RF acceptance remain pending.
+
+### Validation
+
+- Local package suite: 3,365 tests, 13 intentional skips, zero failures. All
+  88 smoke scripts pass; signed Debug/Release and strict signatures pass.
+  Native SAFE, minimum-width scrolling, Dark/Light/legacy layouts, both
+  three-instance window gates, Release startup and full updater rollback pass.
+  Deterministic benchmark: 10 seconds against the unchanged 30-second gate.
+- Include the TX processing telemetry concurrency and signal-identity regressions
+  in both Extended sanitizer runs. Add an actual TX-meter presentation-owner
+  smoke for both owners: state/meter changes, profile switches, sensor availability, deduplication
+  and facade release, and run it in CI.
 
 ### Documentation
 
@@ -719,11 +781,12 @@ batch of improvements ships as a new version.
   default). Off, every click on a digit steps, and a double-click on the
   decimal point or the MHz label still types a frequency (#259).
 
+
 ### Documentation
 
-- Record verified 2026.1020_001 publication, exact-source CI/Extended recovery,
-  fresh clean notarized DMG, independent public startup/full rollback, public
-  guides/HTTPS synchronization and nine scoped software issue closures.
+- Document the console defaults, inline filter options, bottom weather group
+  and read-only processing telemetry with its unavailable/stale states.
+  Correct the stale engineering note about Keychain-backed credentials.
 
 ## [2026.1020_001] — 2026-10-20
 

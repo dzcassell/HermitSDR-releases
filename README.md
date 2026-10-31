@@ -36,7 +36,15 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1030_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1031_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1031_001
+
+- Slim, square meter divisions with denser spacing and crisp pixel-aligned edges.
+- Read-only TX processing detail: expander/de-esser reduction, signed AGC gain, per-band compression, SSB CESSB clipping and pre-limiter band energy, with explicit unavailable/stale states.
+- Matching Zoom/Floor/Ref controls, inline Width/Shift/reset with full filter options, left-side clock labels, bottom Space weather and blue/red Chakra Petch dial defaults that preserve saved choices.
+- Correct ANAN drive/sensor descriptions and unavailable temperature readings; keep meters and latency maps current after state changes. Give filter options an opaque palette background for readable Light/Dark controls.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `f33e0331b200dd5de382550302c5b029c9acd4d9fae4ded424fc6dbcce3f4eac`.
 
 ## New in 2026.1030_001
 
