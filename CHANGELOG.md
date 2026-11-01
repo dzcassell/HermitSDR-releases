@@ -7,6 +7,73 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1101_001] — 2026-11-01
+
+### Features
+
+- Add native capture of a selected external app in TX Controls, with a visual
+  source → capture → program → radio chain, raw input meter, app gain/mute,
+  explicit program admission and private listening. Input Mixer can add this
+  audio before the existing master processing and limiter. No manual BlackHole
+  configuration is required for native app capture. Capture remains visible in
+  a main-window banner and stops on app exit, source change, disarm or failure.
+  Actual Discord/GarageBand and RF acceptance remain operator tests.
+- Keep whole-system capture private-preview-only. Refuse app-only identities
+  shared with a terminal/code launch host and pin selections to process launch
+  identity. These limits prevent ambiguous app attribution and newly launched
+  HermitSDR instances from entering the transmitted program through broad capture.
+- Add persisted Mercury IIIS (3S), Mercury Lite and Custom amplifier profiles.
+  IIIS is an operator reference linked to the manufacturer's full-unit v4.5
+  manual, with ratings and capability scope in TX Controls and diagnostics.
+  Selecting a profile preserves drive and timing; only Lite offers an explicit
+  timing preset. Physical IIIS hardware/firmware matching remains pending.
+- Integrate the owner-authorized transmitter staging: VOX with anti-trip,
+  hysteresis, hang and watchdog; MIDI PTT/TUNE/MOX and CW paddles through ARM
+  and coordinator ownership; HL2 filter-board selection; separate TUNE and
+  per-band drive memory; keyed OC outputs and serial footswitch/inhibit/output
+  routing. Optional functions retain their existing off/zero defaults.
+- Add automatic DATA-U/DATA-L TX bundles with Digital profile, input selection,
+  drive ceiling and voice-setting restoration. Honour the selected FT8 CQ slot
+  parity. Add HL2 companion-board codec microphone and straight-key inputs;
+  codec capture requires ARM and cannot supply SAFE shared/call audio.
+  These transmitter integrations are software-tested; hardware validation is
+  deferred and no new RF acceptance is claimed.
+
+### Fixes
+
+- Integrate staged transmitter safety fixes for re-arm/disarm tails, global
+  console release, TX inhibit, non-finite PCM, retuning after RF drops and lost
+  controller releases. Remove the engine's fallback TX policy: every key-down
+  requires the current policy, while release remains unconditional. Preserve
+  shared-program wire leases, mixer ownership and ordered serial shutdown.
+  Defer automatic data-mode input/profile changes while shared/call audio owns
+  capture, so mode changes cannot replace a live shared microphone.
+- Suppress local TX monitor recapture and flush 200 ms of captured embedded
+  player audio after key-down. Preserve independent selected-app routing.
+- Correct duplicate CW elements and stale paddle memory after forced release;
+  straight-key and paddle inputs must all release before a fresh authorization.
+- Let sheets and application-modal dialogs own global radio shortcuts, including
+  Escape. Always release previously held PTT/CW inputs before focus gates.
+- Pin the Yeti Nano stale-mono/two-hardware-channel regression behind the native
+  microphone-format fix already shipped in 2026.1030_001. Add actionable recovery
+  instructions for a missing or reconfigured input device.
+- Make TX file EOF callbacks explicitly main-actor/Sendable and preserve
+  synchronous audio-loopback playback ordering.
+
+### Validation and tooling
+
+- Add a Metal compile/link preflight to CI and release dry runs, actionable
+  toolchain recovery instructions, and four failure/cleanup tests. The installed
+  Metal compiler and linker pass on this Mac.
+- Exercise app-capture owner lifecycle, process identity and privacy boundaries;
+  preserve public/private callback epochs, readiness gates and stale-source
+  refusal. Add combined straight-key/paddle release regression coverage, and verify filter/accessory
+  pin merging across preload, keyed frames and unkey using the virtual radio.
+- Update the MIDI mixer fixture for the integrated guarded keying path while
+  retaining its no-ARM/no-drive-change checks for mixer edits.
+- Publish the operator-facing App Audio and amplifier-profile guides alongside
+  the release documentation.
+
 ## [2026.1031_001] — 2026-10-31
 
 ### UI
@@ -282,6 +349,15 @@ batch of improvements ships as a new version.
   it from the website and README; deploy the tagged page atomically with
   the release card. This installer also includes the recording
   memory, Carrier Sleuth and optional QSO upload changes in 2026.1023_002/003.
+
+### Staged fixes
+
+- Fix doubled keyboard CW dots/dashes from a brief single paddle press
+  (#291). Preserve held repetition, fresh-tap memory, opposite-paddle memory
+  and iambic A/B squeeze-release behavior. Discard paddle memory at a blocked
+  forced-release boundary so it cannot leak into the next authorized press.
+  TX timing changes are staged for
+  owner review and are not landed on main.
 
 ## [2026.1023_003] — 2026-10-23
 

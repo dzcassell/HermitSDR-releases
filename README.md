@@ -36,7 +36,56 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1031_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1101_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1101_001
+
+- Add native capture of a selected external app in TX Controls, with a visual
+  source → capture → program → radio chain, raw input meter, app gain/mute,
+  explicit program admission and private listening. Input Mixer can add this
+  audio before the existing master processing and limiter. No manual BlackHole
+  configuration is required for native app capture. Capture remains visible in
+  a main-window banner and stops on app exit, source change, disarm or failure.
+  Actual Discord/GarageBand and RF acceptance remain operator tests.
+- Keep whole-system capture private-preview-only. Refuse app-only identities
+  shared with a terminal/code launch host and pin selections to process launch
+  identity. These limits prevent ambiguous app attribution and newly launched
+  HermitSDR instances from entering the transmitted program through broad capture.
+- Add persisted Mercury IIIS (3S), Mercury Lite and Custom amplifier profiles.
+  IIIS is an operator reference linked to the manufacturer's full-unit v4.5
+  manual, with ratings and capability scope in TX Controls and diagnostics.
+  Selecting a profile preserves drive and timing; only Lite offers an explicit
+  timing preset. Physical IIIS hardware/firmware matching remains pending.
+- Integrate the owner-authorized transmitter staging: VOX with anti-trip,
+  hysteresis, hang and watchdog; MIDI PTT/TUNE/MOX and CW paddles through ARM
+  and coordinator ownership; HL2 filter-board selection; separate TUNE and
+  per-band drive memory; keyed OC outputs and serial footswitch/inhibit/output
+  routing. Optional functions retain their existing off/zero defaults.
+- Add automatic DATA-U/DATA-L TX bundles with Digital profile, input selection,
+  drive ceiling and voice-setting restoration. Honour the selected FT8 CQ slot
+  parity. Add HL2 companion-board codec microphone and straight-key inputs;
+  codec capture requires ARM and cannot supply SAFE shared/call audio.
+  These transmitter integrations are software-tested; hardware validation is
+  deferred and no new RF acceptance is claimed.
+- Integrate staged transmitter safety fixes for re-arm/disarm tails, global
+  console release, TX inhibit, non-finite PCM, retuning after RF drops and lost
+  controller releases. Remove the engine's fallback TX policy: every key-down
+  requires the current policy, while release remains unconditional. Preserve
+  shared-program wire leases, mixer ownership and ordered serial shutdown.
+  Defer automatic data-mode input/profile changes while shared/call audio owns
+  capture, so mode changes cannot replace a live shared microphone.
+- Suppress local TX monitor recapture and flush 200 ms of captured embedded
+  player audio after key-down. Preserve independent selected-app routing.
+- Correct duplicate CW elements and stale paddle memory after forced release;
+  straight-key and paddle inputs must all release before a fresh authorization.
+- Let sheets and application-modal dialogs own global radio shortcuts, including
+  Escape. Always release previously held PTT/CW inputs before focus gates.
+- Pin the Yeti Nano stale-mono/two-hardware-channel regression behind the native
+  microphone-format fix already shipped in 2026.1030_001. Add actionable recovery
+  instructions for a missing or reconfigured input device.
+- Make TX file EOF callbacks explicitly main-actor/Sendable and preserve
+  synchronous audio-loopback playback ordering.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `452be153481f92264f5c544d6af993661814e88f2f532cef8793e3987409567a`.
 
 ## New in 2026.1031_001
 
@@ -1969,12 +2018,12 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | Space weather | Header Kp + SFI chips · Space Weather window (Log menu) with NOAA SWPC public products: 3-hourly Kp, daily A-index and sunspot number, GOES X-ray flux + flare list, solar wind speed/density/Bz, proton and electron flux, R/S/G scales with three-day outlook, 27-day outlook, 45-day AP forecast, SWPC alert/watch/warning feed · one-month and one-day plots · twelve fixed HTTPS GETs hourly with per-product freshness limits (2 h minute products, 48 h daily, 10 d outlooks), stale or unreadable products show a dash · crab watches that fire once per event (flare ≥ class, Kp ≥ n, R/S/G ≥ n, proton event) with optional spoken alerts, off by default · the crab's `band_conditions` tool reads the same values |
 | Logbook | ADIF import/export with preserved fields · Cabrillo 3.0 contest export (persisted per-contest header, UTC day / saved-filter selection, flagged missing exchanges) · editing, bulk changes, saved filters and backups · precise LoTW contact matching · optional QRZ Logbook / eQSL / Club Log / Wavelog uploads (Keychain, durable bounded queue, per-contact receipts, manual selected/failed upload; off by default) · DXCC/WAS/grid coverage · interactive worked-world globe, gray line and local DX radar · QRZ.com / HamQTH callsign lookup that fills empty station fields on commit and from the editor (Keychain credentials, off by default) · 100,000-contact performance fixture · statistics window (contacts per UTC day / month / year, band, mode, DXCC entity and continent, worked versus confirmed, charts + tables, CSV) · 100,000-contact performance fixture |
 | Feature catalog | Searchable inventory of 93 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
-| Extras | Sub-RX (VFO B) · diversity RX (P2) · radio audio output — the receiver through the radio's own headphone / speaker jacks (ANAN Orion MkII on P2; HL2 / SquareSDR with the AK4951 audio codec companion board announced to the gateware on P1; both off by default and not yet verified on a radio) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT (LAN peers pair before tuning or keying) · Kenwood TS-2000 / PowerSDR-Thetis `ZZ` CAT emulation for loggers and digital programs (TCP, pseudo-terminal or serial adapter; receive-side command set, every keying or transmit-side command refused) · transverter profiles (IF→RF dial/CAT/log mapping with per-profile drive ceiling) · Speaker Tracker (local voiceprint clustering and naming of received voices, off by default) · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · named multi-radio instances + local Master/Follower microphone/Deck audio (independent ARM/PTT; hardware acceptance pending; [setup](docs/SharedProgram.md)) · MIDI controllers (any CoreMIDI source: learn-mapped encoders with speed acceleration, pickup knobs, Input Mixer faders/mutes/EQ/effect controls and nanoKONTROL2 profiles, pads on the Stream Deck action model; off by default, keying assignments refused pending review) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) · **MAGNET HF Emergency** (magnethf.com watch/net availability, native JS8 transmit verified against JS8Call 3.0.3, JS8Call API hand-off, CW auto-key, voice script) |
-| OC outputs | Per-band open-collector matrix for the accessory connector (OC1–OC7 × band for receive, transmit and TUNE, tune pulse timers), stored per physical radio · the receive row drives Protocol 1 register 0 C2 and Protocol 2 high-priority byte 1401 while receiving · transmit/TUNE values stored, wire-side staged behind the transmit gate · all-zero default is byte-identical to the previous wire |
+| Extras | Sub-RX (VFO B) · diversity RX (P2) · radio audio output — the receiver through the radio's own headphone / speaker jacks (ANAN Orion MkII on P2; HL2 / SquareSDR with the AK4951 audio codec companion board announced to the gateware on P1; both off by default and not yet verified on a radio) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT (LAN peers pair before tuning or keying) · Kenwood TS-2000 / PowerSDR-Thetis `ZZ` CAT emulation for loggers and digital programs (TCP, pseudo-terminal or serial adapter; receive-side command set, every keying or transmit-side command refused) · transverter profiles (IF→RF dial/CAT/log mapping with per-profile drive ceiling) · Speaker Tracker (local voiceprint clustering and naming of received voices, off by default) · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · named multi-radio instances + local Master/Follower microphone/Deck audio (independent ARM/PTT; hardware acceptance pending; [setup](docs/SharedProgram.md)) · MIDI controllers (any CoreMIDI source: learn-mapped encoders with speed acceleration, pickup knobs, Input Mixer faders/mutes/EQ/effect controls and nanoKONTROL2 profiles, pads on the Stream Deck action model; off by default, keying assignments work behind ARM and every interlock) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) · **MAGNET HF Emergency** (magnethf.com watch/net availability, native JS8 transmit verified against JS8Call 3.0.3, JS8Call API hand-off, CW auto-key, voice script) |
+| OC outputs | Per-band open-collector matrix for the accessory connector (OC1–OC7 × band for receive, transmit and TUNE, tune pulse timers), stored per physical radio · the receive row drives Protocol 1 register 0 C2 and Protocol 2 high-priority byte 1401 while receiving · keyed transmit and TUNE rows follow the coordinator, with tune pulse timers and filter-board pin merging · all-zero default is byte-identical to the previous wire |
 | Band data to station devices | HermitSDR plays the radio side of a CAT or logger link so an amplifier or tuner follows the dial (Station › Control Devices › Station Devices): VK-Amps "CAT Yaesu" (`FA…;` on a serial port, polls answered) and "CAT Icom" (CI-V transceive frames) band switching, a Kenwood TS-2000 stream, and the Palstar HF-AUTO through W1TR's HF Auto app as N1MM `RadioInfo` or `USERDOC` XML over UDP · RF-side (transverter-mapped) frequency, pushed on change and repeated each poll interval · no device feedback is interpreted, nothing keys the radio · fixture-verified against virtual devices; not yet tried on the hardware |
 | Logger broadcasts | WSJT-X UDP protocol output for GridTracker2, JT-Bridge, MacLoggerDX, RUMlogNG and any WSJT-X-aware logger — Heartbeat, Status, Decode (FT8 / FT4 only), Clear, QSO Logged, Logged ADIF, Close to a unicast host or a multicast group (127.0.0.1:2237 by default, multicast TTL 1), with optional inbound Reply (selects the decoded station exactly like a click on its row) and Halt Tx (the panel's STOP) · N1MM Logger+ `contactinfo` / `contactreplace` / `contactdelete` XML for every logged, edited or deleted contact (port 12060 by default; imports and restores excluded) · both off by default, one owning queue with a bounded send queue, nothing here can key or arm the radio (docs/LoggerBroadcasts.md) |
 | Web console | Browser receiver and remote console (#154, first slice of #91): one static page served by the overlay HTTP server at `/console`, pairing with the Control API over `wss://` with the same code, certificate and grants — panadapter + waterfall, S-meter, dial, 12 kHz receiver audio through Web Audio, click-to-tune, step / arrow keys, mode, filter presets and custom width/shift in Hz, bands, AGC, VFO A⇄B, phone-width layout · installable secure-origin PWA with a removable static offline shell (no cached receiver or pairing data) · browser-session cap (1–4) and optional time limit · no transmit control anywhere; off by default |
-| Serial lines | USB-serial adapter modem-control lines as station I/O (#128): footswitch PTT and TX-inhibit inputs on CTS/DSR/DCD/RI, TX and TUNE outputs on DTR/RTS, 20 ms TIOCMGET poll with debounce, invert, lead/tail and pulse settings, reopen on loss, demo adapter · this build displays and logs the inputs and pulses an output only on the manual test button; keying and interlock wiring staged behind the transmit gate |
+| Serial lines | USB-serial adapter modem-control lines as station I/O (#128): footswitch PTT and TX-inhibit inputs on CTS/DSR/DCD/RI, TX and TUNE outputs on DTR/RTS, 20 ms TIOCMGET poll with debounce, invert, lead/tail and pulse settings, reopen on loss, demo adapter · footswitch keys through the hardware-PTT path (ARM + coordinator, released on port loss / remap / quit) · inhibit input and lost port fold into the station interlock · TX line follows the coordinator with lead/tail, TUNE line pulses |
 | Platform | macOS 15+, Apple silicon only |
 
 ## The story so far

@@ -44,7 +44,8 @@ radio-side executor. Only the last of those can touch the radio.
 | Knob / fader / pitch wheel | **AF volume** | **Pickup:** the knob does nothing until it passes within 4 % of the current volume, then follows the knob exactly. Pickup restarts when the document is edited, the controller is unplugged or the feature is switched off. |
 | Knob / fader | any deck action | A switch: crossing 50 % upward presses, crossing back releases. |
 | Button (note, or CC ≥ 64 / < 64) | any deck action | Down on note-on / CC ≥ 64, up on note-off / CC < 64. The same `DeckAction` model and the same executor as a Stream Deck key: bands, modes, tune steps, NB/NR/ANF/split/sub/mute/record/skimmer/FT8/arcade/dial lock, band memories, palette, spoken status, RX/TX antennas, Media Deck pads, URLs. |
-| Button | **PTT (hold)**, **TUNE**, **MOX**, **Paddle — dot / dash** | **Refused in this build** with the receipt `… — MIDI keying is staged for review (#127), not enabled in this build`. See *Keying* below. |
+| Button | **PTT (hold)**, **TUNE**, **MOX** | Exactly a Stream Deck key: momentary `setPTT(_, source: .hardware)` / `toggleTune(source: .hardware)` through `performDeckAction`; a vanished controller unkeys (TUNE and MOX get an explicit off). Behind ARM and every interlock. |
+| Button | **Paddle — dot / dash** | `handleHardwarePaddle` → `CWKeyInputMapper` → `setCWPaddles`, the keyboard paddles' path. **CW mode only** — in any other mode the receipt reads `Paddle — dot — CW paddles are available only in CW mode.` and nothing reaches the engine. |
 
 Rows are keyed by control: learning a control that already has a row
 replaces it; a control maps to exactly one action.
@@ -198,21 +199,70 @@ the error).
 
 ## Keying
 
-The issue's transmit gate applies: PTT, TUNE, MOX and paddle wiring is a
-keying path and lands only after review. On `main`, `RadioState+MIDI.swift`
-tests `MIDIAction.isKeying` and returns a refusal receipt for every such
-dispatch without touching the transmitter; `DocsConsistencyTests` pins that
-the executor file contains no `setPTT(`, `toggleTune(` or `setCWPaddles(`.
+The operator route this exists for (first real request 2026-10-11, LB2EG:
+HL2+, a CTR2-MIDI paddle interface, CW left/right mapped to Paddle — dot /
+dash): a paddle contact on a MIDI pad or pedal is a CW keyer input, no more.
 
-`stage/127-midi-keying` removes that gate: deck PTT/TUNE/MOX dispatches
-then reach `performDeckAction`, which keys exactly as a Stream Deck key
-does (`setPTT(phase == .down, source: .hardware)`, momentary; a vanished
-controller releases it), and paddle dispatches reach the CW keyer through
-the same `CWKeyInputMapper` path as the keyboard paddles (CW mode only).
-Every interlock — ARM, TX profile, operator policy, protection,
-`TXCoordinator` — applies unchanged; a MIDI controller is never an alternate
-keying path. The first keyed test is a dummy-load session with Damon's
-approval.
+- **Paddles.** `performMIDIDispatch(.paddle)` calls
+  `RadioState.handleHardwarePaddle`, which is `setCWKeyInput` — the keyboard
+  paddles' own entry. Its first stop is `CWKeyInputMapper.gate(…, cwMode:
+  mode == .cw)` (package-pinned): outside CW mode a press is **refused**
+  with "CW paddles are available only in CW mode." (also shown in the
+  connect sheet's `lastError`) and a release is ignored; the logical paddle
+  state never moves, so nothing reaches the engine. In CW mode the shared
+  logical paddles (keyboard and MIDI OR into one `CWKeyInputMapper`, so a
+  release from either source releases — the safe direction) go to
+  `RadioEngine.setCWPaddles(dot:dash:policy: currentTXPolicy)`, which
+  refuses again unless the engine's own mode is CW, then runs the
+  `CWKeyingSession` → `TXCoordinator` handshake: ARM, TX profile, operator
+  policy, frequency range, calibration, protection and station interlocks
+  decide whether RF rises, and the session's stuck-key watchdog
+  (`stuckKeyWatchdogMilliseconds`) force-drops a contact that never
+  releases and refuses re-key until a physical release arrives. The engine
+  attributes MIDI paddles to the `.keyboard` keying source (they share the
+  keyboard's session slot; CAT `send_morse` is refused `.busy` while a
+  paddle is held, and vice versa). Receipt on the setup window:
+  `Paddle — dot ↓ → CW keyer (keyed)`, or the refusal.
+- **PTT (hold), TUNE, MOX.** `performDeckAction`, exactly as a Stream Deck
+  key: `setPTT(phase == .down, source: .hardware)` for momentary PTT (both
+  edges), `toggleTune(source: .hardware)` and `setPTT(!txKeyed, source:
+  .hardware)` on the down edge for TUNE and MOX. The receipt is the deck's
+  `txReceipt` (`PTT down → keyed`, or `PTT down — <refusal>`).
+- **Releases.** The device controller releases held pads through
+  `MIDIMapper.safeRelease`, which emits the `.up` edge for momentary PTT and
+  `pressed: false` for paddles, and an explicit `.ptt(false)` / `.tune(false)`
+  press for latched PTT, MOX and TUNE — toggles whose `.up` phase does
+  nothing, so a plain "up" would have left the carrier on. It fires on
+  **source loss**, **Enabled off**, **quit** (`shutdown()` → `stop()`), a
+  **mapping document change** that touches the rows (a row deleted,
+  unassigned or re-moded under a held finger; the mapper also honours the
+  stale release edge itself if it arrives first), and **app deactivation**
+  (`NSApplication.willResignActiveNotification` — keying pads only, as the
+  keyboard's `KeyMap` does; a held band pad keeps its edge state). Note
+  that a TUNE pad is a toggle: after a tap and release nothing is held, and
+  TUNE runs until the next tap, the on-screen button or CAT — the same as
+  the Stream Deck and the UI; only a pad still down when the controller
+  vanishes is released.
+- **What a MIDI controller cannot do.** The transport, device controller,
+  document owner and setup window hold no radio handle (`DocsConsistency`
+  forbids `setPTT(`, `toggleTune(`, `setCWPaddles(`, `TXCoordinator`,
+  `RadioEngine` in all four); the executor file reaches keying only through
+  `performDeckAction` and `handleHardwarePaddle`; `RadioState` has exactly
+  one `engine.setCWPaddles(` call site. Lamps never echo keying. Thetis
+  import excludes MOX/TUNE rows unless the reviewer includes them, and an
+  included row is a live keying control once input is enabled.
+- **Tests.** `MIDIKeyingTests` (paddle note-on/off → `CWKeyInput` in CW
+  mode, refused outside it; the gated state through `CWVirtualRadioHarness`
+  with the real `TXCoordinator` — disarmed refused, armed keyed, watchdog
+  force-drop and re-key only after a physical release; `releaseAll` for
+  every keying action including latched ones; `releaseKeying` scope; stale
+  release edges after a row edit), `MIDIMappingTests` (held PTT released on
+  device loss), `DocsConsistencyTests` (entry points, release hooks and the
+  operator text above), `tools/cw-session-smoke.sh` (production
+  `setCWPaddles` refuses outside CW mode with the coordinator untouched).
+
+**Not yet keyed on hardware.** The first keyed test is a dummy-load session
+with Damon's approval; the review packet is on #127.
 
 ## Safety boundary
 
@@ -221,8 +271,10 @@ approval.
   a message or operate the radio.
 - `MIDIInputTransport` and `MIDIDeviceController` hold no radio handle;
   RadioState installs an `execute` closure and a volume reader at launch.
-- A held pad is released (its `.up` phase delivered) when its source
-  disappears, when Enabled is switched off, and at application quit.
+- A held pad is released (its safe release delivered — see *Keying*) when
+  its source disappears, when Enabled is switched off, when the mapping
+  document's rows change, at application quit, and (keying pads only) when
+  the app deactivates.
 - Both CoreMIDI callback blocks are `@Sendable`. A closure literal inside a
   `@MainActor` class is otherwise inferred main-isolated, and Swift 6 emits
   an executor check at entry that traps on the CoreMIDI thread — the same
@@ -302,7 +354,9 @@ mute (15), blanker (16), auto-notch (18), TUNE (76), and the supported band
 buttons (78, 79, 81–88). Other commands, malformed records, duplicates and
 custom MinValue/MaxValue scaling are reported as skipped. PL-1/Micro device
 control-number remaps need Learn instead. Buttons may use note or CC input;
-continuous controls require CC. Importing cannot enable the staged MIDI TX path.
+continuous controls require CC. With MIDI keying enabled (see *Keying*), an
+imported MOX or TUNE row is a live keying control — which is why keying rows
+are excluded unless explicitly reviewed.
 
 Merge replaces matching physical controls; Replace starts with no old rows.
 The selected source filter applies to the entire document and the global
