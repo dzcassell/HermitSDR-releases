@@ -7,6 +7,86 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1102_002] — 2026-11-02
+
+### Features
+
+- Log → QSO Log → **Confirmations…**: LoTW, eQSL and QRZ Logbook
+  confirmations reconciled against the log as a dry run first. Tolerant
+  matching on call, band, mode family (USB/LSB → SSB, MFSK/FT4 → FT4) and
+  time, strict at the document's own precision (second, or minute for eQSL's
+  HHMM) or loose inside a configurable ±N-minute window, with the own-station
+  check; every unmatched record says why (no contact, band / mode / station
+  differs, time off by N min with the nearest contact named, ambiguous) and
+  every field disagreement is a visible conflict that is never overwritten.
+  Apply records each source in its own ADIF fields (`LOTW_QSL_RCVD`,
+  `EQSL_QSL_RCVD`, `QRZCOM_QSO_DOWNLOAD_STATUS` + `APP_QRZLOG_STATUS`, with
+  dates and provenance), fills only empty geography, is idempotent, and a
+  coverage summary counts confirmations per source, band and mode. LoTW
+  downloads incrementally (`qso_qslsince` from the last applied sync, the
+  report's `APP_LoTW_LASTQSL` as the next cursor, per account); eQSL inbox
+  and QRZ `FETCH` downloads run only with upload credentials already in the
+  Keychain, otherwise import the exported file. The QSL column, filter,
+  Awards and Statistics gain eQSL / QRZ / Any source; the LoTW window's
+  strict fetch is unchanged. (#323)
+- New radio family: **SDRplay RSPdx** over USB, receive only. A signed
+  `HermitSDR SDRplay Helper` embedded in the app bundle is the only process
+  that loads SDRplay's API 3.15 library (its hardened runtime allows the
+  external library; the app's does not), enumerates and drives the radio and
+  streams I/Q to the app over a versioned pipe protocol. Discovery lists
+  "SDRplay RSPdx <serial>"; with the API missing, the plugged-in RSPdx still
+  appears and says what to install. Chain rates 48 kHz – 1.536 MHz from one
+  3.072 MHz ADC clock; Settings ▸ SDRplay RSPdx: antenna A/B/C, LNA state
+  with the specification's per-band gain-reduction table, IF gain reduction
+  with AGC, HDR mode below 2 MHz (fixed centres, digital shift; rates up to
+  192 kHz), bias-T on ANT B behind a confirmation, AM/FM and DAB notches, IF
+  bandwidth, helper diagnostics (API version, gain readback, dropped samples).
+  ADC overload lights the header lamp. The profile is receive-only by
+  construction (no ARM, PTT, TUNE or drive). First hardware run recorded in
+  docs/SDRplay.md. (#332)
+- Painless SDRplay API dependency: one availability probe (library, `pkgutil`
+  receipt, `com.sdrplay.service` daemon, helper hello) shown in Settings ▸
+  SDRplay API with Check again; an "SDRplay API required" sheet wherever an
+  RSP meets a missing API (connect-sheet row, a once-per-launch toast with an
+  Install… action, Settings) with "Install for me…", "Open SDRplay download
+  page" and "Not now". The assisted install downloads SDRplay's installer
+  (20 MB cap, timeout, progress), verifies the filename, Developer ID
+  Installer signer "SDRplay Limited (2J9W5H85P2)" and Apple notarization
+  before anything runs (mismatch → file deleted, download page opened), hands
+  the package to the macOS Installer so SDRplay's licence and the admin prompt
+  are seen by the user, then waits up to ten minutes for the service and
+  reconnects. Fixture-tested with injected downloader, verifier, opener and
+  probe. (#332)
+
+### Documentation
+
+- `docs/QSLSync.md` (mirrored): sources and the exact documented queries,
+  the per-account ledger and cursor rule, matching rules, what Apply writes,
+  where confirmations show, and the fixture validation. (#323)
+
+### Tests
+
+- `QSLReconciliationTests` (anonymised LoTW / eQSL / QRZ fixtures: strict and
+  loose matching, midnight, window edges, ambiguity, duplicates, conflicts,
+  per-source fields, idempotence, coverage text) and `QSLSyncProtocolTests`
+  (exact requests, eQSL link safety, QRZ unwrapping, loopback HTTP server for
+  the LoTW cursor, the eQSL two-step and QRZ paging); awards per-source
+  confirmation cases. (#323)
+
+### Changed
+
+- Move the engine-side receiver bank — the sub-receiver (RX2) chain with its
+  DSP configuration, mixed / separate-device audio routing and meter delivery,
+  the Super Skimmer monitor decode chains, and the diversity steering weight —
+  out of `RadioEngine` into a compiler-checked `Sendable` `ReceiverBankService`
+  behind a narrow `ReceiverBankPort` (3,340 → 2,978 engine lines; the line
+  ratchet drops from 3,400 to 3,050). Behaviour is unchanged: the engine keeps
+  thin forwards only where the link or the live IQ graph is touched (stream
+  restart and receiver count, RX2 NCO, diversity DDC mode and weight write,
+  monitor DDC configuration), the keyed-mute edge still freezes the SUB chain
+  and blanks its audio/meters, and the lock and queue inventories are
+  unchanged. (#60)
+
 ## [2026.1102_001] — 2026-11-02
 
 ### Fixes

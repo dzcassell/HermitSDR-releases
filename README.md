@@ -36,7 +36,71 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1102_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1102_002** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1102_002
+
+- Log → QSO Log → **Confirmations…**: LoTW, eQSL and QRZ Logbook
+  confirmations reconciled against the log as a dry run first. Tolerant
+  matching on call, band, mode family (USB/LSB → SSB, MFSK/FT4 → FT4) and
+  time, strict at the document's own precision (second, or minute for eQSL's
+  HHMM) or loose inside a configurable ±N-minute window, with the own-station
+  check; every unmatched record says why (no contact, band / mode / station
+  differs, time off by N min with the nearest contact named, ambiguous) and
+  every field disagreement is a visible conflict that is never overwritten.
+  Apply records each source in its own ADIF fields (`LOTW_QSL_RCVD`,
+  `EQSL_QSL_RCVD`, `QRZCOM_QSO_DOWNLOAD_STATUS` + `APP_QRZLOG_STATUS`, with
+  dates and provenance), fills only empty geography, is idempotent, and a
+  coverage summary counts confirmations per source, band and mode. LoTW
+  downloads incrementally (`qso_qslsince` from the last applied sync, the
+  report's `APP_LoTW_LASTQSL` as the next cursor, per account); eQSL inbox
+  and QRZ `FETCH` downloads run only with upload credentials already in the
+  Keychain, otherwise import the exported file. The QSL column, filter,
+  Awards and Statistics gain eQSL / QRZ / Any source; the LoTW window's
+  strict fetch is unchanged. (#323)
+- New radio family: **SDRplay RSPdx** over USB, receive only. A signed
+  `HermitSDR SDRplay Helper` embedded in the app bundle is the only process
+  that loads SDRplay's API 3.15 library (its hardened runtime allows the
+  external library; the app's does not), enumerates and drives the radio and
+  streams I/Q to the app over a versioned pipe protocol. Discovery lists
+  "SDRplay RSPdx <serial>"; with the API missing, the plugged-in RSPdx still
+  appears and says what to install. Chain rates 48 kHz – 1.536 MHz from one
+  3.072 MHz ADC clock; Settings ▸ SDRplay RSPdx: antenna A/B/C, LNA state
+  with the specification's per-band gain-reduction table, IF gain reduction
+  with AGC, HDR mode below 2 MHz (fixed centres, digital shift; rates up to
+  192 kHz), bias-T on ANT B behind a confirmation, AM/FM and DAB notches, IF
+  bandwidth, helper diagnostics (API version, gain readback, dropped samples).
+  ADC overload lights the header lamp. The profile is receive-only by
+  construction (no ARM, PTT, TUNE or drive). First hardware run recorded in
+  docs/SDRplay.md. (#332)
+- Painless SDRplay API dependency: one availability probe (library, `pkgutil`
+  receipt, `com.sdrplay.service` daemon, helper hello) shown in Settings ▸
+  SDRplay API with Check again; an "SDRplay API required" sheet wherever an
+  RSP meets a missing API (connect-sheet row, a once-per-launch toast with an
+  Install… action, Settings) with "Install for me…", "Open SDRplay download
+  page" and "Not now". The assisted install downloads SDRplay's installer
+  (20 MB cap, timeout, progress), verifies the filename, Developer ID
+  Installer signer "SDRplay Limited (2J9W5H85P2)" and Apple notarization
+  before anything runs (mismatch → file deleted, download page opened), hands
+  the package to the macOS Installer so SDRplay's licence and the admin prompt
+  are seen by the user, then waits up to ten minutes for the service and
+  reconnects. Fixture-tested with injected downloader, verifier, opener and
+  probe. (#332)
+- `docs/QSLSync.md` (mirrored): sources and the exact documented queries,
+  the per-account ledger and cursor rule, matching rules, what Apply writes,
+  where confirmations show, and the fixture validation. (#323)
+- Move the engine-side receiver bank — the sub-receiver (RX2) chain with its
+  DSP configuration, mixed / separate-device audio routing and meter delivery,
+  the Super Skimmer monitor decode chains, and the diversity steering weight —
+  out of `RadioEngine` into a compiler-checked `Sendable` `ReceiverBankService`
+  behind a narrow `ReceiverBankPort` (3,340 → 2,978 engine lines; the line
+  ratchet drops from 3,400 to 3,050). Behaviour is unchanged: the engine keeps
+  thin forwards only where the link or the live IQ graph is touched (stream
+  restart and receiver count, RX2 NCO, diversity DDC mode and weight write,
+  monitor DDC configuration), the keyed-mute edge still freezes the SUB chain
+  and blanks its audio/meters, and the lock and queue inventories are
+  unchanged. (#60)
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `aa79b7c3f93b85cd08868153a2fc102d9617f5ab24b0156e7a195cfe3740f6d3`.
 
 ## New in 2026.1102_001
 
@@ -2295,9 +2359,9 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 <!-- Mirrors the app's built-in capability table (DSP/Capabilities.swift). -->
 | Capability | Support |
 | --- | --- |
-| Radios | Hermes-Lite 2 / SquareSDR (openHPSDR Protocol 1) · Apache Labs ANAN Orion-class, e.g. 7000DLE MK2 (Protocol 2) · every other ANAN on Protocol 2 — ANAN-10/100 (Hermes), ANAN-10E/100B, ANAN-100D (Angelia), ANAN-200D (Orion), ANAN-G2 (Saturn) and an Atlas/Metis backplane — is recognised by name and receives through its Alex filter and antenna relays, transmit closed until validated on the hardware · Protocol 1 Hermes, Griffin, Angelia, Orion and Orion MkII boards are named and receive-only · RFSpace NetSDR (receive-only direct-sampling HF receiver: TCP control + UDP I/Q on port 50000, its own LAN discovery, in-app static-IP/DHCP assignment) |
-| RX / TX | Receive + transmit live-validated on both openHPSDR protocols (dummy load; on-air QSOs user-gated) · the NetSDR is receive-only, so its sessions carry no TX banner, ARM, PTT, TUNE or drive controls at all |
-| Sample rates | 48–384 kHz (P1) · up to 1536 kHz (P2) · 48–768 kHz on the NetSDR (the radio streams 50–800 kHz, resampled 24/25 to the chain rate) |
+| Radios | Hermes-Lite 2 / SquareSDR (openHPSDR Protocol 1) · Apache Labs ANAN Orion-class, e.g. 7000DLE MK2 (Protocol 2) · every other ANAN on Protocol 2 — ANAN-10/100 (Hermes), ANAN-10E/100B, ANAN-100D (Angelia), ANAN-200D (Orion), ANAN-G2 (Saturn) and an Atlas/Metis backplane — is recognised by name and receives through its Alex filter and antenna relays, transmit closed until validated on the hardware · Protocol 1 Hermes, Griffin, Angelia, Orion and Orion MkII boards are named and receive-only · RFSpace NetSDR (receive-only direct-sampling HF receiver: TCP control + UDP I/Q on port 50000, its own LAN discovery, in-app static-IP/DHCP assignment) · SDRplay RSPdx over USB (receive-only, 1 kHz – 2 GHz, through SDRplay's API 3.15 loaded by a signed helper process; antenna A/B/C, LNA state table, IF gain + AGC, HDR mode, bias-T, notches) |
+| RX / TX | Receive + transmit live-validated on both openHPSDR protocols (dummy load; on-air QSOs user-gated) · the NetSDR and the SDRplay RSPdx are receive-only, so their sessions carry no TX banner, ARM, PTT, TUNE or drive controls at all |
+| Sample rates | 48–384 kHz (P1) · up to 1536 kHz (P2) · 48–768 kHz on the NetSDR (the radio streams 50–800 kHz, resampled 24/25 to the chain rate) · 48 kHz – 1536 kHz on the RSPdx (decimations of its 3.072 MHz ADC clock) |
 | Demod modes | USB, LSB, CW, AM, SAM, FM, NFM, DSB, DATA-U, DATA-L (USB / LSB for sound-card digital modes: 3 kHz filter from 100 Hz by default, own filter memory, selected by CAT PKTUSB / PKTLSB, TCI DIGU / DIGL and Kenwood MD 9 / 6) · separate wide/narrow FM deviation · CTCSS encode/decode · CTCSS tone squelch (TSQL: FM / NFM audio opens only on the selected tone, ~¼ s to open, 250 ms hang) · FM sub-audio filter (the repeater's CTCSS tone leaves the speaker audio; on by default) · AM, SAM and DSB filters to 20 kHz, with 10 kHz audio at the speakers above 11 kHz of width · main SAM Both / Upper / Lower RF sidebands (single-sideband mono; SUB stays Both) |
 | FT8 / FT4 | Receive: waterfall spots, decode panel, stations-heard ADIF (FT4 exported as MFSK/FT4), PSKReporter uploads, 15 s / 7.5 s UTC slots, automatic station clock-drift estimation with bounded slot correction, time-machine replay. Transmit: native slot-clocked modulator + auto-sequencer behind ARM/TXCoordinator (native FT8 dummy-load validated; on-air validation pending), or WSJT-X via CAT PTT + audio routing · **native JS8 (normal) encoder** — clean-room port of JS8Call's varicode/CRC-12/LDPC(174,87) path, frame programs one slot at a time, decoded by JS8Call 3.0.3 |
 | SSTV | Martin M1, Martin M2, Martin M3, Martin M4, Scottie S1, Scottie S2, Scottie S3, Scottie S4, Scottie DX, Robot 36, Robot 72, PD50, PD90, PD120, PD160, PD180, PD240, PD290, Robot 8 B/W, Robot 12 B/W, Robot 24 B/W, Wraase SC2-60, Wraase SC2-120, Wraase SC2-180, Pasokon P3, Pasokon P5, Pasokon P7, MP73, MP115, MP140, MP175, MR73, MR90, MR115, MR140, MR175, ML180, ML240, ML280, ML320, FAX480 — auto VIS + manual mode/start, slant/phase correction, PNG export |
@@ -2326,8 +2390,8 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | Scheduled recording | Recording Schedule window (Radio menu): timed audio (WAV) / IQ (.hiq) / both captures by UTC time — daily, weekday set or one date — optional receive preset (dial + mode) applied at start and restored afterwards, file-size roll-over into numbered parts, next-run column, scheduler log, per-radio persistence · exact-once per occurrence from the 60 s clock; refused while the transmitter is armed, keyed or owned by a program or while a recorder is in use; a start missed while asleep is logged, never back-filled · crab `recording_schedule` ("record 9.420 MHz AM at 0300Z for 30 minutes", list / toggle / stop) |
 | MW stations | FCC AM Query extract (US Government public domain; fetched only on Refresh or by opt-in weekly refresh, cached under Application Support, never bundled) plus an optional operator CSV (MWList-style column names) · MW Stations window (Radio menu): fuzzy call-letter search (WBZZ finds WBZ), every station on a channel nearest the station grid first, city / state / licensee search, day / night power and directional flag, class, licence status, distance and bearing, Tune in AM, Plot on the Stations Heard map (at most 200 pins) · 9 / 10 kHz channel labels on the panadapter naming the likely station per channel (View menu; at most 24 in the visible span, nearest the display centre) · Crab `mw_station` answers "what's on 1030 kHz" and resolves misheard call letters |
 | Space weather | Header Kp + SFI chips · Space Weather window (Log menu) with NOAA SWPC public products: 3-hourly Kp, daily A-index and sunspot number, GOES X-ray flux + flare list, solar wind speed/density/Bz, proton and electron flux, R/S/G scales with three-day outlook, 27-day outlook, 45-day AP forecast, SWPC alert/watch/warning feed · one-month and one-day plots · twelve fixed HTTPS GETs hourly with per-product freshness limits (2 h minute products, 48 h daily, 10 d outlooks), stale or unreadable products show a dash · crab watches that fire once per event (flare ≥ class, Kp ≥ n, R/S/G ≥ n, proton event) with optional spoken alerts, off by default · the crab's `band_conditions` tool reads the same values |
-| Logbook | ADIF import/export with preserved fields · Cabrillo 3.0 contest export (persisted per-contest header, UTC day / saved-filter selection, flagged missing exchanges) · editing, bulk changes, saved filters and backups · precise LoTW contact matching · optional QRZ Logbook / eQSL / Club Log / Wavelog uploads (Keychain, durable bounded queue, per-contact receipts, manual selected/failed upload; off by default) · DXCC/WAS/WAZ/grid coverage · interactive worked-world globe, gray line and local DX radar · QRZ.com / HamQTH callsign lookup that fills empty station fields on commit and from the editor (Keychain credentials, off by default) · 100,000-contact performance fixture · statistics window (contacts per UTC day / month / year, band, mode, DXCC entity, CQ zone and continent, worked versus confirmed, charts + tables, CSV) · 100,000-contact performance fixture · **Contest** window (log only): ARRL Field Day and CQ WW DX SSB / CW rule sets (versioned, data-driven), sent / received exchange fields that follow the rules with section, zone, class and RST validation, live DUPE indicator with the earlier contact's time, QSO points, multipliers, total, rate and a per-band table over the logbook's `CONTEST_ID` contacts (edits and deletions in the QSO Log change the score), serial allocation, optional MASTER.SCP Super Check Partial suggestions, End contest → Cabrillo export with the header prepared; no CW / voice message sending (`docs/Contest.md`) |
-| Feature catalog | Searchable inventory of 99 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
+| Logbook | ADIF import/export with preserved fields · Cabrillo 3.0 contest export (persisted per-contest header, UTC day / saved-filter selection, flagged missing exchanges) · editing, bulk changes, saved filters and backups · precise LoTW contact matching · [LoTW / eQSL / QRZ Logbook confirmation sync](docs/QSLSync.md) (dry-run reconciliation with tolerant call/band/mode/time matching, explained unmatched records and conflicts, per-source ADIF fields, incremental LoTW download, per-source coverage summary) · optional QRZ Logbook / eQSL / Club Log / Wavelog uploads (Keychain, durable bounded queue, per-contact receipts, manual selected/failed upload; off by default) · DXCC/WAS/WAZ/grid coverage · interactive worked-world globe, gray line and local DX radar · QRZ.com / HamQTH callsign lookup that fills empty station fields on commit and from the editor (Keychain credentials, off by default) · 100,000-contact performance fixture · statistics window (contacts per UTC day / month / year, band, mode, DXCC entity, CQ zone and continent, worked versus confirmed, charts + tables, CSV) · 100,000-contact performance fixture · **Contest** window (log only): ARRL Field Day and CQ WW DX SSB / CW rule sets (versioned, data-driven), sent / received exchange fields that follow the rules with section, zone, class and RST validation, live DUPE indicator with the earlier contact's time, QSO points, multipliers, total, rate and a per-band table over the logbook's `CONTEST_ID` contacts (edits and deletions in the QSO Log change the score), serial allocation, optional MASTER.SCP Super Check Partial suggestions, End contest → Cabrillo export with the header prepared; no CW / voice message sending (`docs/Contest.md`) |
+| Feature catalog | Searchable inventory of 100 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
 | Extras | Sub-RX (VFO B) · diversity RX (P2, with a one-shot Find-null estimator: preview, Apply, Restore) · radio audio output — the receiver through the radio's own headphone / speaker jacks (ANAN Orion MkII on P2; HL2 / SquareSDR with the AK4951 audio codec companion board announced to the gateware on P1; both off by default and not yet verified on a radio) · N2ADR IO Board band-follow (HL2: the TX frequency written to the IO Board over the Protocol 1 I2C bridge so a serial- or band-data-wired amplifier follows the dial; off by default, never keys or changes drive; [setup](docs/HL2IOBoard.md)) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT (LAN peers pair before tuning or keying) · Kenwood TS-2000 / PowerSDR-Thetis `ZZ` CAT emulation for loggers and digital programs (TCP, pseudo-terminal or serial adapter; receive-side command set, every keying or transmit-side command refused) · transverter profiles (IF→RF dial/CAT/log mapping with per-profile drive ceiling) · Speaker Tracker (local voiceprint clustering and naming of received voices, off by default) · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · named multi-radio instances + local Master/Follower microphone/Deck audio (independent ARM/PTT; hardware acceptance pending; [setup](docs/SharedProgram.md)) · MIDI controllers (any CoreMIDI source: learn-mapped encoders with speed acceleration, pickup knobs, Input Mixer faders/mutes/EQ/effect controls, nanoKONTROL2 profiles with mute/ducking strip-LED feedback (off by default), pads on the Stream Deck action model; off by default, keying assignments work behind ARM and every interlock) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) · **MAGNET HF Emergency** (magnethf.com watch/net availability, native JS8 transmit verified against JS8Call 3.0.3, JS8Call API hand-off, CW auto-key, voice script) |
 | OC outputs | Per-band open-collector matrix for the accessory connector (OC1–OC7 × band for receive, transmit and TUNE, tune pulse timers), stored per physical radio · the receive row drives Protocol 1 register 0 C2 and Protocol 2 high-priority byte 1401 while receiving · keyed transmit and TUNE rows follow the coordinator, with tune pulse timers and filter-board pin merging · all-zero default is byte-identical to the previous wire |
 | Band data to station devices | HermitSDR plays the radio side of a CAT or logger link so an amplifier or tuner follows the dial (Station › Control Devices › Station Devices): VK-Amps "CAT Yaesu" (`FA…;` on a serial port, polls answered) and "CAT Icom" (CI-V transceive frames) band switching, a Kenwood TS-2000 stream, and the Palstar HF-AUTO through W1TR's HF Auto app as N1MM `RadioInfo` or `USERDOC` XML over UDP · RF-side (transverter-mapped) frequency, pushed on change and repeated each poll interval · no device feedback is interpreted, nothing keys the radio · fixture-verified against virtual devices; not yet tried on the hardware |

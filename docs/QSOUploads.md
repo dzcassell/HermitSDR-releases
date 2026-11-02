@@ -7,6 +7,10 @@ and logger broadcasts remain separate.
 
 ## Configure an account
 
+Inbound confirmations are separate: see [QSLSync.md](QSLSync.md); an upload
+receipt is never a QSL, and a confirmation download reuses an eQSL or QRZ
+upload credential only when the operator presses Download.
+
 Choose QRZ Logbook, eQSL, Club Log or Wavelog in the top selector. **Receipts**
 shows delivery history; upload/retry controls stay visible above the scroll area.
 

@@ -285,6 +285,11 @@ is unchanged; live LoTW requests were not made during fixture validation.
 
 [ARRL LoTW developer query reference](https://lotw.arrl.org/lotw-help/developer-query-qsos-qsls/).
 
+QSO Log → **Confirmations…** ([QSLSync.md](QSLSync.md)) adds the tolerant,
+dry-run reconciliation for LoTW, eQSL and QRZ Logbook documents with per-source
+fields, incremental downloads and a coverage summary; this strict matcher in the
+LoTW window is unchanged.
+
 ## Measured large-log budget
 
 Run `tools/logbook-benchmark.sh /path/to/artifacts` to generate a deterministic
