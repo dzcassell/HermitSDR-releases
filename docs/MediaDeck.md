@@ -161,7 +161,11 @@ and tap; an Open-URL pad plays in the browser and is not affected.
 The header output meter shows the loudest pad after master volume, the
 tapped YouTube player included.
 Preparing, buffering, playing, paused, queued, completed, stopped, missing,
-and failed are distinct visible and accessibility states. The pin keeps the
+and failed are distinct visible and accessibility states. A pad whose chosen
+output device disappears mid-clip (or whose engine cannot be restarted after
+a device change) stops and shows **failed**, with the reason in the activity
+log; choose the output again and press the pad to replay. A device that only
+changes its format restarts the pad where it left off. The pin keeps the
 deck above normal windows and is saved with the deck. Standard macOS window
 controls provide resizing and full screen.
 

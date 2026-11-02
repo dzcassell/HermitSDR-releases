@@ -93,8 +93,10 @@ One XL-style layout is faders 1/2 for mic/Deck, knobs 1–14 for their EQ bands,
 knobs 15/16 for FX amount, knobs 17/18 for effect selection and two momentary
 buttons for mute. These are physical control positions, not assumed CC numbers:
 use Learn for the actual channel/CC and encoder convention. No physical controller has been validated for these new
-mixer targets. Motorized-fader position output, encoder rings and mixer-mute LED
-feedback are not implemented; the existing supported deck-action lamps remain.
+mixer targets. Motorized-fader position output and encoder rings are not
+implemented; the existing supported deck-action lamps remain, and the Input
+Mixer's mute/ducking state can light a control surface's strip buttons (see
+**Mixer LEDs** below).
 
 New mapping documents use format version 2; adding a mixer target upgrades an
 older document to v2 so older apps refuse it clearly, and an imported or
@@ -147,9 +149,11 @@ every continuous control after connection, profile changes and software edits.
 Move a control through the current on-screen value before expecting it to
 follow. FX choices are discrete; FX amount is continuous. Switch layouts with
 input disabled, then enable it manually. On-screen mute indicators are the
-source of truth: mixer LED feedback, motor feedback and ring feedback are not
-implemented. This device-specific CC profile is software-tested; validate the
-actual unit's ports, CCs, pickup, mute releases and reconnect behavior when it
+source of truth; the unit's M and S LEDs can mirror them (the sheet's **Light
+M (mute) and S (ducking) LEDs** switch, off by default — see **Mixer LEDs**
+below). Motor feedback and ring feedback are not implemented. This
+device-specific CC profile is software-tested; validate the actual unit's
+ports, CCs, pickup, mute releases, LED mode and reconnect behavior when it
 arrives. No physical nanoKONTROL2 certification is claimed.
 
 ## Lamps (LED feedback)
@@ -196,6 +200,61 @@ The document lives at `~/Library/Application Support/HermitSDR/MIDI/
 mappings.json` (pretty JSON, atomic writes, versioned — a file from a
 newer build is refused rather than silently truncated; the window shows
 the error).
+
+## Mixer LEDs (Input Mixer strip-button feedback)
+
+A control surface's **S / M / R** buttons are a fixed table per controller,
+not learned rows, so the Input Mixer lights them from its own state through
+a layout chosen under **Controls → Mixer LEDs** (or the nanoKONTROL2
+sheet's **Light M (mute) and S (ducking) LEDs** switch). It is **off by
+default**; the on-screen mixer stays the source of truth and the LEDs only
+mirror it.
+
+| Lamp | Lit while | nanoKONTROL2 (factory CC-mode scene) |
+| --- | --- | --- |
+| **M** on a strip | that strip's **mute** is on | CC 48 / 49 / 50 (Mic / Deck / Guests), 127 on, 0 off |
+| **S** on the Deck strip | **voice-over ducking** is dipping the Deck by ≥ 1 dB | CC 33, 127 on, 0 off |
+| **R** | never written — the mixer has no record arm | CC 64–71 left dark |
+
+Strip order follows the presets: strip 1 = Microphone, 2 = Media Deck,
+3 = Remote Guests, so the M lamp sits over the M button that toggles that
+strip's mute.
+
+- **Set the unit's LED Mode to External.** Korg's
+  [parameter guide](https://cdn.korg.com/us/support/download/files/c8d0cd6808e12d3672845cadcdbbfe9b.pdf)
+  ("LED mode", p. 9): with **LED Mode = External** a button's LED "will
+  light-up or go dark when a message with the control change number …
+  assigned to that button is received from the computer — light-up when an
+  On Value … is received, and go dark when an Off Value … is received." The
+  factory setting is Internal (the LED follows the button locally); change
+  it in KORG KONTROL Editor. The factory CC-mode scene puts S / M / R on
+  CC 32–39 / 48–55 / 64–71, channel 1, On 127 / Off 0 (the guide documents
+  the fields; the numbers are the factory scene as read back by the editor
+  and used by every published nanoKONTROL2 host map, e.g. the
+  SuperCollider class's `sbutton 32 / mbutton 48 / rbutton 64`). A unit
+  whose buttons were reassigned needs the same CCs restored, or Learn the
+  rows and leave the LEDs off. HermitSDR sends **no SysEx** and never
+  programs the device.
+- **Only changes go out.** The pure `MixerLampFeedback` diffs the mixer's
+  mute/duck snapshot against what was last sent, coalesced with the row
+  lamps 80 ms after a state change; an idle mixer costs no MIDI traffic.
+- **Resync on connect.** When the source (re)connects, every driven lamp is
+  written once explicitly — on or off — so an LED left lit by an earlier
+  session cannot survive; after that only changes are sent.
+- **Quiet when off.** Nothing is sent while MIDI is disabled, with the
+  layout Off, or with no paired output (same pairing rule as the row lamps).
+  Switching the layout Off darkens what it lit, once; Enabled off, quit and
+  source loss clear every lit lamp with the row lamps.
+- **Output only.** The table maps state → lamp, never lamp → state: a lamp
+  message cannot move a fader, toggle a mute, select a source, arm, key or
+  change drive/policy. The M lamps share the M buttons' CCs, so mixer rows
+  offer no per-row Lamp (no double write).
+- Data-driven: `MixerLampLayout` (`Integration/MIDI/MixerLampFeedback.swift`,
+  package-tested by `MixerLampFeedbackTests`) holds the channel, control
+  numbers per button row and strip, on/off values, strip order and which
+  condition each button row shows; another controller is a second static
+  table listed in `MixerLampLayout.all`. The document stores the layout id
+  as `mixerLamps` (absent = off, format version unchanged).
 
 ## Keying
 

@@ -20,8 +20,8 @@ The console is two existing services and one file:
 
 | Piece | Where | Role |
 | --- | --- | --- |
-| `HermitSDR/Resources/WebConsole/console.html` | app bundle | The page. Plain HTML/CSS/JS, no build step, no CDN, no cookies. |
-| OBS overlay HTTP server (#148) | port 4997, `Station ▸ Audio & Streaming ▸ OBS Studio` | Serves `GET /console` (the page) and `GET /console/config.json` (Control API port, TLS fingerprint, policy, station name). Loopback unless its **Allow LAN** switch is on. |
+| `HermitSDR/Resources/WebConsole/console.html` | app bundle | The page. Plain HTML/CSS/JS, no build step, no CDN, no cookies, no libraries (the WebGL2 waterfall is written out in the page). |
+| OBS overlay HTTP server (#148) | port 4997, `Station ▸ Audio & Streaming ▸ OBS Studio` | Serves `GET /console` (the page) and `GET /console/config.json` (Control API port, TLS fingerprint, policy, station name, waterfall palette). Loopback unless its **Allow LAN** switch is on. |
 | Control API (#122) | port 4996, `Settings ▸ Control API` | The WebSocket the page pairs with. State, meters, spectrum rows and 12 kHz PCM audio down; RX commands up. |
 
 The browser loads the page over HTTP from the overlay server, reads
@@ -103,6 +103,28 @@ remains in #91; automated Chrome checks establish the software behavior only.
   power of two above its pixel width and re-subscribes on resize). The
   floor and top track the row. VFO A is the red line, VFO B the dashed
   green one, the receive passband is shaded.
+* **Waterfall on the GPU (#91).** The waterfall is a WebGL2 ring texture:
+  every row the Control API delivers is uploaded once (`texSubImage2D`, 8-bit
+  dB bins, no CPU colouring) into a bins × 512-row history texture, a write
+  offset scrolls it, and the fragment shader maps each pixel through the
+  page's floor / top (the same automatic range the panadapter shows) into a
+  256-entry palette texture and draws the passband tint and VFO line — one
+  upload and one triangle per row, no per-frame allocation, so a phone or
+  tablet GPU draws it at display rate regardless of history depth. The
+  palette is the shack's own: `config.json` carries the operator's static
+  waterfall colormap (`palette: [[position, r, g, b], …]`, 2–16 stops,
+  `WebConsolePalette`); a procedural colormap (Prism, Nebula) has no table,
+  so the page keeps its embedded default, which is the app's **Classic**.
+  Changing the colormap in the app reaches a browser on its next page load.
+  When `webgl2` is unavailable, refused, or the GPU context is lost
+  (`webglcontextlost`), the page draws the same rows from its CPU copy of
+  the history with the 2D canvas — identical mapping and palette, nothing is
+  lost — and returns to the GPU when the context is restored. The side panel's
+  **Waterfall** line says which is in use (`#scopeCard[data-renderer]` for
+  tooling); `?renderer=canvas2d` on the page URL forces the 2D canvas. The
+  rows themselves are unchanged: ≤ 1024 bins at ≤ 10 rows/s from the API,
+  so the renderer's headroom (up to 4096 bins) is for a later server slice.
+  No new gestures: click/tap to tune and the wheel work on both canvases.
 * **Dial, mode, filter, band, link, ON AIR** from the state stream;
   the receive footprint uses the native voice/data sideband offsets and RIT.
   **S-meter** from the 10 Hz meter messages (S-units and dBm, ADC overload).
@@ -258,12 +280,23 @@ without a radio. Before, only a live radio session bound the listener.
   receive-footprint geometry checked against the native receiver in every mode,
   and (#201) that every `{t:'…'}` command the page forms parses as a
   protocol command and is granted to a browser session holding Control.
+* `swift test --filter WebConsoleTests` also pins (#91) that the config's
+  palette export is bounded and falls back to the default, that the page's
+  embedded default is the same table and its LUT interpolates the stops the
+  way the renderer does (run in JavaScriptCore), that the page refuses what
+  the server would refuse, and that the WebGL2 path, the 2D fallback, the
+  context-loss handlers and `data-renderer` are present with no dynamic code.
 * `tools/web-console-smoke.sh` — the production overlay server and Control
   API server on loopback; HTTP routes; the Python reference client as a
   browser (cap, native client unaffected, time limit, slot reuse); then
   headless Google Chrome loads the real page with the code in the fragment
   and, over the DevTools protocol, the page's own self-test must report
-  paired + spectrum rows + audio frames, a tune and a mode change issued
+  paired + spectrum rows + audio frames, the waterfall must be on WebGL2 (a
+  synthetic spectrum row injected into the page is read back from the GPU
+  canvas with its spike where it belongs; a lost context must fall back to
+  the 2D canvas with the history intact and a restored one take over again;
+  a second tab with `?renderer=canvas2d` must draw with the 2D canvas), a
+  tune and a mode change issued
   through the page must land in the fixture radio, an out-of-range tune
   must surface as an error, every #201 control clicked or dragged on the
   real page (NR/NB/ANF, squelch, RIT, split, shack mute and volume, ATT, RF
@@ -280,11 +313,12 @@ without a radio. Before, only a live radio session bound the listener.
 
 ## Not in this slice (#91 remains open)
 
-Decoder panels, sub-receiver audio,
-a WebGL waterfall, LAN discovery from the browser, a relay or hostile-network route,
-and any transmit. Each is a Control API client-side addition or a
-separately reviewed server change. (RF gain, attenuation, DSP, squelch,
-shack audio, RIT, split and the shack step arrived with #201.)
+Decoder panels (a separate later slice), sub-receiver audio, LAN discovery
+from the browser, a relay or hostile-network route, touch gestures beyond
+tap-to-tune, and any transmit. Each is a Control API client-side addition or
+a separately reviewed server change. (RF gain, attenuation, DSP, squelch,
+shack audio, RIT, split and the shack step arrived with #201; the WebGL2
+waterfall with its 2D-canvas fallback with this slice of #91.)
 
 ## Completion boundary for #201
 

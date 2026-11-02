@@ -36,7 +36,315 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1101_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1102_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1102_001
+
+- Name the NetSDR frequency-calibration Store / Restore buttons and both
+  confirmation alerts' Write / Cancel buttons to accessibility, so an
+  accessibility client can tell the write from the cancel (the 2026-10-07
+  live session found them unnamed). The in-app lock text and refusal now
+  say the hidden `netsdrCalibrationWrites` default gates writes, instead
+  of "until validated on a NetSDR" — it has been. (#142)
+- A Media Deck pad whose output device disappeared stayed "Playing" with no
+  sound for the rest of the session: the pad's engine now observes
+  `AVAudioEngineConfigurationChange`, re-validates the bound device and output
+  format behind the AVFAudio exception guard, restarts where it left off when
+  the device is still there, and otherwise stops the pad, shows it as failed
+  and logs why. The failure also releases the pad's TX program ring and Auto
+  PTT like any other stop. (#309)
+- Manual-host aliases slipped past the per-radio instance locks: `anan.local`
+  and its IP address, or an empty MAC, could open the same radio in two
+  station instances. The lock identity now resolves a typed hostname to its
+  addresses (bounded, about one second, on a detached thread) and locks the
+  name, every canonical address and the MAC when known, so aliases of one
+  radio collide. (#309)
+- Remove the images a Zoom/SIP caller heard in the "Radio receive audio" return:
+  the 12 kHz receiver mix now reaches the 48 kHz return through a 256-tap
+  polyphase interpolator (flat to about 5 kHz, images at least 60 dB down,
+  2.7 ms filter delay) instead of a linear ramp. (#328)
+- Start the receive return smoothly: playout waits until one receiver block plus
+  10 ms is queued and then plays whole blocks only, so the receiver's bursty
+  block clock no longer pads partial blocks with silence at start-up or at
+  every block boundary. The steady return cushion is about 55 ms. (#328)
+- `docs/JS8Conversations.md` (mirrored): the JS8 Conversations window, the
+  inbox rule, message status badges, the JS8Call grammar sources
+  (`varicode.cpp` command / checksum tables, `mainwindow.cpp` buffering,
+  relay and store-and-forward handling, the `♢` display glyph) and what the
+  slice leaves out. (#324)
+- State the NetSDR calibration truth in `docs/RadioProfiles.md`: measurement
+  available in every build, storing to the radio requires the hidden
+  `netsdrCalibrationWrites` default (write path validated live 2026-10-07 on
+  MC000359, 79,999,494 Hz, +0.29 Hz residual), REF LOCK status needs a unit
+  with the reflock option (the lab unit reports none). Corrected the model's
+  "loopback only" comment and the wave3 handoff header. (#142)
+- Record the verified 2026.1101_001 publication, integrated transmitter boundaries,
+  exact-source CI/native/sanitizer receipts, public hashes/clean scan, mirror/site
+  synchronization, issue disposition and updated isolated Dev/cleanup handoff.
+- `docs/ConcurrencyOwnership.md` opens with the measured 2026-11-02 inventory
+  (44 unchecked / 153 locks / 62 queues / 52 timers / 230 unsafe-or-mmap
+  references), per-domain counts, the converted types and the status of the
+  lock-order assertion and virtual-radio TSan items; `CLAUDE.md` gains a
+  "Threading model" section. (#61)
+- Add `docs/WeakSignalParity.md`: a verified RX / native-TX / external matrix
+  for FT8, FT4, JS8, WSPR, JT65, JT9, Q65, Feld Hell and the absent MSK144,
+  FST4/FST4W and FT2 (name-only or zero occurrences), feasibility notes with
+  reusable components, licensing and size estimates, and a recommended order
+  starting with an FST4W receive-only spike; linked from DigitalModes.md and
+  mirrored (#326).
+- Describe the Media Deck output-device-loss behaviour and the hostname/IP
+  alias rule for radio ownership across station instances. (#309)
+- `docs/HL2IOBoard.md`: IO Board wiring, SPE Expert CAT settings (YAESU
+  FTxxxx 2007+, 19200 baud), detection and troubleshooting; the HL2 I2C
+  bridge frame layout and its sources. (#331)
+- Add the Received Images operator guide. (#268)
+- Document Input Mixer strip-LED feedback in `docs/MIDIController.md` with the
+  KORG parameter-guide source for LED Mode = External and the factory CC scene;
+  the nanoKONTROL2 sheet and manual no longer say mixer LEDs are unsupported. (#307)
+- `BookmarkScanMeter`, `AudioDiagnosticJournal` and `LogbookStatisticsEngine`
+  are compiler-checked `Sendable`: the scan meter's single slot is the state of
+  one `OSAllocatedUnfairLock` (`withLockIfAvailable` keeps the DSP writer
+  drop-never-wait), the journal's bounded inbox and queue-owned session history
+  are two typed locks with disk writes after the copy-out, and the statistics
+  engine's cache lock already held every mutable field. No TX type changed. The
+  audited `@unchecked Sendable` inventory falls from 47 to 44. (#61)
+- Move the engine-side recording domain — IQ `.hiq` recorder, demod WAV
+  recorder, RF time-machine history ring and epoch, Band DVR store and enable
+  flag — out of `RadioEngine` into a compiler-checked `Sendable`
+  `RecordingEngineService` (3,466 → 3,313 engine lines). Behaviour, file
+  names, the `RecordingEnginePort` contract and the live-only DVR/recorder tee
+  rules are unchanged; the engine keeps thin forwards only where the IQ graph
+  must be rewired. (#60)
+- **JS8 Conversations** (Decode menu): the native JS8 decoder's frames are
+  assembled into JS8Call-style messages — heartbeats and CQs, directed
+  `FROM: TO text`, multi-frame continuations closed by the last-frame bit,
+  relays (`A>B>C` paths), `@ALLCALL` / `@GROUP` calls, `MSG` / `MSG TO:`
+  store-and-forward, `SNR?` / `INFO?` / `GRID?` / `HEARING?` / `QUERY` and
+  their replies, `ACK` / `NACK` and `HEARING` lists, with the CRC-16/KERMIT
+  checksum of buffered commands verified and stripped. The window shows
+  threads (you ↔ station, overheard pairs, one per group) as timestamped
+  bubbles, an inbox of traffic to your call, its base call, a relay or
+  `MSG TO:` destination or your groups with an unread badge, a heard roster
+  (grid, last S/N, heartbeat and message counts) and search; each message
+  carries complete / missing-frames / missed-start / bad-checksum / stale and
+  REPLAY status. Settings › Station gains a **JS8 groups** field. History is
+  bounded (2,000 messages, 512 stations) and persisted in the support folder.
+  Read-only — composing, queued transmit and multi-speed decoding are later
+  slices; the MAGNET HF transmit path is unchanged. (#324)
+- **CHIRP channel import / export** (#321). Bookmarks read and write CHIRP's
+  generic CSV (the 21-column `Location … DVCODE` file CHIRP's File → Export
+  writes and every CHIRP driver imports). **Import CHIRP…** in the star
+  popover parses the file off the UI and shows a preview sheet before anything
+  is stored: rows read / skipped, channels to add, exact duplicates skipped,
+  same-frequency-and-name conflicts with Keep mine / Replace / Add both per
+  row or for all, and a lossy report listing every row and field that a
+  memory cannot hold (DCS codes, reverse squelch, mismatched cross tones,
+  Skip, Power, D-STAR fields, digital-voice and approximated modes, snapped
+  tones, truncated names). Frequency, Duplex / Offset (stored as a signed
+  transmit offset and duplex word — never used to key or tune), Tone / TSQL /
+  Cross tones onto the one CTCSS tone with its encode and squelch flags, Mode
+  (FM / NFM / AM / USB / LSB / CW / DIG and the documented approximations) and
+  Comment → notes all map; Replace keeps the memory's identifier and position
+  so scan lists survive. **Export… → CHIRP CSV** writes the whole library or
+  the displayed results with CHIRP's own formatting (six-decimal MHz, `88.5`
+  tones, `023` / `NN` defaults, CRLF, minimal quoting) and reports the fields
+  with no CHIRP column; a 20-row repeater / simplex / split / DCS / airband /
+  DMR / D-STAR fixture round-trips byte-for-byte for every representable row.
+  `docs/CHIRP.md` documents the mapping. Repeater-directory search is not part
+  of this: it needs a licensed data source.
+- **TCI server: receiver IQ stream** (#125). `iq_samplerate` (48, 96, 192 or
+  384 kHz per client, the TCI 2.1 set; an unsupported value is ignored and the
+  current rate read back), `iq_start:0` and `iq_stop:0` stream the receiver's
+  complex baseband — the whole sampled span centred on the `dds` frequency,
+  as the radio or a replay delivers it, before the receiver's filters and the
+  time machine — as TCI binary frames: stream type 0, float32 interleaved
+  I/Q, two channels, 2048 complex samples per packet, the 2.1 packet counter
+  in the header. The client's rate is reached from the radio's by the
+  receiver's own /2 decimator cascade; a radio slower than the request
+  streams at its rate and the header says so. Each client has a bounded
+  16-packet queue fed through a 64-block mailbox that never blocks the DSP
+  thread; a slow reader loses the oldest frames, counted in Settings beside
+  the audio drops, and the baseband tap exists only while a client streams.
+  Settings ▸ CAT shows the IQ client count. Everything transmit-side stays
+  refused exactly as before. `docs/TCI.md` documents the stream, its rates,
+  format and limits; verified with the loopback client, not yet with a
+  skimmer.
+- Add WAZ (the 40 CQ zones) to the Awards window, its summary CSV, the log
+  statistics window (CQ zones table, chart, card and CSV) and the crab's
+  award_progress tool. An explicit ADIF `CQZ` wins and an invalid one is listed
+  as unresolved; otherwise the zone is inferred from the installed country file
+  with its per-prefix zone overrides (W6 and VE7 → 3, VK6 → 29) and counted as
+  inferred. IOTA, formal VUCC rules and satellite credit remain documented
+  follow-ups pending organizer confirmation. (#322)
+- **Parks & Summits** (Log menu): POTA and SOTA activators on the air now,
+  from the public `api.pota.app` activator feed and the SOTAwatch v3 feed —
+  opt-in, both polled every 90 s with ETag / If-Modified-Since revalidation,
+  fixed GETs with no station data sent, bounded to 400 rows, deduplicated by
+  activator + reference + band and aged out after an hour, with per-source
+  health. Columns: age, program, activator, reference and park/summit name,
+  kHz, mode and a worked-before badge from the logbook (same activator at the
+  reference, or the reference under another activator; multi-park values and
+  /P calls match); filters for program, band, mode group and not-yet-worked.
+  A row click tunes VFO A exactly like a cluster spot and stages a
+  one-contact hunt: the next contact with that activator — the hunt strip's
+  quick log, QSO Log ▸ Add… (prefilled) or any other quick log — carries
+  `POTA_REF` / `SOTA_REF`, while `MY_POTA_REF` / `MY_SOTA_REF` stay empty
+  unless the operator's own activation references are set in Settings ▸
+  Station (new fields; then stamped on every logged contact). The draft is
+  taken exactly once, so a hunt can never leak into the contact after it.
+  The four fields join the contact editor and round-trip through import,
+  edit, export and the online uploads; Cabrillo is untouched. No TX path is
+  involved; the app does not submit to the program databases.
+  `docs/ParksAndSummits.md`. (#318)
+- HL2: write the transmit frequency to the N2ADR IO Board over the Protocol 1
+  I2C bridge so an amplifier, antenna switch or transverter wired to the
+  board follows the dial — e.g. an SPE Expert on the board's serial port.
+  Off by default (Settings › Radio › N2ADR IO Board band-follow); detects the
+  board (0x41 reads 0xF1), reports its firmware, writes 0x1D registers 0–4
+  MSB first with register 4 last on every TX-frequency change (split / XIT /
+  CAT / transverter aware, receive-only operation included), coalesced to one
+  burst per 50 ms, held while keyed, resent on reconnect. Never keys, arms or
+  changes drive; off sends exactly the previous wire. (#331)
+- Add a native Elecraft KPA500 amplifier driver to Station Devices, the first
+  vendor codec on the station-device framework: `^RVM`/`^SN` identity,
+  operate/standby, forward power and SWR, PA temperature and supply, band and
+  the `^FL` fault number with its owner's-manual meaning, polled over the
+  amplifier's RS232 PC port (38400 8N1). A fault inhibits TX through the
+  existing station interlock until the amplifier clears it; the band command
+  follows the radio's TX band once per band change and a manual Set band holds
+  until then. Simulator-verified only — no KPA500 has been connected yet; the
+  RF2K-S and SPE native drivers remain open. See docs/KPA500.md. (#112)
+- Add the Received Images library (Decode ▸ Received Images): every SSTV,
+  Weather Fax and MFSK picture the decoders save is indexed with its mode,
+  UTC time, dial frequency, receiver mode and radio; existing PNGs are
+  indexed on first launch. The window shows a thumbnail grid with mode,
+  date and text filters, sort, a detail pane with an editable callsign,
+  Reveal in Finder, Delete to the Trash and Export. An optional export
+  folder with a `{date}`/`{time}`/`{mode}`/`{freq}`/`{call}` filename
+  template copies each new picture as it arrives, remembered per radio.
+  FTP/FTPS gallery upload is a later slice. (#268)
+- Light a control surface's strip buttons from the TX Input Mixer: a
+  data-driven `MixerLampLayout` maps strip mute (M) and Deck voice-over
+  ducking (S) to the Korg nanoKONTROL2's factory S/M/R CCs (32–39 / 48–55 /
+  64–71, LED Mode = External), sends only changed lamps through the existing
+  MIDI output port, rewrites every driven lamp on controller (re)connect and
+  darkens them on disable, quit and source loss. Off by default — enable it
+  under MIDI Controller → Controls → Mixer LEDs or in the nanoKONTROL2 sheet.
+  Output only: lamps cannot move a fader, select a source, arm, key or change
+  drive/policy. (#307)
+- Explain why a decoder shows nothing: a pure receive-path diagnosis
+  classifies the live state as disconnected (naming a denied Local Network
+  permission), no IQ, unsteady IQ stream, ADC overload, decoder paused,
+  wrong mode or band, clock offset, muted, squelched, quiet-but-healthy or
+  healthy, each with one sentence of evidence and one suggested action.
+  The verdict appears under the Digital Modes window header, as a short cue
+  beside the FT8/FT4 toggles when decoding is impaired, and in full with
+  its evidence line in About › Copy System Information. Muted and squelched
+  are notices only — decoders tap the audio ahead of those stages. Nothing
+  is fixed automatically; the guided setup flow is a later slice. See
+  `docs/ReceiveHealth.md`. (#311)
+- **Needed DX** (Log ▸ Needed DX): a live board that ranks DX cluster spots
+  and this receiver's own FT8/FT4 decodes against the logbook's award coverage
+  — new DXCC entity, CQ zone, state or grid; new band, mode or band+mode slot;
+  worked but unconfirmed — with a chip for every reason, a score, the age and
+  the best source (heard here outranks a human spot outranks a skimmer).
+  Sightings of one call/band/mode merge across feeds; stale spots decay after
+  two minutes and leave after thirty; unresolved and `/MM` calls stay unknown
+  rather than guessed. Scope, confirmation source, band/mode filters and a
+  minimum score are persisted; an optional watch toast fires once per
+  opportunity above a chosen score (off by default). A row click tunes like
+  the cluster or decode row it came from; nothing keys. The ranker is a pure,
+  fixture-tested package type (`NeededDXRanker`); `docs/NeededDX.md`
+  documents the points and the rules. (#312)
+- **APRS-IS Internet feed, read-only** (#325). Settings › Station gains an
+  off-by-default APRS-IS connection (`rotate.aprs2.net:14580` by default,
+  server/port editable) that logs in with passcode −1 — an unverified,
+  receive-only session — and a server-side filter built from the station
+  grid (`r/lat/lon/km`, radius 1–1000 km) plus an optional buddy list
+  (`b/CALL…`). The packets it streams run through the existing APRS parser
+  and land on the Stations Heard APRS layer tagged by provenance: green pins
+  heard off the air, violet pins relayed by APRS-IS, a violet ring when a
+  station was heard both ways, "heard on RF" / "via APRS-IS" with per-feed
+  counts in the hover; the same report arriving on the other feed within
+  60 s is one report, not two, and only RF ever sets a pin's dial and S/N.
+  An **APRS-IS** checkbox on the map hides Internet-only pins. The status
+  row shows connection, server, filter, packets per minute and total;
+  reconnects back off 2 → 60 s and a refused login stops rather than
+  retries. Privacy: the login line is the only thing the client can send —
+  there is one write in the client and a test pins it — nothing heard is
+  uploaded; the RF→Internet iGate upload is a later, separate opt-in.
+  `docs/APRSIS.md` documents the protocol sources, the filter and the
+  boundaries.
+- Add a native contest logger, first slice (Log → Contest): versioned,
+  data-driven rule sets for ARRL Field Day (class + ARRL/RAC section, dupes
+  per band per mode, CW/digital 2 points and phone 1, the ×5/×2/×1 power
+  multiplier) and CQ WW DX SSB / CW (RS(T) + CQ zone, dupes per band,
+  0/1/2/3 points by country and continent with the North America exception,
+  zones + countries per band), transcribed from the sponsors' published rules
+  with the URLs recorded; a persisted session with the station's sent
+  exchange, Start / End / Reopen, serial allocation that never reuses a
+  number; a keyboard-first entry row whose fields follow the rules (sections,
+  zones 1–40, classes and RST validated), a live DUPE indicator with the
+  earlier contact's time and a points / new-zone / new-country preview; the
+  running score, multipliers, total, hourly rate and a per-band table computed
+  off the main actor over the logbook's `CONTEST_ID` contacts, so edits and
+  deletions in the QSO Log change the score; a recent-contacts list; optional
+  MASTER.SCP Super Check Partial suggestions; and End contest → the existing
+  Cabrillo exporter with contest, mode, power, sent exchange and claimed score
+  prepared. Contest QSOs are ordinary logbook contacts in standard ADIF fields
+  (`CONTEST_ID`, `RST_SENT` / `RST_RCVD`, `STX` / `SRX`, `STX_STRING` /
+  `SRX_STRING`, `CLASS`, `ARRL_SECT`, `CQZ`, `MY_ARRL_SECT`, `MY_CQ_ZONE`);
+  the Cabrillo header gains a report-less QSO line layout for Field Day.
+  Log only: ESM / F-key message sending is a later, transmit-gated milestone.
+  See `docs/Contest.md`. (#316)
+- Add a local 6 m / VHF opening detector with explainable reception evidence:
+  header "Openings" chips for 10 m, 6 m, 2 m and 70 cm judge a 15-minute
+  rolling window of this station's own decodes (FT8/FT4, WSPR, JS8, every
+  heard-station source) and DX cluster spots (RBN grids kept on the spot)
+  into Disconnected / Feed quiet / Quiet / Insufficient / Opening / Strong
+  opening from data-driven per-band thresholds — distinct reporter→reported
+  paths over a minimum distance with an end near the station, distinct
+  stations (one far superstation never qualifies), at least one grid-located
+  path, rate — with hysteresis (held at least 5 min, exits at 60 % of the
+  entry count) and a feed-dead versus genuinely-quiet distinction (no decode
+  or spot of any kind for 10 min while connected). The chip popover lists the
+  paths, farthest station, Es/tropo distance buckets, compass sectors and
+  rate behind the call; an optional toast announces a band opening (off by
+  default). Sampled at 0.2 Hz on the main actor; receive only, nothing is
+  sent, nothing retunes. PSKReporter download is not an input yet (the app
+  only uploads). See docs/BandOpenings.md. (#313)
+- **Web console: the waterfall is drawn by the GPU.** The browser page's
+  waterfall is now a WebGL2 ring texture — each Control API spectrum row is
+  uploaded once as 8-bit dB bins (`texSubImage2D`), a write offset scrolls
+  the 512-row history and the fragment shader maps dB through a 256-entry
+  palette texture with the page's floor / top and draws the passband tint
+  and VFO line, so a row costs one upload and one triangle with no per-frame
+  allocation. The palette is the shack's own: `config.json` carries the
+  operator's static waterfall colormap (`palette`, 2–16 stops) and the page
+  embeds Classic as its default for procedural colormaps or older servers.
+  When `webgl2` is unavailable or the GPU context is lost, the same rows are
+  drawn from a CPU copy of the history with the 2D canvas, and the GPU takes
+  over again on `webglcontextrestored`; the side panel's **Waterfall** line
+  and `data-renderer` name the active path, `?renderer=canvas2d` forces the
+  fallback. Still no libraries, no transmit surface, no new gestures;
+  decoder panels remain a later slice. (#91)
+- **Diversity RX: Find null** (#294, first slice). The diversity panel gains a
+  Find null button: about ¾ s of both coherent ADC streams is captured ahead
+  of the combiner (bounded bank, copy-only on the packet thread, analysis on
+  a utility worker), and a pure closed-form estimator proposes the weight
+  that deepens everything outside the current passband while bounding the
+  passband's own loss to 3 dB. The preview shows the predicted noise depth,
+  the passband change and the weight, with coherence as the confidence gate
+  (an uncorrelated or silent second input yields no suggestion, never a
+  guess); Apply sends it through the existing polar-pad path and Restore
+  brings the previous weight back. Disabled while the transmitter is keyed
+  or PureSignal capture is armed; a retune, rate change, disconnect or a
+  hand on the pad stops a running capture. One-shot by design: continuous
+  tracking is a later slice. Synthetic two-antenna fixtures pin ≥ 20 dB of
+  noise reduction with ≤ 3 dB wanted-signal loss, the no-correlation and
+  silent-input refusals, |w| clipping to the pad, the wanted-signal guard,
+  bounded capture, late-worker rejection and the P2 pair tap. (#294)
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `a85ddf4b81e6608f3b0fbb2d70e86831ff9be6879fa882292bcbd325b0fe5461`.
 
 ## New in 2026.1101_001
 
@@ -1999,30 +2307,33 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | RTTY | 45.45/50/75/100 Bd · 170/200/425/850 Hz shifts · normal/reverse polarity · bounded AFC · one-click parameter auto-detect (tone pair, shift, baud, polarity, confidence) |
 | Contestia | 4–64 tones · 125–2000 Hz · Walsh-FEC block sync with S/N gating · normal/reverse · receive only |
 | NAVTEX / SITOR | 518 / 490 / 4209.5 kHz presets (USB, tone pair at the configured audio centre) · 100 Bd 170 Hz FSK with bit sync and bounded AFC · CCIR 476 4-of-7 · SITOR-B FEC (DX/RX time diversity, phasing, error marking) · SITOR-A ARQ listener (both sides of a simplex exchange, repeat suppression) · ZCZC … NNNN messages with station, subject and serial, the 4 % error criterion and 72 h duplicate suppression · now / next NAVAREA schedule · plain-text export · receive only |
-| Digital Modes | PSK31/63/125 · QPSK31/63/125 (upper/lower phase sense, receive only) · Olivia · MFSK16/32/64/128 (+ MFSK8/4) with fldigi picture reception — Shortwave Radiogram images paint in the window, auto-save as PNG and re-render with slant/shift · THOR · DominoEX · Hellschreiber · packet/APRS at 300 Bd (HF, 1600/1800 Hz) and 1200 Bd Bell 202 (1200/2200 Hz — 6 m APRS inside the radio's range, 2 m through a transverter profile) with the APRS fields parsed per the Protocol Reference 1.0.1 (uncompressed, compressed and Mic-E positions, timestamps, PHG, symbols, weather, messages/acks, objects/items, status, raw telemetry), a summary column in the panel and APRS stations with symbol and age on the heard map · GMDSS DSC (ITU-R M.493 100 Bd FSK on the six HF distress channels, DX/RX time diversity, every format specifier field-parsed with MMSI → country, per-radio searchable message database, coast-station summary, stations and reported positions on the heard map) · JS8 · WSPR · JT65 · JT9 · Q65 — one hosted decoder at a time, receive only |
+| Digital Modes | PSK31/63/125 · QPSK31/63/125 (upper/lower phase sense, receive only) · Olivia · MFSK16/32/64/128 (+ MFSK8/4) with fldigi picture reception — Shortwave Radiogram images paint in the window, auto-save as PNG and re-render with slant/shift · THOR · DominoEX · Hellschreiber · packet/APRS at 300 Bd (HF, 1600/1800 Hz) and 1200 Bd Bell 202 (1200/2200 Hz — 6 m APRS inside the radio's range, 2 m through a transverter profile) with the APRS fields parsed per the Protocol Reference 1.0.1 (uncompressed, compressed and Mic-E positions, timestamps, PHG, symbols, weather, messages/acks, objects/items, status, raw telemetry), a summary column in the panel and APRS stations with symbol and age on the heard map, plus an opt-in read-only APRS-IS Internet feed (passcode −1, login line only, never uploads) whose stations are labelled apart from the ones heard off the air · GMDSS DSC (ITU-R M.493 100 Bd FSK on the six HF distress channels, DX/RX time diversity, every format specifier field-parsed with MMSI → country, per-radio searchable message database, coast-station summary, stations and reported positions on the heard map) · JS8 (normal speed; the JS8 Conversations window assembles directed / multi-frame messages, relays, @groups, MSG / MSG TO:, queries, ACK and HEARING into threads, an inbox with unread badge and a heard roster, kept across launches, read-only) · WSPR · JT65 · JT9 · Q65 — one hosted decoder at a time, receive only |
 | Tone signalling | DTMF (ITU-T Q.23 pairs, Q.24 timing and twist limits: ≥ 40 ms accepted, ≤ 23 ms rejected, ≤ 10 ms interruption bridged, −8 … +4 dB twist) · ICAO SELCAL (Annex 10 Vol III Table 3-1, all 32 tones incl. SELCAL 32, two 1 s pulses with a 0.2 s gap → "AB-CD", crab / window watch alert) · EAS/SAME (47 CFR 11.31: 520.83 Bd AFSK 2083.3 / 1562.5 Hz, 0xAB preamble, ZCZC header voted over its three bursts, event / originator / state tables, NNNN end of message, 853 + 960 Hz and 1050 Hz attention signals) — Goertzel bank on the hosted-decoder thread, Decoder Activity sessions, waterfall marker per detection, bounded persisted log · receive only |
 | Decoder Activity | Live decoder status plus local recent-history search by mode, frequency and stored text, decoder/outcome filters, result counts and Reset; live sessions remain unfiltered |
+| Received images | Library of every SSTV / Weather Fax / MFSK picture the decoders save (#268): persisted metadata index (mode, submode, UTC, dial, receiver mode, radio, editable callsign, size), existing PNGs indexed on first launch, thumbnail grid with mode / date / text filters and sort, detail pane, Reveal in Finder, Delete to the Trash, Export selection · optional auto-export folder with a `{date}-{time}-{mode}-{freq}` filename template (UTC tokens, collision-safe suffixes), remembered per physical radio · receive only, no upload |
+| Receive health | Explains why a decoder shows nothing (#311): disconnected / Local Network denied, no IQ, unsteady IQ stream, ADC overload, decoder paused, wrong mode or band, clock offset, muted, squelched, quiet-but-healthy or healthy — one sentence of evidence plus one suggested action, shown under the Digital Modes header, as a cue beside the FT8/FT4 toggles and in full with its evidence line in About › Copy System Information · pure, fixture-tested, never fixes anything automatically |
 | Carrier Sleuth | Sub-hertz carrier waterfalls of a Band DVR segment or `.hiq` recording (#282): every 9 kHz (ITU R1/R3, LW + MW) or 10 kHz (R2) channel inside the recorded span, or a custom kHz list · ±50/±100/±150/±200 Hz per channel · one streamed pass channelises the file (1.46 Hz FFT bins, tapered bin selection, ~140–560 Hz per channel on disk), then Hann-windowed 2^14–2^24-point FFTs with ⅛×–8× speed-up give rows at 0.5 mHz–34 mHz resolution, max-pooled into 4096 columns (≤ 0.1 Hz) · hour / ten-minute / minute UTC markers from the recording clock, cursor Hz + UTC readout, Min/Max dB, detail view, per-channel notes, carrier-offset table (TSV), annotated PNG export and clipboard with the facts in the PNG Description · results cached under Application Support (512 MB, oldest-touched evicted, Clear Cache) keyed by file fingerprint + parameters · one private queue, bounded memory (≤ 256 MB of spectrogram rows, spill files for the decimated streams), cancel and progress; never touches the live chain |
 | CW | Adaptive 8–60 WPM decoder at a selectable 300–1000 Hz receive pitch (700 Hz default) · **OmniSkimmer**: GPU polyphase channelizer skims every CW signal across the whole span at once (~375 Hz bins, per-signal decoders, waterfall labels + panel) |
 | Receive DSP | Optional automatic AGC threshold from post-EQ noise, bounded slew and manual takeover · named receive DSP presets with preview and recoverable removal · single/double-pole CW audio peak filter and binaural CW |
-| Tuning & memories | Receive-only bookmark activity scanner: up to 32 named lists of 128 memories, power hold/hysteresis/hang, Skip/lockout, fresh tagged meters, guarded restore and explicit restart after interruption · Session-only SAT / reverse-SAT linked VFO tuning in displayed RF units, either dial leading, atomic range refusal and TX-active hold; portable validated whole/displayed bookmark JSON import/export and CSV spreadsheet export with duplicate-safe merge and local name/mode/frequency search with display-only sorting and in-place renaming; Band DVR segment/interval duration-size preview and export to standalone .hiq recordings outside the rolling shelf |
+| Tuning & memories | Receive-only bookmark activity scanner: up to 32 named lists of 128 memories, power hold/hysteresis/hang, Skip/lockout, fresh tagged meters, guarded restore and explicit restart after interruption · Session-only SAT / reverse-SAT linked VFO tuning in displayed RF units, either dial leading, atomic range refusal and TX-active hold; portable validated whole/displayed bookmark JSON import/export and CSV spreadsheet export with duplicate-safe merge and local name/mode/frequency search with display-only sorting and in-place renaming; [CHIRP generic CSV](docs/CHIRP.md) import with a pre-import preview (counts, keep / replace / add-both conflicts, lossy report) and whole/displayed export in CHIRP's own formatting — offsets and tones stored, never used to transmit; Band DVR segment/interval duration-size preview and export to standalone .hiq recordings outside the rolling shelf |
 | I/Q import | Third-party I/Q recordings open in replay, the time machine and Decode a Recording (#280): RIFF/WAVE with the RFSpace `auxi` chunk (SpectraVue, SdrDx, HDSDR, SDRuno, Elad SW2), SDR# and SDR++ file names, Perseus (`rcvr` chunk / name), KiwiSDR browser captures (`kiwi` GPS stamps / name) and any stereo WAV with an operator-entered centre and start kept in a `.hiqmeta` sidecar · 8/16/24/32-bit PCM and 32-bit float, WAVE_FORMAT_EXTENSIBLE accepted, RIFX/RF64 refused with a reason · streamed in 20 ms blocks, never loaded; resampled to the nearest 48 kHz × 2ⁿ chain rate · local SigMF sibling-pair interchange (#296): one fixed-rate complex channel, cf32_le / ci16_le, exact resampling, capture offsets and fractional UTC; selected .hiq / DVR interval export to cf32_le with RF-normalized transverter geometry, metadata preview and no personal metadata · `.hiq` stays the native format, unchanged |
 | CW keyer | Sample-clock keyer, straight / iambic A / iambic B · 5–80 WPM · 25–75 % weighting · paddle swap · 0–2000 ms TX hang · 200–1200 Hz sidetone riding the exact RF envelope · stuck-key watchdog (≤300 s, physical release to rearm) · keyboard paddles or hamlib CAT b / send_morse (≤256 bytes, CW mode only) — every key request goes through ARM + TXCoordinator |
 | ALE | 2G-ALE monitor (MIL-STD-188-141 8-FSK word decode, Golay FEC, self-sync), channel scanner with park-on-signal and a persisted heard log with link-quality scores · **ALE Skimmer** (#281): one decoder on every 500 Hz / 1 kHz channel across the whole sampled span (vDSP oversampled polyphase bank → 12 kHz USB audio per channel, energy + 8-tone-signature pre-gate, operator-bounded channel count and active decoders, CPU figure in the window), live from the radio or offline through Decode a Recording on any `.hiq` / Band DVR segment, every address group logged with its channel and UTC · folder watch: new IQ recordings in a chosen folder are skimmed one at a time with a text log per file; processed files kept, moved or deleted (off by default, confirmed once per session) · ALE Nets window: caller → called pairs, sounding counts, who-calls-whom nets and a per-address table from the heard log, CSV export · receive only |
 | Native transmit tools | Feld Hell text/raster preview and TX · live ALE caller/handshake · finite UTC WSPR schedules · session-approved Control API PTT/TUNE and 48 kHz microphone uplink · local ARM, coordinator ownership, dead-man leases and STOP · hardware acceptance pending |
 | TX policy | Operator policy checked in TXCoordinator for every request source (UI, CAT, hardware PTT, keyboard, system, native program, Control API) and kind (voice, CW, TUNE, two-tone, digital): IARU Region 1/2/3 or Custom tag as context only, one or more confirmed allowed ranges (inclusive bounds), Off / Warn / Inhibit enforcement, confirmation reset whenever region or ranges change, judged on the actual TX frequency (split/XIT, transverter RF) |
-| Spotting | DX cluster telnet client (multiple nodes at once, RBN-ready, waterfall labels + Times Square ticker) · LoTW user badges + TQSL sign-and-upload · PSKReporter uploads · live planetary K-index · NCDXF/IARU beacon tracker (18 beacons × 5 bands on the published 3-minute cycle: NOW label on the waterfall, countdown panel with click-to-listen, 24 h per-beacon S/N history from the spectrum, read by the band scout) |
+| Spotting | DX cluster telnet client (multiple nodes at once, RBN-ready, waterfall labels + Times Square ticker) · POTA / SOTA activator spots from the public api.pota.app and SOTAwatch feeds (opt-in, 90 s polling, worked-before badges from the log, click to tune + stage a hunt that writes POTA_REF / SOTA_REF on the next contact; [docs](docs/ParksAndSummits.md)) · [Needed DX](docs/NeededDX.md) board ranking live spots and local decodes against the log's award coverage, with reasons · LoTW user badges + TQSL sign-and-upload · PSKReporter uploads · live planetary K-index · local 6 m / VHF opening detector (header chips for 10 m, 6 m, 2 m, 70 cm judged from the last 15 min of own decodes + cluster spots: distinct paths, stations, Es/tropo distance buckets, directions, hysteresis, feed-dead vs quiet; evidence popover, optional toast, [how it judges](docs/BandOpenings.md)) · NCDXF/IARU beacon tracker (18 beacons × 5 bands on the published 3-minute cycle: NOW label on the waterfall, countdown panel with click-to-listen, 24 h per-beacon S/N history from the spectrum, read by the band scout) |
 | Shortwave schedules | EiBi broadcast database (bundled season, weekly refresh) · Shortwave Schedules window: search by station / kHz / UTC hour / ITU country / language / target, Now · Next · All, on-air rows in bold, utility rows tagged, favourites with a reminder five minutes before air (toast + crab line), double-click to tune in AM · on-air broadcaster labels on the panadapter (View menu; at most 24 in the visible span, favourites first, click to tune) · Crab `shortwave_schedule` answers "what is on the dial" and time-of-day questions |
 | Scheduled recording | Recording Schedule window (Radio menu): timed audio (WAV) / IQ (.hiq) / both captures by UTC time — daily, weekday set or one date — optional receive preset (dial + mode) applied at start and restored afterwards, file-size roll-over into numbered parts, next-run column, scheduler log, per-radio persistence · exact-once per occurrence from the 60 s clock; refused while the transmitter is armed, keyed or owned by a program or while a recorder is in use; a start missed while asleep is logged, never back-filled · crab `recording_schedule` ("record 9.420 MHz AM at 0300Z for 30 minutes", list / toggle / stop) |
 | MW stations | FCC AM Query extract (US Government public domain; fetched only on Refresh or by opt-in weekly refresh, cached under Application Support, never bundled) plus an optional operator CSV (MWList-style column names) · MW Stations window (Radio menu): fuzzy call-letter search (WBZZ finds WBZ), every station on a channel nearest the station grid first, city / state / licensee search, day / night power and directional flag, class, licence status, distance and bearing, Tune in AM, Plot on the Stations Heard map (at most 200 pins) · 9 / 10 kHz channel labels on the panadapter naming the likely station per channel (View menu; at most 24 in the visible span, nearest the display centre) · Crab `mw_station` answers "what's on 1030 kHz" and resolves misheard call letters |
 | Space weather | Header Kp + SFI chips · Space Weather window (Log menu) with NOAA SWPC public products: 3-hourly Kp, daily A-index and sunspot number, GOES X-ray flux + flare list, solar wind speed/density/Bz, proton and electron flux, R/S/G scales with three-day outlook, 27-day outlook, 45-day AP forecast, SWPC alert/watch/warning feed · one-month and one-day plots · twelve fixed HTTPS GETs hourly with per-product freshness limits (2 h minute products, 48 h daily, 10 d outlooks), stale or unreadable products show a dash · crab watches that fire once per event (flare ≥ class, Kp ≥ n, R/S/G ≥ n, proton event) with optional spoken alerts, off by default · the crab's `band_conditions` tool reads the same values |
-| Logbook | ADIF import/export with preserved fields · Cabrillo 3.0 contest export (persisted per-contest header, UTC day / saved-filter selection, flagged missing exchanges) · editing, bulk changes, saved filters and backups · precise LoTW contact matching · optional QRZ Logbook / eQSL / Club Log / Wavelog uploads (Keychain, durable bounded queue, per-contact receipts, manual selected/failed upload; off by default) · DXCC/WAS/grid coverage · interactive worked-world globe, gray line and local DX radar · QRZ.com / HamQTH callsign lookup that fills empty station fields on commit and from the editor (Keychain credentials, off by default) · 100,000-contact performance fixture · statistics window (contacts per UTC day / month / year, band, mode, DXCC entity and continent, worked versus confirmed, charts + tables, CSV) · 100,000-contact performance fixture |
-| Feature catalog | Searchable inventory of 93 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
-| Extras | Sub-RX (VFO B) · diversity RX (P2) · radio audio output — the receiver through the radio's own headphone / speaker jacks (ANAN Orion MkII on P2; HL2 / SquareSDR with the AK4951 audio codec companion board announced to the gateware on P1; both off by default and not yet verified on a radio) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT (LAN peers pair before tuning or keying) · Kenwood TS-2000 / PowerSDR-Thetis `ZZ` CAT emulation for loggers and digital programs (TCP, pseudo-terminal or serial adapter; receive-side command set, every keying or transmit-side command refused) · transverter profiles (IF→RF dial/CAT/log mapping with per-profile drive ceiling) · Speaker Tracker (local voiceprint clustering and naming of received voices, off by default) · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · named multi-radio instances + local Master/Follower microphone/Deck audio (independent ARM/PTT; hardware acceptance pending; [setup](docs/SharedProgram.md)) · MIDI controllers (any CoreMIDI source: learn-mapped encoders with speed acceleration, pickup knobs, Input Mixer faders/mutes/EQ/effect controls and nanoKONTROL2 profiles, pads on the Stream Deck action model; off by default, keying assignments work behind ARM and every interlock) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) · **MAGNET HF Emergency** (magnethf.com watch/net availability, native JS8 transmit verified against JS8Call 3.0.3, JS8Call API hand-off, CW auto-key, voice script) |
+| Logbook | ADIF import/export with preserved fields · Cabrillo 3.0 contest export (persisted per-contest header, UTC day / saved-filter selection, flagged missing exchanges) · editing, bulk changes, saved filters and backups · precise LoTW contact matching · optional QRZ Logbook / eQSL / Club Log / Wavelog uploads (Keychain, durable bounded queue, per-contact receipts, manual selected/failed upload; off by default) · DXCC/WAS/WAZ/grid coverage · interactive worked-world globe, gray line and local DX radar · QRZ.com / HamQTH callsign lookup that fills empty station fields on commit and from the editor (Keychain credentials, off by default) · 100,000-contact performance fixture · statistics window (contacts per UTC day / month / year, band, mode, DXCC entity, CQ zone and continent, worked versus confirmed, charts + tables, CSV) · 100,000-contact performance fixture · **Contest** window (log only): ARRL Field Day and CQ WW DX SSB / CW rule sets (versioned, data-driven), sent / received exchange fields that follow the rules with section, zone, class and RST validation, live DUPE indicator with the earlier contact's time, QSO points, multipliers, total, rate and a per-band table over the logbook's `CONTEST_ID` contacts (edits and deletions in the QSO Log change the score), serial allocation, optional MASTER.SCP Super Check Partial suggestions, End contest → Cabrillo export with the header prepared; no CW / voice message sending (`docs/Contest.md`) |
+| Feature catalog | Searchable inventory of 99 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
+| Extras | Sub-RX (VFO B) · diversity RX (P2, with a one-shot Find-null estimator: preview, Apply, Restore) · radio audio output — the receiver through the radio's own headphone / speaker jacks (ANAN Orion MkII on P2; HL2 / SquareSDR with the AK4951 audio codec companion board announced to the gateware on P1; both off by default and not yet verified on a radio) · N2ADR IO Board band-follow (HL2: the TX frequency written to the IO Board over the Protocol 1 I2C bridge so a serial- or band-data-wired amplifier follows the dial; off by default, never keys or changes drive; [setup](docs/HL2IOBoard.md)) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT (LAN peers pair before tuning or keying) · Kenwood TS-2000 / PowerSDR-Thetis `ZZ` CAT emulation for loggers and digital programs (TCP, pseudo-terminal or serial adapter; receive-side command set, every keying or transmit-side command refused) · transverter profiles (IF→RF dial/CAT/log mapping with per-profile drive ceiling) · Speaker Tracker (local voiceprint clustering and naming of received voices, off by default) · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · named multi-radio instances + local Master/Follower microphone/Deck audio (independent ARM/PTT; hardware acceptance pending; [setup](docs/SharedProgram.md)) · MIDI controllers (any CoreMIDI source: learn-mapped encoders with speed acceleration, pickup knobs, Input Mixer faders/mutes/EQ/effect controls, nanoKONTROL2 profiles with mute/ducking strip-LED feedback (off by default), pads on the Stream Deck action model; off by default, keying assignments work behind ARM and every interlock) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) · **MAGNET HF Emergency** (magnethf.com watch/net availability, native JS8 transmit verified against JS8Call 3.0.3, JS8Call API hand-off, CW auto-key, voice script) |
 | OC outputs | Per-band open-collector matrix for the accessory connector (OC1–OC7 × band for receive, transmit and TUNE, tune pulse timers), stored per physical radio · the receive row drives Protocol 1 register 0 C2 and Protocol 2 high-priority byte 1401 while receiving · keyed transmit and TUNE rows follow the coordinator, with tune pulse timers and filter-board pin merging · all-zero default is byte-identical to the previous wire |
 | Band data to station devices | HermitSDR plays the radio side of a CAT or logger link so an amplifier or tuner follows the dial (Station › Control Devices › Station Devices): VK-Amps "CAT Yaesu" (`FA…;` on a serial port, polls answered) and "CAT Icom" (CI-V transceive frames) band switching, a Kenwood TS-2000 stream, and the Palstar HF-AUTO through W1TR's HF Auto app as N1MM `RadioInfo` or `USERDOC` XML over UDP · RF-side (transverter-mapped) frequency, pushed on change and repeated each poll interval · no device feedback is interpreted, nothing keys the radio · fixture-verified against virtual devices; not yet tried on the hardware |
+| Amplifier drivers | Elecraft KPA500 over its rear RS232 PC port (38400 8N1, straight 9-pin cable or Elecraft's KUSB): firmware and serial identity, Operate / Standby, forward power and SWR, PA temperature and supply, band, and the `^FL` fault number with the owner's-manual meaning · a fault adds a TX inhibit until the amplifier clears it; the band command follows the radio's TX band once per band change, Set band holds until then · never keys, never clears a fault · simulator-verified; not yet tried on a KPA500 — RF2K-S and SPE native drivers still open (`docs/KPA500.md`) |
 | Logger broadcasts | WSJT-X UDP protocol output for GridTracker2, JT-Bridge, MacLoggerDX, RUMlogNG and any WSJT-X-aware logger — Heartbeat, Status, Decode (FT8 / FT4 only), Clear, QSO Logged, Logged ADIF, Close to a unicast host or a multicast group (127.0.0.1:2237 by default, multicast TTL 1), with optional inbound Reply (selects the decoded station exactly like a click on its row) and Halt Tx (the panel's STOP) · N1MM Logger+ `contactinfo` / `contactreplace` / `contactdelete` XML for every logged, edited or deleted contact (port 12060 by default; imports and restores excluded) · both off by default, one owning queue with a bounded send queue, nothing here can key or arm the radio (docs/LoggerBroadcasts.md) |
-| Web console | Browser receiver and remote console (#154, first slice of #91): one static page served by the overlay HTTP server at `/console`, pairing with the Control API over `wss://` with the same code, certificate and grants — panadapter + waterfall, S-meter, dial, 12 kHz receiver audio through Web Audio, click-to-tune, step / arrow keys, mode, filter presets and custom width/shift in Hz, bands, AGC, VFO A⇄B, phone-width layout · installable secure-origin PWA with a removable static offline shell (no cached receiver or pairing data) · browser-session cap (1–4) and optional time limit · no transmit control anywhere; off by default |
+| Web console | Browser receiver and remote console (#154, first slice of #91): one static page served by the overlay HTTP server at `/console`, pairing with the Control API over `wss://` with the same code, certificate and grants — panadapter + WebGL2 waterfall in the shack's palette (2D-canvas fallback), S-meter, dial, 12 kHz receiver audio through Web Audio, click-to-tune, step / arrow keys, mode, filter presets and custom width/shift in Hz, bands, AGC, VFO A⇄B, phone-width layout · installable secure-origin PWA with a removable static offline shell (no cached receiver or pairing data) · browser-session cap (1–4) and optional time limit · no transmit control anywhere; off by default |
 | Serial lines | USB-serial adapter modem-control lines as station I/O (#128): footswitch PTT and TX-inhibit inputs on CTS/DSR/DCD/RI, TX and TUNE outputs on DTR/RTS, 20 ms TIOCMGET poll with debounce, invert, lead/tail and pulse settings, reopen on loss, demo adapter · footswitch keys through the hardware-PTT path (ARM + coordinator, released on port loss / remap / quit) · inhibit input and lost port fold into the station interlock · TX line follows the coordinator with lead/tail, TUNE line pulses |
 | Platform | macOS 15+, Apple silicon only |
 

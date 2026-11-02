@@ -4,7 +4,8 @@ Available in **2026.0904_002**.
 
 Open **Log → QSO Log**. The workspace supports adding and editing contacts,
 ADIF import with a preview, selected-contact bulk changes/deletion, saved filters,
-and full/filtered/selected ADIF export plus [Cabrillo 3.0 contest export](#cabrillo-export). **Awards…** uses a snapshot of the current
+and full/filtered/selected ADIF export plus [Cabrillo 3.0 contest export](#cabrillo-export). **Log → Contest** is the log-only
+[contest logger](Contest.md) that scores the logbook's `CONTEST_ID` contacts. **Awards…** uses a snapshot of the current
 filtered results; see [Awards.md](Awards.md). **World & radar…** opens the live
 [worked-world view](WorkedWorld.md) with its own filters. **Statistics…** opens
 the live [statistics window](#statistics).
@@ -21,6 +22,15 @@ uploads, off by default, with Keychain credentials and per-contact receipts.
 New contacts upload after the local disk save; imports/restores stay local.
 Selected-contact upload, bounded retries and interrupted-delivery review are
 in [QSOUploads.md](QSOUploads.md). LoTW behavior is unchanged.
+
+## Park and summit references
+
+**Log → Parks & Summits** lists POTA and SOTA activators from the programs'
+public spot feeds and stages a one-contact hunt on click; the next contact
+with that activator carries `POTA_REF` / `SOTA_REF`, and your own activation
+reference from Settings → Station rides as `MY_POTA_REF` / `MY_SOTA_REF`. All
+four fields are in the contact editor and survive import, edit, export and
+the online uploads. See [ParksAndSummits.md](ParksAndSummits.md).
 
 ## Import and preservation
 
@@ -127,10 +137,11 @@ fixture: `CabrilloExportTests`.
 Available in the release after **2026.1020_001** (#270). **Statistics…** in the
 QSO Log opens a window with one chart and one table per breakdown: contacts per
 **UTC day**, **month** and **year**, per **band**, per **mode** (ADIF mode, so
-USB/LSB count as SSB and SAM as AM, as in the award matrix), per **DXCC entity**
-and per **continent**, each split into confirmed and unconfirmed contacts. Six
-cards summarise contacts, confirmed share, unconfirmed, active days with the
-first → last UTC span, resolved entities and continents.
+USB/LSB count as SSB and SAM as AM, as in the award matrix), per **DXCC entity**,
+per **CQ zone** and per **continent**, each split into confirmed and unconfirmed
+contacts. Seven cards summarise contacts, confirmed share, unconfirmed, active
+days with the first → last UTC span, resolved entities, CQ zones of 40 and
+continents.
 
 **Scope.** *Current filter* applies the workspace query exactly as the table
 shows it (search, band, mode, QSL, UTC dates); *Full log* ignores it; any
@@ -146,17 +157,19 @@ locale; a contact at 23:59:59Z and one at 00:00:00Z fall in different days,
 months or years exactly as ADIF `QSO_DATE` would place them. DXCC follows the
 awards rules: an explicit ADIF `DXCC` code wins (named from the bundled entity
 table; an unknown code is shown as `DXCC <code>`), `/MM` and `/AM` are in no
-entity, otherwise the installed `cty.dat` infers the entity. Continents come
-from the country file's header for each callsign (`NA`, `EU`, …); without a
-country file every continent is *Unknown*. Unresolved entities and unknown
-continents are counted in their own trailing row so each table sums to the
-contact count.
+entity, otherwise the installed `cty.dat` infers the entity. CQ zones follow the
+[WAZ rules](Awards.md#waz-cq-zones): a recorded `CQZ` wins, an invalid one is
+unknown, otherwise the country file's zone for the call with its prefix
+overrides. Continents come from the country file's header for each callsign
+(`NA`, `EU`, …); without a country file every continent is *Unknown*.
+Unresolved entities, unknown zones and unknown continents are counted in their
+own trailing row so each table sums to the contact count.
 
 **Charts and tables.** Native Swift Charts in the active palette (Light and
 Dark): days as two lines (contacts, confirmed) over a UTC date axis, the other
 breakdowns as stacked confirmed / unconfirmed bars in the table's order (bands by
-frequency, modes alphabetically, entities and continents by count; the entity
-chart shows the top 30). The table beneath lists every row with contacts,
+frequency, modes alphabetically, entities, zones and continents by count; the
+entity chart shows the top 30, entities and zones as horizontal bars). The table beneath lists every row with contacts,
 confirmed, unconfirmed and share, 500 rows per page.
 
 **Export CSV…** writes one table through the save panel:

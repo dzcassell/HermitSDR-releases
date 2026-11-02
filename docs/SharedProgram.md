@@ -65,7 +65,7 @@ conversion to the 48-kHz program rate. It does not change the hardware rate.
 
 Discovery probes can interrupt an active ANAN stream or steal its firmware's source-port ownership. While any local HermitSDR instance owns a radio, the other instances pause broadcast/fallback discovery and show **Known radio** entries from an earlier scan. Use the radio's IP address if it is missing, or disconnect all copies briefly to rescan. These cached entries do not prove a radio is still reachable.
 
-Two instances cannot claim the same radio, including known MAC aliases. A local instance also cannot release or change the network settings of a radio owned by another instance. Disconnect it in that instance first. These protections coordinate this version's copies; close older versions before setting up multiple instances.
+Two instances cannot claim the same radio, including known MAC aliases and manual-host aliases: a typed hostname such as `anan.local` is resolved to its addresses when the lock is taken (bounded to about a second), and the lock covers the name, every resolved address and the MAC when the radio reported one. A copy connecting to `anan.local` and another connecting to that radio's IP therefore collide, as do two copies that give the same radio an empty MAC. A name that does not resolve within the bound is locked by its text alone. A local instance also cannot release or change the network settings of a radio owned by another instance. Disconnect it in that instance first. These protections coordinate this version's copies; close older versions before setting up multiple instances.
 
 ## Separate profiles
 

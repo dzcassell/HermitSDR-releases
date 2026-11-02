@@ -26,8 +26,11 @@ Please read this before relying on anything here.
   HermitSDR client (`--selftest`). The fake server's replies were written from
   the Expert Amp Server source code at version 0.4.8.
 - **Nobody has yet run the bridge against a real Expert Amp Server, a real SPE
-  amplifier, or the HermitSDR app itself.** No real amplifier driver ships in
-  HermitSDR today; the reference driver is the only one.
+  amplifier, or the HermitSDR app itself.** One vendor driver ships beside the
+  reference driver: the Elecraft KPA500 serial driver described in
+  [KPA500.md](KPA500.md) (also simulator-verified only). For every other
+  amplifier the reference driver, and a bridge like the one below, is the way
+  in.
 
 Reports from real stations are what this needs next. Please send them to
 <https://github.com/dzcassell/HermitSDR-releases/issues>.
@@ -50,8 +53,9 @@ lines below, and listens on a TCP port. HermitSDR needs no changes.
 2. Press **Add…**. A sheet titled "Add station device" appears.
 3. Fill in the sheet:
    - **Name**: anything you like, for example `SPE Expert`.
-   - **Driver**: `Reference amplifier (line protocol) (Amplifier)`. It is the
-     only choice at present.
+   - **Driver**: `Reference amplifier (line protocol) (Amplifier)`. The other
+     choices are the Elecraft KPA500 driver ([KPA500.md](KPA500.md)) and the
+     band-data drivers that feed the dial to a box which reports nothing back.
    - **Kind**: leave it at Amplifier. The kind decides how alarms are treated;
      see "What each value does" below.
    - **Expected model**: leave this blank the first time. If you fill it in

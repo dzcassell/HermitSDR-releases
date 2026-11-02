@@ -92,7 +92,13 @@ Start again and check privately before readmitting guests. Refresh devices while
 stopped if a device is missing. A silent source can legitimately show no level;
 check the calling app's mute/speaker selection and channel. The receive return is
 tapped after keyed receive mute, before Deck, CW sidetone and TX monitor, so none
-of those can feed a caller back into itself. Use headphones to prevent acoustic
+of those can feed a caller back into itself. That 12 kHz receiver mix reaches the
+48 kHz return through a 256-tap polyphase interpolator: flat to about 5 kHz, with
+every image at least 60 dB down and a fixed 2.7 ms filter delay. The receiver
+delivers audio in blocks of roughly 43 ms, so the return holds one such block plus
+10 ms (about 55 ms) before it starts and keeps that cushion while playing; a
+late block plays silence and the cushion rebuilds rather than a partial block
+being padded. Use headphones to prevent acoustic
 feedback; software routing cannot prevent a loudspeaker feeding your microphone.
 
 Software fixtures validate routing, privacy epochs, persistence migration,
