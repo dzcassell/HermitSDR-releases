@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>HermitSDR Tab Audio</title>
+<style>
+:root { color-scheme: dark; font: 13px/1.45 system-ui, sans-serif; background: #0f0f1a; color: #c8d8e8; }
+body { width: 340px; margin: 0; padding: 16px; }
+h1 { font-size: 16px; color: #00b4d8; margin: 0 0 12px; }
+label { display: block; margin-top: 12px; }
+input[type=text], input[type=password] { box-sizing: border-box; width: 100%; margin-top: 4px; padding: 8px; background: #0a0a18; border: 1px solid #1e2e3e; color: inherit; }
+input[type=range] { width: 100%; accent-color: #00b4d8; }
+button { padding: 9px 12px; color: inherit; background: #1a2a3a; border: 1px solid #3a4a5a; cursor: pointer; border-radius: 2px; }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible, input:focus-visible { outline: 2px solid #00b4d8; outline-offset: 2px; }
+.row { display: flex; gap: 8px; margin: 12px 0; } .row button { flex: 1; }
+#start { background: #8b2338; } #stop { border-color: #e44757; }
+small { display: block; margin-top: 8px; color: #8ea8c0; }
+#status { min-height: 60px; white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 12px; }
+progress { width: 100%; height: 10px; accent-color: #00b4d8; }
+</style>
+<h1>HermitSDR · Tab → Radio</h1>
+<label for="host">Shack host and Control API port</label>
+<input id="host" type="text" placeholder="192.168.1.20:4996" spellcheck="false" autocomplete="off">
+<label for="code">Pairing code</label>
+<input id="code" type="password" placeholder="Settings → Control API" autocomplete="off">
+<small>The code is used once and is never saved.</small>
+<div class="row"><button id="connect" disabled>Pair with station</button><button id="certificate">Certificate…</button></div>
+<small>After pairing, ARM in HermitSDR TX Controls and enable “Allow TX this session” in Settings → Control API.</small>
+<label for="gain">Tab gain · <output id="gain-value">100%</output></label>
+<input id="gain" type="range" min="0" max="300" value="100">
+<label><input id="monitor" type="checkbox" checked> Keep playing audio locally</label>
+<div class="row"><button id="start" disabled>Transmit this tab</button><button id="stop" disabled>Stop / disconnect</button></div>
+<progress id="meter" max="1" value="0" aria-label="Tab audio peak"></progress>
+<div id="status" role="status" aria-live="polite">Disconnected</div>
+<small>There is no transmission-duration limit. Closing this popup keeps streaming. Stop here or disarm at the shack.</small>
+<script type="module" src="popup.js"></script>
+</html>

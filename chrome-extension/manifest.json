@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "minimum_chrome_version": "116",
+  "name": "HermitSDR Tab Audio",
+  "version": "1.0.0",
+  "description": "Pair with HermitSDR on your LAN and transmit a selected tab's audio with local operator approval.",
+  "permissions": ["activeTab", "tabCapture", "offscreen", "storage"],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": { "default_title": "HermitSDR Tab Audio", "default_popup": "popup.html" }
+}

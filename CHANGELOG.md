@@ -7,6 +7,41 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1103_001] — 2026-11-03
+
+### Features
+
+- **HermitSDR Tab Audio**: a Chrome 116+ extension captures the selected tab on
+  another LAN computer and streams 48 kHz mono audio into the native TX chain.
+  Uses the existing TLS Control API, HMAC pairing, local ARM and per-session
+  TX approval, with tab gain, local monitoring, peak meter and explicit Stop.
+  Available as an unpacked-extension ZIP beside the DMG; setup in
+  `docs/BrowserTabAudio.md`. The receive-only Web console is unchanged. (#333)
+- **No remote stream duration limit**, as requested by the operator. Removed
+  the Control API's former 60-second voice/program cutoff; neither the server
+  nor extension imposes a timed cutoff or silence/VOX duration cutoff. Lease,
+  audio-stall, ownership, session and transmitter protection remain active;
+  loss/refusal never auto-reconnects or re-keys. The separate, explicitly
+  requested TUNE test tone retains its requested completion time.
+
+### Fixes
+
+- Tab capture rejects delayed end/start callbacks from previous captures, so
+  an old stream cannot stop its replacement after a manual reconnect.
+- Control API client disconnects now remove their session TX approval and
+  notify the remote TX owner immediately, matching server-initiated closure.
+  The wire lease remains the independent fallback for a stalled UI.
+
+### Verification
+
+- Extension protocol/worklet and failure/cancellation fixtures; real unpacked
+  Chrome tab capture, gain and Stop cleanup on a synthetic-tone tab; production
+  TLS server and remote TX controller with inert coordinator ports and synthetic
+  PCM; simulated four-hour host renewals pin the absence of a duration cap.
+  The Chrome fixture waits for committed navigation before requesting its
+  temporary tab grant, including in launch-agent CI. Physical cross-LAN capture
+  and dummy-load RF remain operator acceptance.
+
 ## [2026.1102_002] — 2026-11-02
 
 ### Features

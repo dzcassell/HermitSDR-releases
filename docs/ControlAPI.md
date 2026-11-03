@@ -384,9 +384,11 @@ clients remain compatible; `apiVersion` stays 1, `apiRevision` is 3.
 
 Normal `id`/`ack`/typed `error` behavior applies. Settings edits require an idle
 transmitter. ARM, policy, calibration, profile, station, protection and ownership
-checks remain authoritative. CW microphone keying is refused. A single over
-is capped at 60 seconds. Requests older than 150 ms are refused rather than
-turning a delayed command into a fresh lease. Deadlines use the receive
+checks remain authoritative. CW microphone keying is refused. Streaming
+microphone/program audio has no elapsed-duration limit. It continues while its session is approved and its audio and lease stay healthy. The
+explicitly requested `txTune` test tone ends after its requested duration.
+Requests older than 150 ms are refused rather than turning a delayed command
+into a fresh lease. Deadlines use the receive
 monotonic timestamp plus 450 ms, not the time the main actor processes them.
 The radio protocol queue checks the lease every 20 ms and can drop MOX even
 while the UI is stalled; it can never grant a key. Remote ARM is unavailable.

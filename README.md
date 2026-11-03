@@ -36,7 +36,28 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1102_002** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1103_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1103_001
+
+- **HermitSDR Tab Audio**: a Chrome 116+ extension captures the selected tab on
+  another LAN computer and streams 48 kHz mono audio into the native TX chain.
+  Uses the existing TLS Control API, HMAC pairing, local ARM and per-session
+  TX approval, with tab gain, local monitoring, peak meter and explicit Stop.
+  Available as an unpacked-extension ZIP beside the DMG; setup in
+  `docs/BrowserTabAudio.md`. The receive-only Web console is unchanged. (#333)
+- **No remote stream duration limit**, as requested by the operator. Removed
+  the Control API's former 60-second voice/program cutoff; neither the server
+  nor extension imposes a timed cutoff or silence/VOX duration cutoff. Lease,
+  audio-stall, ownership, session and transmitter protection remain active;
+  loss/refusal never auto-reconnects or re-keys. The separate, explicitly
+  requested TUNE test tone retains its requested completion time.
+- Tab capture rejects delayed end/start callbacks from previous captures, so
+  an old stream cannot stop its replacement after a manual reconnect.
+- Control API client disconnects now remove their session TX approval and
+  notify the remote TX owner immediately, matching server-initiated closure.
+  The wire lease remains the independent fallback for a stalled UI.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `79179a255d8b779bb8c37f621f4dc39109e44ba2c4dce99d5e75a398a8b6914e`.
 
 ## New in 2026.1102_002
 
