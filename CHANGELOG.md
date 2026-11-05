@@ -7,6 +7,45 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1105_001] — 2026-11-05
+
+### Fixes
+
+- Show whole seconds in the console clock and avoid recursive native slider
+  sizing. Use one scrollable tuning bank at a time to reduce console layout work.
+
+### Performance
+
+- Limit the spectrum persistence texture and decay pass to the part of the
+  display that draws the spectrum trace.
+- Use Accelerate's in-place transform for receive-side RSID detection.
+- Decimate remote spectrum rows on the Control API server queue, freeing
+  the receive DSP thread to return as soon as it hands off the row.
+
+## [2026.1104_001] — 2026-11-04
+
+### Fixes
+
+- Updater rollback smoke waits up to four monotonic seconds for its exact
+  acknowledged child to exit before asserting absence. It sends no extra
+  signal, retains all acknowledgement/stage/recovery assertions, and leaves
+  the production helper and frozen startup-health timeout unchanged. (#334)
+
+### Engineering
+
+- Extracted the receive decoder fleet and raw-demod dispatch into independent,
+  compiler-checked `DecoderEngineService`; the engine retains compatibility
+  accessors and session-generation admission. (#60)
+- QRSS analysis now owns its non-Sendable FFT/filter/history state through a
+  compiler-enforced worker gate, separate from its bounded audio inbox. Frame
+  callbacks run after releasing gates. SDRplay helper pipe lifecycle uses a
+  typed closed-state gate, with compiler-checked Sendable conformance. The
+  unchecked-conformance ceiling falls from 48 to 46. (#61)
+- Added actual-process updater acknowledgement/exit and helper-channel tests,
+  decoder-fleet isolation/corrupt-input tests and QRSS concurrency stress.
+  Extended sanitizer jobs include the new ownership fixtures. The broader
+  architecture and concurrency issues remain open.
+
 ## [2026.1103_001] — 2026-11-03
 
 ### Features

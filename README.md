@@ -36,7 +36,13 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1103_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1105_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1105_001
+
+- Show whole seconds in the console clock and avoid recursive native slider
+  sizing. Use one scrollable tuning bank at a time to reduce console layout work.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `389bab587750edb7332c3062b1e1b2162a6a15b96f26b5c3bf90f98605468b42`.
 
 ## New in 2026.1103_001
 
