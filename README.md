@@ -25,11 +25,6 @@ there under View → Appearance → Console Layout (untick it).
 The [UI design brief](docs/UI_DESIGN.md) and
 [implementation roadmap](docs/UI_IMPLEMENTATION_ROADMAP.md) describe the goal.
 
-> **Availability**: HermitSDR is not made available for use in the
-> Russian Federation while Russia's war against Ukraine continues. The
-> app checks the system region/timezone at startup and declines to run —
-> an offline check by design (nothing phones home). Слава Україні. 🇺🇦
-
 Receive *and transmit* are live-proven on **both protocols**, and the first
 on-air QSOs are in the log (WU1T ↔ KA3MAJ, W8NGA, KN1B and KJ5DZV, FT8, 40 m, 2026-09-14/15): the Hermes-Lite 2 and the
 ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,

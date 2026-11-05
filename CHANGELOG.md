@@ -10953,13 +10953,8 @@ Waterfall palettes (more colors, and *moving* colors):
 ## [7.20] — 2026-07-19
 
 **The waterfall generation**: resolution, smoothness, and a GPU post
-chain — plus region availability policy and a Discord snapshot command.
+chain and a Discord snapshot command.
 
-- **Region availability** (`App/RegionGate.swift`): the app declines to
-  run in the Russian Federation (system region or a Russian timezone)
-  while Russia's war against Ukraine continues. Deliberately offline —
-  reads local settings only, nothing phones home; trivially bypassed by
-  changing the locale, and that's accepted: it's a statement, not DRM.
 - **Discord /waterfall**: new slash command snapshots the panadapter and
   posts the PNG to the configured text channel (reuses the existing
   capture + multipart-upload path).
