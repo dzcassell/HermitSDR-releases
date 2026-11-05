@@ -7,6 +7,70 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1105_002] — 2026-11-05
+
+### Added
+
+- Run offline SSB profile experiments from an agent-authored recipe and export
+  level-matched clips and measurements.
+- Record and export recent waterfall, spectrum, link and audio diagnostics from
+  the Performance window.
+- Scan saved IQ with a declarative receive recipe and export signal evidence
+  for agent review. Include a shareable HermitSDR lab skill.
+- Share receive and transmit settings, offline SSB experiment metrics, marked waterfall
+  diagnostics and completed receive-watch summaries with local MCP clients.
+  Each share is explicit, expires and can be revoked.
+- Preview receive watch recipes on saved IQ and run them on the live receive
+  span. Optional local IQ excerpts capture the start of a detection.
+- Compare up to four decoder trials on a recording and export the resulting
+  transcript, decoded messages and session evidence.
+- Compare exported TX latency maps and loopback runs, and analyze synchronized
+  stereo reference and return recordings with optional calibration. (#25)
+- Manage DXpedition plans in UTC, compare them with log and cluster evidence,
+  and refresh the afu.tools calendar on demand. Plans can be exchanged as JSON
+  or iCalendar files. (#315)
+- Import HF path prediction tables alongside observed cluster activity and
+  export point-to-point inputs for a separately installed P.533 solver. (#314)
+- Merge Field Day position journals into a club scoreboard, sync them with an
+  encrypted private-LAN host, and export a read-only page for a browser or TV.
+  (#317)
+- Plan true short- and long-path antenna bearings from grid locators and
+  request a read-only rotctld position. (#320)
+- Import station-specific LEO satellite pass predictions, with UTC windows,
+  orbital element provenance and a sky plot. (#319)
+- Audition agent-authored SSB recipes in the app, including optional
+  parametric EQ and single-band compressor settings.
+- Review waterfall timing near a marked incident and reopen saved cases
+  directly in the Performance window.
+- Create and edit receive watch recipes locally, open saved session reports,
+  and compare decoders on the selected interval of a recording.
+- Decode RDS station metadata from an offline FM multiplex WAV or HermitSDR
+  IQ recording. (#121)
+- Select multiple MIDI controllers and learn device-specific controls, so two
+  controllers can use the same channel and control number independently.
+  Route lamp updates to the paired device and preserve shared keying mappings.
+
+### Fixes
+
+- Localize menu titles, key commands, Set Frequency and radio connection labels
+  in 40 locales, with English as the default. Wrap longer connection labels
+  onto two rows. Accept regional decimal separators and Unicode digits when
+  tuning.
+- Ask The Crab reviews the configured SSB transmit audio chain without
+  changing radio settings. Advice requests cannot run control setters.
+- App Audio distinguishes waiting, silence and signal. Route selection
+  checks the process launch identity as well as its PID. (#329)
+
+### Performance
+
+- Keep AppKit responsive when all Metal staging buffers are busy. The
+  waterfall drains pending rows on subsequent frames and records skipped
+  draws in the flight recorder.
+- Average FFT bins in reusable storage and rotate only emitted spectrum rows.
+- Save waterfall zoom once the glide settles, and sample CPU and GPU usage
+  without enumerating threads or copying the GPU registry.
+- Coalesce history resize requests and release obsolete Metal shift storage.
+
 ## [2026.1105_001] — 2026-11-05
 
 ### Fixes

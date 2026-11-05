@@ -141,7 +141,50 @@ the sponsor's template
 
 ESM / F-key message sending (CW or voice), Winter Field Day, a shipped
 serial-number contest (CQ WPX), assisted/unassisted controls beyond the
-Cabrillo header, call-history files, multi-operator networking, per-radio
+Cabrillo header, call-history files, shared serial allocation, per-radio
 contest profiles and restoring pre-contest receiver settings on exit.
 
 Regression fixture: `ContestRulesTests`.
+
+## Club Field Day scoreboard
+
+Use **Log → Club Field Day Scoreboard** with the same shared session key,
+rule edition and power category at each position. Give each position a
+different label. Start the local Field Day session before exporting its
+journal. A later export from the same position records edits and
+retractions, and extends the previous journal.
+
+Use **Combine Journals** to merge copies. The scoreboard uses the longest
+compatible history for each position. It rejects divergent histories and
+counts a repeated call on the same band and mode according to the Field Day
+dupe rule. The result is a QSO score. Field Day bonus points are separate.
+
+Export JSON for further analysis or **HTML for Browser** for a read-only
+snapshot containing the aggregate and position counts. The HTML carries no
+calls, contact times or session key. Journal files carry contact data and
+are exchanged manually.
+
+### Private LAN sync
+
+Open **Club Scoreboard → LAN Journal Sync** on each Mac. Agree on a session
+key, rule edition and power category. Enter a different position name at
+each Mac. At the host, enter the Mac’s private IP address and choose
+**Start Host**. The default port is 7347. The host listens on that address
+while the separate Scoreboard window is open. You can continue logging in
+the Contest window.
+
+Copy the invitation and share it privately with trusted participants.
+A guest enters the host address, port and invitation, then chooses
+**Join / Sync Now**. On the host, **Publish Local Changes** publishes the
+host position’s own edits. Each sync sends the selected Field Day position’s
+journal and returns the shared aggregate score. Every invited position
+can receive the club’s contact journals. Invitations expire when the host
+stops, and a new host run generates a new invitation.
+
+The host stores accepted journals separately from the radio log and retains
+them across restart. If the network drops, keep logging on each Mac and sync
+again later. Retries of the same journal are safe. Positions can edit or
+retract their contacts. Conflicting copies of one position’s history and
+incompatible sessions are refused. Use **Export Scoreboard → HTML for
+Browser** for a read-only TV or browser snapshot. Field Day has no shared
+serial-number allocation. Other contest categories do not appear in LAN sync.

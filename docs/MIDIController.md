@@ -18,13 +18,13 @@ radio-side executor. Only the last of those can touch the radio.
    **Enabled** on. The switch is persisted (`midiOn`) and defaults to off.
    Every MIDI source on the Mac is listed under *Sources*; the status line
    reads `connected: <names>` for the ones the filter accepts.
-3. If more than one source is present, type part of the controller's name
-   in the **source filter** and Apply, and pick a **channel** if the
-   controller can be set to one — a music keyboard on the same Mac must
-   not tune the radio.
-4. Press **Learn new control**, then move ONE control. A row appears
-   labelled with its channel and number (`ch 1 CC 16`, `ch 10 note 36
-   (C2)`, `ch 1 pitch bend`). The row's mode is guessed from the message:
+3. Choose **Choose input devices** in *Sources* and check each controller
+   you want to use together. The optional name and channel filters still
+   apply. Turn off **Choose input devices** to return to the automatic list.
+4. Press **Learn new control**, then move ONE control. The row shows the
+   device and the channel and number (for example, `ch 1 CC 16`). Two
+   devices can use the same channel and number for different actions.
+   The mode is guessed from the message:
    a note is a **Button**; a CC whose first value is 1/127 or 63/65 is an
    **Endless encoder** (with the encoding guessed to match); any other CC
    or a pitch wheel is a **Knob / fader**.
@@ -33,6 +33,16 @@ radio-side executor. Only the last of those can touch the radio.
    one way, or jumps, has the wrong encoding).
 6. Watch *Live input*: it prints every message the controller sends,
    whether it was mapped, and the receipt of what the radio did.
+
+**Learn shared control** creates the original kind of mapping, usable from
+all eligible devices. Existing mappings and imported presets are shared.
+Device-specific mappings use the Mac’s CoreMIDI endpoint ID. Relearn them
+if you move the profile to a Mac that assigns different IDs. A device-specific
+row normally takes precedence for its own device. PTT,
+TUNE, MOX, CW paddles, and Media Deck playback stay on the shared mapping
+path. A shared keying or playback mapping takes precedence on its control
+number, including when a device-specific row also uses that number. Use the
+source selection to limit which devices can send shared controls.
 
 ## What a control does
 
@@ -179,15 +189,14 @@ colour index); 127 is a safe default.
   Lamp row, or when nothing is active: an idle launch sends no message at
   all. Only CHANGES go out (a diff against what was last sent), coalesced
   80 ms after a state change, so a meter tick costs no MIDI traffic.
-- **Where it goes.** The transport opens one output port and pairs
-  destinations by name: a destination named like a connected source (a
-  USB controller presents both under its name), or, when a source filter
-  is set, any destination the filter matches. With no filter and no
-  connected source nothing is paired, so a synth on the same Mac never
-  hears the radio. The status line reads `connected: … · lamps → <names>`;
+- **Where it goes.** Each connected input gets at most one output. The
+  transport prefers a unique output on the same CoreMIDI entity, then a
+  unique exact name match. With one input, the name filter can also select
+  a single output. Ambiguous routes are left unpaired. The status line reads
+  `connected: … · lamps → <names>`;
   the Controls panel warns when Lamp rows exist but no output is paired.
 - **Loss and disable.** Switching Enabled off, quitting, or losing the
-  source clears every lit lamp (one note-off each, sent while the paired
+  source clears affected lamps (one note-off each, sent while the paired
   output is still present), and a source that reappears is relit from
   scratch — the hardware powered up dark. A send that fails is logged and
   the destination dropped until the next hot-plug rescan; there is no
@@ -238,7 +247,9 @@ strip's mute.
 - **Only changes go out.** The pure `MixerLampFeedback` diffs the mixer's
   mute/duck snapshot against what was last sent, coalesced with the row
   lamps 80 ms after a state change; an idle mixer costs no MIDI traffic.
-- **Resync on connect.** When the source (re)connects, every driven lamp is
+- **Resync on connect.** The mixer lamp layout uses one paired controller.
+  If several are paired, exactly one must identify as a nanoKONTROL2 for
+  strip lamps to be sent. When the target connects, every driven lamp is
   written once explicitly — on or off — so an LED left lit by an earlier
   session cannot survive; after that only changes are sent.
 - **Quiet when off.** Nothing is sent while MIDI is disabled, with the

@@ -34,6 +34,23 @@ calibration, arbitrary file import, account setup and final social publishing
 continue in their native interfaces. Unknown IDs return a refusal. No shell,
 arbitrary defaults writes, KVC, secret reads or synthetic UI clicks are exposed.
 
+## Reviewing SSB audio
+
+“Review my SSB transmit configuration and suggest tweaks for muddy audio”
+runs an English-language, read-only review of the configured input, voice
+profile, passband and EQ. The report gives a small adjustment to audition
+and identifies the settings behind it. Use a matched playback level in
+the [SSB Profile Laboratory](SSBProfileLaboratory.md) to compare recordings.
+
+The review reads settings directly. It has no measurement of the signal
+at the receiving station. Use an actual recording or a monitored comparison
+to evaluate the effect. The app's on-device model can summarize supplied
+facts and work with narrow tools. Apple recommends a larger model when a
+task requires more reasoning or context. The local MCP interface makes
+selected, expiring evidence available to a compatible desktop client.
+[Apple Foundation Models](https://developer.apple.com/documentation/foundationmodels) ·
+[Local MCP](LocalMCP.md)
+
 ## YouTube and transmission
 
 “Play this YouTube video audio over the air [URL]” is handled before either
