@@ -7,6 +7,19 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1106_001] — 2026-11-06
+
+### Added
+
+- Discover and receive from the FLEX-8400 over SmartSDR DAX IQ. The first
+  receive profile uses one stream at 48, 96, or 192 kHz on ANT 1. It feeds
+  the live waterfall, Mac audio, decoders and IQ recording. (#47)
+
+### Development
+
+- Exercise the Flex receive link in CI with simulated SmartSDR traffic and
+  provide an isolated native receive qualification tool. (#47)
+
 ## [2026.1105_002] — 2026-11-05
 
 ### Added
