@@ -87,6 +87,10 @@ fixture may be described as microphone-to-PA latency.
 
 ## Analyze saved measurements
 
+Open regular local files for saved measurements. The importer bounds capture,
+recipe, calibration and comparison inputs before decoding, and refuses
+symbolic links and pipes. Select the original file if you have a link to it.
+
 In **TX Latency → Analyze**, choose **Compare Software Maps** to compare
 matching stage IDs. A stage that changes from estimated to measured is
 flagged as a provenance change. Deltas are shown for enabled stages with

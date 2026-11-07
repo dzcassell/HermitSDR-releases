@@ -4,6 +4,7 @@ import argparse
 from datetime import datetime, timedelta, timezone
 import json
 import math
+import os
 from pathlib import Path
 import stat
 import sys
@@ -31,13 +32,27 @@ def validate_tle(line, number):
         raise ValueError("A TLE failed its checksum.")
 
 
+def read_local_input(path, limit, label):
+    if path.is_symlink():
+        raise ValueError(f"Choose a regular local {label} file.")
+    flags = os.O_RDONLY
+    for name in ("O_NONBLOCK", "O_NOFOLLOW", "O_CLOEXEC", "O_BINARY"):
+        flags |= getattr(os, name, 0)
+    descriptor = os.open(path, flags)
+    with os.fdopen(descriptor, "rb") as source:
+        info = os.fstat(source.fileno())
+        if not stat.S_ISREG(info.st_mode):
+            raise ValueError(f"Choose a regular local {label} file.")
+        if info.st_size > limit:
+            raise ValueError(f"{label} file exceeds {limit // 1024} KiB.")
+        data = source.read(limit + 1)
+    if len(data) > limit:
+        raise ValueError(f"{label} file exceeds {limit // 1024} KiB.")
+    return data
+
+
 def load_elements(path, time_scale, constructor):
-    if not stat.S_ISREG(path.stat().st_mode):
-        raise ValueError("Choose a regular local TLE file.")
-    with path.open("rb") as source:
-        data = source.read(32_769)
-    if len(data) > 32_768:
-        raise ValueError("TLE file exceeds 32 KiB.")
+    data = read_local_input(path, 32_768, "TLE")
     lines = [line.rstrip() for line in data.decode("ascii").splitlines() if line.strip()]
     satellites = []
     seen = set()
@@ -111,14 +126,18 @@ def pass_rows(satellite, station, time_scale, start, end, minimum):
         if len(offsets) > 64:
             raise ValueError("A predicted pass has too many distinct culminations.")
         times = time_scale.from_datetimes([datetime.fromtimestamp(first + offset, timezone.utc) for offset in offsets])
-        el, az, distance = (satellite - station).at(times).altaz()
+        topocentric = (satellite - station).at(times)
+        el, az, distance, _, _, rate = topocentric.frame_latlon_and_rates(station)
         samples = []
-        for offset, bearing, elevation, km in zip(offsets, az.degrees, el.degrees, distance.km):
-            bearing, elevation, km = float(bearing), float(elevation), float(km)
-            if not all(map(math.isfinite, (bearing, elevation, km))):
+        for offset, bearing, elevation, km, km_per_second in zip(
+            offsets, az.degrees, el.degrees, distance.km, rate.km_per_s
+        ):
+            bearing, elevation, km, km_per_second = map(float, (bearing, elevation, km, km_per_second))
+            if not all(map(math.isfinite, (bearing, elevation, km, km_per_second))) or abs(km_per_second) > 15:
                 raise ValueError(f"{satellite.name}: orbital propagation failed in the requested window.")
             samples.append({"offsetSeconds": offset, "azimuthDegrees": round(bearing, 3) % 360,
-                            "elevationDegrees": round(elevation, 3), "rangeKM": round(km, 3)})
+                            "elevationDegrees": round(elevation, 3), "rangeKM": round(km, 3),
+                            "rangeRateKMPerSecond": round(km_per_second, 6)})
         yield {
             "catalogNumber": satellite.model.satnum, "startsAt": stamp(datetime.fromtimestamp(first, timezone.utc)),
             "endsAt": stamp(datetime.fromtimestamp(last, timezone.utc)),
@@ -147,6 +166,17 @@ def observer_coordinates(args):
     return latitude + (ord(grid[5]) - ord("A") + 0.5) / 24, longitude + (ord(grid[4]) - ord("A") + 0.5) / 12
 
 
+def local_transponders(path, catalog_numbers):
+    data = read_local_input(path, 65_536, "Transponder catalog")
+    entries = json.loads(data)
+    if not isinstance(entries, list) or len(entries) > 64:
+        raise ValueError("Use a JSON array of up to 64 transponder entries.")
+    if not all(isinstance(item, dict) and type(item.get("catalogNumber")) is int
+               and item["catalogNumber"] in catalog_numbers for item in entries):
+        raise ValueError("Each transponder must identify a satellite in the TLE file.")
+    return entries
+
+
 def convert(args):
     try:
         import skyfield
@@ -169,7 +199,7 @@ def convert(args):
         passes.extend(pass_rows(satellite, station, time_scale, start, end, args.minimum_elevation))
         if len(passes) > 256:
             raise ValueError("The plan exceeds 256 passes. Use fewer satellites or a shorter window.")
-    return {
+    plan = {
         "schemaVersion": 1,
         "model": "Skyfield SGP4",
         "modelVersion": skyfield.__version__,
@@ -184,6 +214,10 @@ def convert(args):
         "passes": sorted(passes, key=lambda item: (item["startsAt"], item["catalogNumber"])),
     }
 
+    if args.transponders is not None:
+        plan["transponders"] = local_transponders(args.transponders, {satellite.model.satnum for satellite in satellites})
+    return plan
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -196,9 +230,13 @@ def main():
     parser.add_argument("--start", required=True, help="start date and time with explicit UTC offset")
     parser.add_argument("--hours", type=int, default=24)
     parser.add_argument("--minimum-elevation", type=float, default=10)
+    parser.add_argument("--transponders", type=Path, help="optional local JSON catalog for satellites in the TLE file")
     args = parser.parse_args()
     try:
-        text = json.dumps(convert(args), indent=2, allow_nan=False)
+        plan = convert(args)
+        text = json.dumps(plan, indent=2, allow_nan=False)
+        if len(text.encode("utf8")) > 1_048_575:
+            text = json.dumps(plan, separators=(",", ":"), allow_nan=False)
         if len(text.encode("utf8")) > 1_048_575:
             raise ValueError("The generated plan exceeds 1 MiB. Use fewer satellites or a shorter window.")
         print(text)

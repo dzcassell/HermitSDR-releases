@@ -7,6 +7,44 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1106_002] — 2026-11-06
+
+### Added
+
+- Open independent receive windows on supported Protocol 2 receivers.
+- Preview IC-7610 LAN receive, including audio and scope, and monitor Meshtastic
+  nodes over TCP or USB. These integrations still need broader hardware checks.
+- Preview satellite Doppler and transponder mappings, and add explicit Hamlib
+  rotator point and stop controls.
+- Inspect recorded RDS and stereo FM, channelize offline RX-888 captures, and
+  inspect Ozy, RX-888 and Saturn hardware or firmware data offline.
+- Check Metis application gateware size, checksum and block layout, and
+  simulate its bootloader exchange offline.
+
+### Fixes
+
+- Bound video and RTMP buffering, tighten camera shutdown, and reject oversized
+  offline transmit-latency imports.
+
+### Performance
+
+- Reduce receive tone processing and sample-buffer copies, and move optional
+  mixer diagnostic recording off the audio callback.
+- Reduce CPU use in the 2G ALE tone detector, including the wideband skimmer.
+
+### Development
+
+- Exercise portable HPSDR reception, Control API relay security, FreeDV and
+  neural noise reduction offline. Qualify synthetic media transfer for WHIP.
+
+- Make updater, Feld Hell ownership, offline decode pause, shared-program,
+  transmit lease expiry and discovery lock tests less sensitive to hosted runner scheduling.
+- Update the Worked World and SUB receiver smoke tests for the rotator and independent receive windows.
+- Give the Control API loopback fixture time to verify complete audio and spectrum frames on hosted runners.
+- Inspect IC-7610 LAN scope captures offline during receive integration.
+- Run contributor CI and release automation on GitHub-hosted macOS runners
+  and document the reviewed pull request workflow.
+
 ## [2026.1106_001] — 2026-11-06
 
 ### Added
