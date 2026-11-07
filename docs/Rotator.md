@@ -33,9 +33,8 @@ radar map and in the QSO editor.
 - **It can never touch transmit.** A rotator is not an interlock: a rotator
   fault or a lost link shows as a warning on the interlock strip, never as a
   TX inhibit, and nothing in the rotator path can key, arm or tune the radio.
-- **Hardware motion review.** This feature is staged for the owner's review
-  of the motion paths before it ships; it has been exercised only against a
-  simulated `rotctld` (see *What has been tested*). Treat the first session
+- **Hardware motion validation.** The driver shipped in 2026.1106_002
+  after simulated `rotctld` checks (see *What has been tested*). Treat the first session
   with a real rotator as an acceptance test: stand where you can see the
   antenna, keep a hand on the controller's own stop, and start with a small
   move.

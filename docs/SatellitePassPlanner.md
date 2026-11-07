@@ -89,3 +89,16 @@ catalog shows the predicted ground uplink and receive frequencies at the
 first, peak and last looks. The calculation maps the nominal frequency
 through the transponder and applies first-order Doppler in each direction.
 The rows are planning values and do not tune or key a radio.
+
+## Logging a completed contact
+
+In **Log → QSO Log**, add or edit the contact and expand **Satellite contact**.
+Enable **Contact made through a satellite** only for a completed satellite QSO.
+Enter the satellite name and, if known, its uplink/downlink code. ADIF export
+writes `PROP_MODE=SAT`, `SAT_NAME` and the optional `SAT_MODE`. Viewing a pass or
+previewing a Doppler correction does not mark any contact as satellite.
+
+In **Worked & Confirmed**, **Satellite grids** counts explicitly tagged
+satellite contacts separately from **Grids**. Both use the selected grid
+precision, scope and confirmation source. An imported satellite confirmation
+must name the same satellite before it can confirm the contact.

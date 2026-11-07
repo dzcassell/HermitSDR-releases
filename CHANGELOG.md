@@ -7,6 +7,52 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1107_006] — 2026-11-07
+
+### Added
+
+- Mix up to eight running apps with separate input meters, faders and mutes. Blend them with the microphone using its own fader and mute.
+- Start and route selected app audio with one button in TX Controls.
+
+## [2026.1107_005] — 2026-11-07
+
+### Development
+
+- Add an offline two-window receiver check for tuning, audio routing and WAV isolation.
+
+## [2026.1107_004] — 2026-11-07
+
+### Fixes
+
+- Prevent NetSDR discovery’s first timer tick from crashing at startup.
+- Close ALE watch folder handles after macOS finishes canceling the watch.
+- Clarify that the rotator driver is available and physical motion still needs on-site validation.
+
+## [2026.1107_003] — 2026-11-07
+
+### Development
+
+- Give RF Vision compiler-checked ownership of its worker state.
+
+## [2026.1107_002] — 2026-11-07
+
+### Added
+
+- Log completed satellite contacts explicitly and show their grid coverage separately.
+
+### Fixes
+
+- Show when App level is off and identify the capture meter as a reading before gain in TX Controls.
+- Wait for an independent receiver’s WAV to finish saving before starting another recording from that window.
+- Keep an ALE recording when the watched path changes during decoding.
+- Update the rotator guide to reflect its release and remaining physical acceptance.
+
+## [2026.1107_001] — 2026-11-07
+
+### Fixes
+
+- Prevent a Swift Charts trap in Space Weather’s Particles plot with a positive logarithmic domain and one sample per timestamp and energy.
+
 ## [2026.1106_002] — 2026-11-06
 
 ### Added

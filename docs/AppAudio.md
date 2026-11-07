@@ -12,24 +12,20 @@ that ambiguous route is refused. Quit it and reopen it normally from Dock or
 Finder, refresh and select it again. If macOS cannot establish isolation, use
 System Audio for local preview only when you explicitly intend the broader scope.
 
-1. Open **TX Controls** and select **App Audio — other apps** as Source.
-2. Open Discord, your browser, GarageBand, or another playback app. Refresh the
-   app list, choose that app, then click **Start capture**.
-3. If macOS asks, allow Screen & System Audio Recording for this development
-   app in System Settings → Privacy & Security. Retry capture if required.
-4. Play audio in the selected app. **APP INPUT** shows its captured level.
-   The chain should show **Capture: Listening**, **Program: Not admitted**,
-   and **Radio: SAFE**. A listening stream can legitimately contain silence.
-5. For private local preview, choose a physical listening output and enable
-   **Listen**. This preview is mono at −6 dB, independent of program gain/mute.
-   The source app also keeps playing through its original output; listening to
-   both paths on the same speakers can sound doubled. Headphones or a separate
-   listening output are useful.
-6. **Add to TX program** admits freshly captured audio, but does not arm or key.
-   While SAFE, the program stage says **Waiting for ARM**. App level and Mute
-   control the admitted audio; the input meter measures the original capture.
-7. Stop capture when finished. The main console has a capture banner and a Stop
-   control even when TX Controls is closed.
+1. In **TX Controls**, choose **App Audio — other apps** as Source and pick
+   the running app.
+2. Click **Send app to TX**. This starts capture and routes the selected app
+   into the TX program. It does not arm or key the radio. If macOS asks,
+   allow Screen & System Audio Recording and retry if needed.
+3. Play the app. **APP INPUT · BEFORE GAIN** shows its captured level.
+   **Waiting for ARM** means the app is routed and the transmitter is SAFE.
+   **Ready for PTT** means the app is routed and signal is present.
+4. For private listening, use **Capture for preview**, choose a physical
+   listening output and enable **Listen**. Preview is mono at −6 dB and
+   independent of App level and Mute. The source app keeps its normal playback.
+5. **Stop sending app audio** stops capture and clears the route. The main
+   console also has a capture banner and a Stop control.
+
 
 Demo Mode supports capture, metering and private preview; it cannot ARM or key.
 The network-isolated test instance cannot discover/connect to physical radios.
@@ -38,14 +34,21 @@ ARM/PTT, policy, protection and hardware checks.
 
 ## Mix with the microphone and Deck
 
-Select **Input Mixer** as the TX source to combine microphone, Media Deck,
-admitted remote guests, and admitted App Audio. Changing TX source stops app
-capture and clears admission; start it again for the new route. App Audio has
-its own level and mute in TX Controls. The existing mixer window owns microphone,
-Deck and guest faders/EQ/effects. App Audio enters the program after those channel
-processors, then passes through the same master TX gain/profile/EQ/processing
-and final limiter as the other inputs. App audio is not added to the caller
-return/mix-minus bus in this candidate.
+Open **Input Mixer**, choose **Use Input Mixer** if needed, then use
+**Add app** once for each running app you want in the mix. Each app starts
+capture and gets its own input meter, fader and mute. You can mix up to eight
+app channels alongside the microphone, Media Deck and remote guests.
+
+**Stop** pauses one app and keeps its fader setting. **Remove** frees its
+slot. **Stop all apps** ends all app captures in the mixer. Disarming or
+changing TX source stops capture. Use **Start** to resume a strip. If the app
+was relaunched, remove the old strip and add the new process.
+
+The app channels share the existing master TX processing and final limiter.
+They do not feed the remote guest return bus. macOS must be able to isolate
+each app's audio. The app picker includes regular and menu bar apps that
+macOS reports as running. Tabs and helper processes inside one app share
+its channel.
 
 **System Audio is preview-only in this candidate.** It includes other playback
 and notifications, with HermitSDR instances known at capture start excluded.
@@ -59,7 +62,7 @@ native app capture; microphone + selected-app audio uses Input Mixer.
 
 - Capture, source selection, program admission, app level/mute and private preview
   are session-only. The TX source choice uses the existing settings snapshot.
-- Capture starts only on an explicit Start action. Source/scope changes, selected
+- Capture starts only on an explicit Send or Capture action. Source/scope changes, selected
   app exit, capture error, preview-output failure, disarm and application shutdown
   stop capture and clear admission. App identity includes its launch time, so a
   reused PID cannot silently substitute a relaunched process. Relaunched apps
@@ -70,7 +73,7 @@ native app capture; microphone + selected-app audio uses Input Mixer.
 - Permission denial, protected content, app-specific routing or an unsupported
   capture case can produce silence. Start playback, check permission, retry,
   and verify the input meter before admitting audio. No silent source fallback.
-- This first candidate selects one application at a time, or System Audio.
+- The standalone App Audio route selects one app at a time. Input Mixer supports multiple app channels.
   Browser tabs within the selected browser are not individually selectable.
 - Virtual-device routing remains an advanced fallback: source app → BlackHole;
   HermitSDR Source **Microphone**, Mic input **BlackHole**. The native route does
