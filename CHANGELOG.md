@@ -7,6 +7,28 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1108_003] — 2026-11-08
+
+### Added
+
+- Offer the FLEX-8400 transmit path on every supported FlexRadio model (FLEX-6300, 6400/6400M, 6500, 6600/6600M, 6700, 8400M, 8600/8600M) running SmartSDR 3 or later: USB, LSB, AM, FM, NFM and DAX digital modes with microphone or Input Mixer audio, ANT 1/2, radio-limited drive, native TUNE and two-tone. These radios follow the FLEX-8400 contract on assumption and are labelled TX ASSUMED until a dummy-load session confirms them; the radio's reported power ceiling, antenna, mode, slice rate, interlock owner and a finite TX timeout are still verified before and during every over.
+- Follow the DAX TX slice rate the radio reports: 24 kHz slices are decimated as before and 48 kHz slices are fed directly, with the matching packet class and pacing.
+- Add CW transmit on FlexRadio: the radio keys its own carrier from HermitSDR's keyer, paddles, keyboard and CAT `send_morse`, with the radio's break-in turned off for the over, its pitch and speed set from the keyer, MOX held by the transmit coordinator and HermitSDR's own sidetone kept. Assumed from the SmartSDR API documentation, not yet bench-validated.
+- Add live FlexRadio transmitter telemetry: forward and reflected power, SWR and PA temperature from the SmartSDR meter stream drive the console power/SWR meters, the TX window cells, the PA temperature cell and SWR protection during a Flex over, with no calibration required.
+- Add FlexRadio TX relay control: the OC output matrix's transmit row drives the radio's TX1/TX2/TX3/ACC TX relay enables (OC1–OC4), written only on change, read back, and restored on disconnect.
+- Add FlexRadio antenna tuner support: ATU TUNE and ATU BYPASS in the TX controls with the radio's tuner status, shown only when the radio reports an internal tuner and gated like TUNE.
+- Add FlexRadio transmit filter programming: voice and data overs set the radio's TX filter from the selected TX profile passband, verify the read-back and restore the previous edges on release.
+
+### Fixes
+
+- Bench 2026-11-08 on the FLEX-8400: write the TX relay enables after the transmit slice is on its band (SmartSDR stores them per band) and restore that band's values before the slice is removed; stop waiting for a `break_in` status echo the radio never sends, which delayed every CW over by 1.5 s; keep per-band `interlock band` tables apart from the live interlock; give status read-backs 1.5 s instead of 300 ms and name the read-back that failed.
+
+### Development
+
+- Add `tools/flexradio-tx-bench.py`, a command-line dummy-load bench that drives the production Flex link (TUNE, two-tone, voice tone, CW, ATU) and prints the radio's meters, and `HERMITSDR_FLEX_TRACE=1` to log every SmartSDR command, reply and status line.
+- Run CI, Extended and Release on the self-hosted macOS runner again; the GitHub-hosted runner stopped every job at start on the account's spending limit.
+- The TX preflight probe accepts `--model`, and the Flex loopback smoke adds FLEX-6600 voice on a 48 kHz slice and FLEX-6300 TUNE on SmartSDR 3.
+
 ## [2026.1108_002] — 2026-11-08
 
 ### Added
