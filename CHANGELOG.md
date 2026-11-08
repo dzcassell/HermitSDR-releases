@@ -7,6 +7,35 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [Unreleased]
+
+## [2026.1108_004] — 2026-11-08
+
+### Added
+
+- Add the **SignalFind** window (`Log ▸ SignalFind`), a native SwiftUI CW, SSB
+  and Digital spot aggregator combining POTA, SOTA, WWFF, Spothole supplemental
+  outdoor programs and live DX Cluster / RBN feeds with per-tab source and band
+  filters, pause/resume queue, worked-before and award-reference badges from
+  the QSO Log, click-to-tune in frequency and mode, an optional MapKit spot
+  map with a great-circle path arc from the station QTH, NCDXF beacon schedule
+  strip, upcoming activation alerts, recent tunes and quick-log contact entry.
+  Feeds are off until enabled; enabling the built-in cluster connections sends
+  the station callsign to NC7J and RBN to log in, and the window says so. An
+  existing `~/.signalfind` profile is offered as an explicit import, never
+  applied silently. Feed bodies are capped at 8 MiB and malformed rows are
+  skipped without dropping valid spots. Quick Log keeps digital contact modes
+  (FT8, FT4, RTTY, PSK, JS8) separate from the receiver's tuning mode in ADIF.
+
+### Fixed
+
+- Keep the **SignalFind** header readable at the default window width: the
+  panel chips and actions move to a second row when one row cannot hold every
+  control, instead of wrapping labels into vertical text.
+- Add dual vertical scales and a series legend to **Space Weather ▸ Kp & A**,
+  and align threshold annotations on **X-ray** and **Particles** inside the
+  plot area.
+
 ## [2026.1108_003] — 2026-11-08
 
 ### Added
