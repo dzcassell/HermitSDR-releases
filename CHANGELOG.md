@@ -7,6 +7,13 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1108_002] — 2026-11-08
+
+### Added
+
+- Add a receive-only FlexRadio preview for the FLEX-6300, 6400/6400M, 6500, 6600/6600M, 6700, 8400M, and 8600/8600M. The preview uses SmartSDR LAN discovery and one DAX IQ receiver on ANT 1 at 48, 96, or 192 kHz. Physical validation on the additional radios is pending.
+- Require the SmartSDR control connection to confirm the discovered model before opening an IQ stream. Transmit still requires a FLEX-8400 with SmartSDR 4.3.16.42034.
+
 ## [2026.1108_001] — 2026-11-08
 
 ### Added

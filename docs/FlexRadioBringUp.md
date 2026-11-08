@@ -1,6 +1,6 @@
-# FlexRadio 8400 bring-up
+# FlexRadio bring-up
 
-Choose **FLEX-8400** in HermitSDR's connection sheet when the radio and
+Choose your **FlexRadio model** in HermitSDR's connection sheet when the radio and
 Mac are on the same LAN. Connect your receive antenna to **ANT 1** and close
 other SmartSDR clients before connecting. Select 48, 96, or 192 kHz in
 HermitSDR. Start at 48 kHz if you only need a narrow view; wider rates cover
@@ -12,16 +12,22 @@ If the picker shows **In Use**, close the other client and wait for the next
 radio announcement. If the radio is missing, check Local Network access in
 System Settings and confirm the Mac and radio are on the same subnet.
 
-This release supports one local receiver on the FLEX-8400 from 100 kHz to
-54 MHz. FLEX-8400 radios running SmartSDR 4.3.16.42034 are candidates for
-transmit on ANT 1 or ANT 2. The driver selects USB, LSB, AM, FM, NFM,
+HermitSDR opens one local DAX IQ receiver on ANT 1 from 100 kHz to 54 MHz
+with SmartSDR 3 or later. The FLEX-8400 is hardware-tested. The FLEX-6300,
+6400/M, 6500, 6600/M, 6700, 8400M, and 8600/M have a receive-only
+preview through the same path. Their antenna and sample-rate behavior still
+needs physical verification. The native receive check in the
+[validation guide](FlexRadioValidation.md) accepts the advertised model via
+`--model`, for example `--model FLEX-8600`.
+
+Transmit on ANT 1 or ANT 2 is qualified for the FLEX-8400 running SmartSDR
+4.3.16.42034. The driver selects USB, LSB, AM, FM, NFM,
 DIGU or DIGL from the console and uses the radio's reported power
 limit. Microphone and Input Mixer supply the DAX audio. TUNE uses the
 radio's carrier, and TWO TONE is available in USB and LSB. The app
 ends an over after at most 55 seconds and verifies a radio timeout
 of at most 60 seconds before PTT. A shorter existing radio timeout
 takes precedence. The waterfall pauses during PTT and resumes after release.
-Release hardware qualification is pending.
 
 The command-line probe is available for discovery and identity checks.
 With the radio powered on and the Mac on the same LAN, run these commands
