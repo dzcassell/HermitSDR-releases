@@ -7,6 +7,12 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1108_001] — 2026-11-08
+
+### Added
+
+- Add FLEX-8400 transmit controls for USB, LSB, AM, FM, NFM and DAX digital modes on SmartSDR 4.3.16.42034. Supports microphone and Input Mixer, ANT 1/2, radio-limited drive, native TUNE, and an SSB two-tone test.
+
 ## [2026.1107_006] — 2026-11-07
 
 ### Added

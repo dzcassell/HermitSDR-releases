@@ -31,7 +31,12 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1107_006** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1108_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1108_001
+
+- Add FLEX-8400 transmit controls for USB, LSB, AM, FM, NFM and DAX digital modes on SmartSDR 4.3.16.42034. Supports microphone and Input Mixer, ANT 1/2, radio-limited drive, native TUNE, and an SSB two-tone test.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `79c14a3d07dadca7fe4e6283d6ce81a66a2f42a96226f2090bd777000b1eeb1a`.
 
 ## New in 2026.1107_006
 
@@ -2417,8 +2422,8 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 <!-- Mirrors the app's built-in capability table (DSP/Capabilities.swift). -->
 | Capability | Support |
 | --- | --- |
-| Radios | Hermes-Lite 2 / SquareSDR (openHPSDR Protocol 1) · Apache Labs ANAN Orion-class, e.g. 7000DLE MK2 (Protocol 2) · every other ANAN on Protocol 2 — ANAN-10/100 (Hermes), ANAN-10E/100B, ANAN-100D (Angelia), ANAN-200D (Orion), ANAN-G2 (Saturn) and an Atlas/Metis backplane — is recognised by name and receives through its Alex filter and antenna relays, transmit closed until validated on the hardware · Protocol 1 Hermes, Griffin, Angelia, Orion and Orion MkII boards are named and receive-only · RFSpace NetSDR (receive-only direct-sampling HF receiver: TCP control + UDP I/Q on port 50000, its own LAN discovery, in-app static-IP/DHCP assignment) · SDRplay RSPdx over USB (receive-only, 1 kHz – 2 GHz, through SDRplay's API 3.15 loaded by a signed helper process; antenna A/B/C, LNA state table, IF gain + AGC, HDR mode, bias-T, notches) · FLEX-8400 over SmartSDR LAN (receive-only, DAX IQ on ANT 1) |
-| RX / TX | Receive + transmit live-validated on both openHPSDR protocols (dummy load; on-air QSOs user-gated) · the NetSDR, SDRplay RSPdx and FLEX-8400 are receive-only, so their sessions carry no TX banner, ARM, PTT, TUNE or drive controls at all |
+| Radios | Hermes-Lite 2 / SquareSDR (openHPSDR Protocol 1) · Apache Labs ANAN Orion-class, e.g. 7000DLE MK2 (Protocol 2) · every other ANAN on Protocol 2 — ANAN-10/100 (Hermes), ANAN-10E/100B, ANAN-100D (Angelia), ANAN-200D (Orion), ANAN-G2 (Saturn) and an Atlas/Metis backplane — is recognised by name and receives through its Alex filter and antenna relays, transmit closed until validated on the hardware · Protocol 1 Hermes, Griffin, Angelia, Orion and Orion MkII boards are named and receive-only · RFSpace NetSDR (receive-only direct-sampling HF receiver: TCP control + UDP I/Q on port 50000, its own LAN discovery, in-app static-IP/DHCP assignment) · SDRplay RSPdx over USB (receive-only, 1 kHz – 2 GHz, through SDRplay's API 3.15 loaded by a signed helper process; antenna A/B/C, LNA state table, IF gain + AGC, HDR mode, bias-T, notches) · FLEX-8400 over SmartSDR LAN (DAX IQ on ANT 1 and a firmware-qualified DAX TX) |
+| RX / TX | Receive + transmit live-validated on both openHPSDR protocols (dummy load; on-air QSOs user-gated) · the NetSDR and SDRplay RSPdx are receive-only · FLEX-8400 on SmartSDR 4.3.16.42034 has a DAX TX path for USB, LSB, AM, FM, NFM and digital modes, pending Release hardware qualification |
 | Sample rates | 48–384 kHz (P1) · up to 1536 kHz (P2) · 48–768 kHz on the NetSDR (the radio streams 50–800 kHz, resampled 24/25 to the chain rate) · 48 kHz – 1536 kHz on the RSPdx (decimations of its 3.072 MHz ADC clock) · 48, 96 and 192 kHz on the FLEX-8400 |
 | Demod modes | USB, LSB, CW, AM, SAM, FM, NFM, DSB, DATA-U, DATA-L (USB / LSB for sound-card digital modes: 3 kHz filter from 100 Hz by default, own filter memory, selected by CAT PKTUSB / PKTLSB, TCI DIGU / DIGL and Kenwood MD 9 / 6) · separate wide/narrow FM deviation · CTCSS encode/decode · CTCSS tone squelch (TSQL: FM / NFM audio opens only on the selected tone, ~¼ s to open, 250 ms hang) · FM sub-audio filter (the repeater's CTCSS tone leaves the speaker audio; on by default) · AM, SAM and DSB filters to 20 kHz, with 10 kHz audio at the speakers above 11 kHz of width · main SAM Both / Upper / Lower RF sidebands (single-sideband mono; SUB stays Both) |
 | FT8 / FT4 | Receive: waterfall spots, decode panel, stations-heard ADIF (FT4 exported as MFSK/FT4), PSKReporter uploads, 15 s / 7.5 s UTC slots, automatic station clock-drift estimation with bounded slot correction, time-machine replay. Transmit: native slot-clocked modulator + auto-sequencer behind ARM/TXCoordinator (native FT8 dummy-load validated; on-air validation pending), or WSJT-X via CAT PTT + audio routing · **native JS8 (normal) encoder** — clean-room port of JS8Call's varicode/CRC-12/LDPC(174,87) path, frame programs one slot at a time, decoded by JS8Call 3.0.3 |
