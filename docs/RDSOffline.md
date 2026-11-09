@@ -63,7 +63,9 @@ The offline command opens no radio or network connection.
 Synthetic multiplex tests exercised offset, noise and burst corruption
 at 128, 192, 228 and 384 kHz. Separate upstream test captures recovered
 the YLE YKSI service name and the MiniRDS service name and RadioText.
-Live wideband FM and international broadcast character tables are
+The same decoder runs live on the receiver's **WFM** mode — see
+[Broadcast FM](BroadcastFM.md) for the live path, the stereo decoder and
+the region setting. International broadcast character tables remain
 follow-up work.
 
 [IEC modulation and baseband coding](https://webstore.iec.ch/en/publication/60236)

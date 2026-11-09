@@ -47,7 +47,7 @@ columns in another order or with extra columns still reads; a file without
 | Tone = `Cross`, `Tone->` | Encode only | |
 | Tone = `Cross`, `Tone->Tone` | Encode and squelch on the receive tone | Reported when the two tones differ (memories hold one tone) |
 | `DTCS`, `DTCS-R`, `TSQL-R`, DCS cross modes | — | Reported; the channel imports without a tone |
-| Mode | Receive mode | FM, NFM, AM, USB, LSB, CW direct; DIG/PKT → DATA-U; WFM → FM, NAM → AM (6 kHz), CWR/NCW/NCWR → CW, RTTY/FSK → DATA-U, RTTYR/FSKR → DATA-L; DV/DMR/P25/DN/NXDN → NFM (carrier only); blank → FM. Every approximation is reported |
+| Mode | Receive mode | FM, NFM, WFM, AM, USB, LSB, CW direct; DIG/PKT → DATA-U; NAM → AM (6 kHz), CWR/NCW/NCWR → CW, RTTY/FSK → DATA-U, RTTYR/FSKR → DATA-L; DV/DMR/P25/DN/NXDN → NFM (carrier only); blank → FM. Every approximation is reported |
 | Comment | Notes | Up to 512 characters; line breaks become spaces |
 | Name | Name | Blank names become the frequency; longer than 120 characters is truncated (reported) |
 | Skip, Power, TStep, URCALL/RPT1CALL/RPT2CALL/DVCODE | — | Reported (Skip, Power, D-STAR); the tuning step is dropped silently. Scan lists choose memories explicitly, so Skip has no stored equivalent |

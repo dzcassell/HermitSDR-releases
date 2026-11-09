@@ -31,7 +31,201 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1108_004** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1109_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1109_001
+
+- **FM DX Catalog and band scan** (Radio menu; the list button beside the
+  WFM chips). A persisted catalog of every broadcast-FM station whose RDS
+  has been decoded, keyed by channel and PI — PS and the PS variants seen,
+  RBDS call sign, PTY, RadioText with history, TP/TA, first / last seen,
+  times seen, last / best channel level, BLER, free tag — most recent
+  first, 5,000 entries (oldest-last-seen evicted), JSON under Application
+  Support, CSV export, double-click to listen in WFM. **FM DX Scan** mutes
+  the speakers, switches the RSPdx to 1536 kHz WFM and parks its centre on
+  successive spans, running seven 200 kHz channels (thirteen on the 100 kHz
+  raster) through a parallel channelizer — frequency shift, 95 kHz
+  low-pass to the 384 kHz IF, discriminator, one RDS decoder and a
+  channel-power meter each — per 1.5 s dwell (1–5 s), so the Americas
+  band is swept in 15 hops ≈ 25 s; hops tune through the normal path as
+  the deliberate `fmDXScan` source, the scan stops on manual tune, mode or
+  rate change, disconnect, TX arm or Stop, and restores frequency, mode,
+  sample rate and mute. Locals are told from DX by persistence (present in
+  ≥ 80 % of the last 20 complete passes, after five) and optionally by
+  distance: a home from a US ZIP code (bundled public-domain Census ZCTA
+  centroid table, `docs/licenses/ZCTA-Gazetteer.md`) or a grid, against an
+  operator-imported FM station CSV (header CSV or the FCC FM Query pipe
+  layout; never downloaded), with a hide-within-N-miles filter. A station
+  new to the catalog or back after six hours is highlighted, toasted and
+  offered to the mesh as the new **FM DX** Meshtastic alert kind.
+  Synthetic-fixture tests cover the seven-channel decode within one dwell
+  (power within 0.01 dB), the worker's settle and rate guards, catalog
+  merge / sort / eviction / persistence / CSV, the local heuristic, ZIP
+  centroids and great-circle distance, station-table parsing and the hop
+  sequencer (`FMDXScannerTests`). `docs/FMDXScanner.md`. First live run
+  (Boston, RSPdx): 26 stations in 3 passes within 90 s, ≈ 25 s per pass;
+  because a 1.5 s hop rarely hears all four PS segments, the catalog now
+  keeps each station's PS / RadioText segments and completes them across
+  hops and passes (partial names shown as `WB·R····`), and an optional
+  **Adaptive** dwell leaves a hop early once every carrier has a complete
+  name or no RDS after 0.6 s.
+- Satellite Pass Planner: **Import TLE…** predicts passes natively (#319,
+  first two scope items). A clean-room near-Earth SGP4 propagator (WGS72
+  constants, Vallado, Crawford, Hujsak and Kelso 2006) reads a local
+  two-line element file with checksum verification, rotates TEME states
+  through IAU 1982 sidereal time into the Earth-fixed frame and produces
+  topocentric azimuth, elevation, range and modeled range rate for a WGS84
+  observer taken from the station grid center (or coordinates entered in the
+  sheet). Passes are found by 10 s elevation sampling with bisection-refined
+  rise and set and a golden-section peak, within the importer's bounds (16
+  satellites, 70–150 min periods, eccentricity ≤ 0.2, 1–72 h, 256 passes,
+  1 MiB). The result is stored exactly like an imported plan, so the sky
+  plot, Doppler preview and transponder catalog work unchanged, and the
+  element provenance reads file name plus import date. Deep-space objects
+  are refused with a reason; the Skyfield converter remains the alternative.
+  Verified against the nine near-Earth cases of the published SGP4
+  verification set (`Tests/DSPTests/Fixtures/SGP4`).
+- **Commands from the mesh and mesh nodes as station devices** (#156,
+  phase 2). With the new **Mesh commands** toggle on (off by default, its
+  own one-time confirmation, never restored on without it), a text that
+  starts with `!` from a node on the operator's allowlist (node ids; empty
+  = nobody) is parsed by the viewer-chat command gate and carried out
+  through the receive-only executor viewer chat already uses — tuning via
+  the Control API's `.remoteClient` source, so dial lock, history and CAT
+  semantics match: `!freq 7.074 lsb`, `!mode`, `!band 20m`, `!zoom`, plus
+  read-only `!smeter`, `!status`, `!decodes` and `!help`. Every transmit
+  word (`!ptt`, `!tx`, `!tune` without a frequency, `!arm`, `!drive`,
+  `!power`, …) is refused with a reply and has no action by construction;
+  tuning is refused while the transmitter is armed or keyed; broadcast
+  texts are ignored unless **Accept broadcast commands** is on; strangers
+  and the node's own echoes are ignored silently. Each command gets a short
+  reply to the sender node on the inbound channel through the phase-1 link,
+  sharing its token bucket and session cap but counted apart (received /
+  executed / refused / ignored, replies sent / dropped), and the window logs
+  time, node, text and outcome. Allowlist edits take effect for the next
+  text. Nodes heard by the monitor also appear as display-only devices
+  under Station Devices — battery, voltage, temperature, humidity,
+  pressure, hourly rain, SNR, hops and last-heard, every reading with its
+  age and a STALE chip after an hour — with no interlock, inhibit or
+  control coupling. Settings persist per station profile. Loopback fixture
+  node emitting FromRadio texts and telemetry, gate, counter, persistence
+  and transmit-probe tests. See [docs/Meshtastic.md](docs/Meshtastic.md).
+- **Alerts to the mesh** (#156, phase 1): the Meshtastic window can hand
+  short alert texts to the connected node, which transmits them on its LoRa
+  channel so an operator in the field reads them on a phone. Wired events:
+  the lightning-static warning, crab watch fires, Receive Watch recipe
+  detections, SignalFind spots whose callsign, park/summit reference or
+  program is on an operator watch list, and Needed DX alerts. One line each
+  with a UTC HH:MM stamp, ≤ 200 bytes cut on a UTF-8 boundary, to every node
+  or one chosen node, channel index, optional ACK request. Everything is off
+  by default behind a master toggle with a one-time confirmation; alerts go
+  only while a monitor session is open (never queued across reconnects), one
+  message per 30 s with a burst of three, a 200-per-session cap with a
+  visible notice, and sent / dropped counters plus the last line in the
+  window. Settings persist per station profile; the master toggle is never
+  restored on without the confirmation. Receive side only — nothing here
+  touches the HF transmitter, and inbound mesh texts are never treated as
+  commands (phase 2 stays in #156). Loopback fixture node, golden-byte,
+  truncation, rate-limit, session-cap and watch-list tests. See
+  [docs/Meshtastic.md](docs/Meshtastic.md).
+- Satellite Pass Planner: **live Doppler receive tracking** (#319, third
+  scope item). Select a pass, confirm the nominal downlink (seeded from the
+  local transponder catalog) and press **Track**: VFO A follows the predicted
+  downlink about once a second — `nominal × (1 − ṙ/c)` plus the operator's
+  nudge — propagating the imported elements with the native SGP4 model
+  (plans imported as JSON interpolate their stored looks). Retunes are
+  skipped inside a 20 Hz hysteresis, the dial is mapped through the active
+  transverter profile with range refusals before anything moves, and Track
+  may start two minutes before AOS (**Waiting for AOS**). Tracking stops by
+  itself at LOS, on disconnect, on ARM, when the dial is tuned outside the
+  passband (smaller moves become the kept nudge), when the elements pass the
+  14-day stale threshold or on Stop, and it is never persisted. Receive
+  only: no PTT, TX frequency, split or transverter TX offset is touched. New
+  `TuningSource.satelliteTracking` names the path through the dial-lock
+  gate. ([docs](docs/SatellitePassPlanner.md#live-doppler-tracking))
+- Live wideband broadcast FM (#121): a **WFM** receive mode with a 200 kHz
+  channel (100–300 kHz) on a 384 kHz IF, a ±75 kHz discriminator whose
+  composite multiplex feeds a 19 kHz pilot PLL, 38 kHz L−R stereo decode
+  with mono blend on a weak pilot, 75 / 50 µs de-emphasis (default by the
+  Mac's region, switchable in the DSP popover) and L+R mono into the
+  speaker path; the decoded left / right pair is published for a later
+  two-channel output (the receive chain is mono today). The offline RDS
+  decoder now runs live on the multiplex: station name, PI (RBDS call
+  sign), programme type by the RDS or RBDS table, RadioText, TP/TA,
+  music/speech and the station clock appear as chips beside the decoder
+  row while WFM is selected and clear on every retune. WFM is only offered
+  when the connected radio tunes above 64 MHz (or a receive transverter
+  profile reaches the band) and streams at 384 kHz or more; a CAT or
+  bookmark request elsewhere is refused with the reason, and the sound-card
+  decoders are gated off with a receive-health explanation. Synthetic
+  multiplex fixtures pin separation, SNR, pilot lock time, mono blend,
+  de-emphasis against the analog curve and live PS / RadioText decode;
+  `docs/BroadcastFM.md` is the operator guide. Hardware validation on an
+  RSPdx is still owed.
+- Add a fourth receive noise-reduction mode, **DeepFilter** (#299, the top
+  public request for "premium" neural NR): the pretrained DeepFilterNet3
+  network (Schröter et al., MIT / Apache-2.0 code and weights — nothing from
+  WDSP) exported to three streaming Core ML models and driven by a native
+  Swift feature pipeline (960/480 Vorbis STFT, 32 ERB bands, five-tap deep
+  filter, upstream local-SNR staging) over the same ×4 bridge RNNoise uses.
+  Selectable next to Spectral / RNNoise / Adaptive on main and SUB, in the
+  `N` key cycle, presets and crab flags; a strength slider caps the
+  attenuation and an optional perceptual post-filter is off by default. A
+  bounded worker owns the models, so the DSP thread never waits on
+  inference, overload degrades to a plain delay and a missing model passes
+  audio through with a status line. Adds ≈31 ms of delay (RNNoise ≈11 ms).
+  Every DSP stage is pinned against the upstream Python package and the
+  Core ML models against PyTorch (< 5e-6); the offline A/B numbers in
+  `docs/DeepFilterNet.md` are synthetic-fixture metrics, not listening
+  acceptance, which is still owed.
+- **HermitSDR Camera** (#147): the virtual camera is now a real macOS Camera
+  Extension embedded in the app (`Contents/Library/SystemExtensions`), so
+  OBS, Zoom, Meet, FaceTime and QuickTime can select "HermitSDR Camera" and
+  see a HermitSDR window — the waterfall, a decoder or the whole console —
+  at 1280 × 720 or 1920 × 1080, 30 fps. Activation happens only on the
+  operator's **Activate** click (one-time approval in System Settings ▸
+  General ▸ Login Items & Extensions; never at launch); the window shows
+  needs-approval / active / restart-required / failed-with-reason, opens
+  System Settings for you, and counts frames sent and dropped while
+  publishing. Clients see a dark "No signal" card whenever nothing is being
+  published. The extension accepts frames only from the HermitSDR app it
+  shipped in (same bundle identifier, HermitSDR's team signature); the Dev
+  build carries its own `com.hermitsdr.app.debug.camera` so it never
+  collides with the installed app. Video only. The release pipeline builds,
+  signs, notarizes and verifies the extension with the app
+  (`tools/verify-camera-extension.sh`); the app can install it once releases
+  are signed with the System Extension provisioning profile
+  (`HERMITSDR_CAMERA_PROFILE`), and says so in the window until then.
+  [Operator guide](docs/VirtualCamera.md).
+- Internal refactor, no behaviour change (#60): the transmit-drive register
+  decision, the open-collector outputs (band value, key-down latch, TUNE
+  pulse) and the aircheck WAV logger left `RadioEngine` for three small
+  compiler-checked `Sendable` services (`TXDriveResolver`,
+  `OpenCollectorOutputs`, `AircheckLogger`), each with a fixture that pins
+  the engine's previous call sequence against a recording link. The engine
+  keeps every call site and the single link write, so MOX / drive / OC
+  ordering on the wire is identical; `RadioEngine.swift` goes from 2,822 to
+  2,719 lines and its ratchet in `DocsConsistencyTests` drops to 2,750.
+  `docs/ConcurrencyOwnership.md`, `docs/StateOwnership.md`.
+- The Thanksgiving dynamic underlay is a new scene, **Riverbank at First
+  Frost**, replacing the flat Harvest Vortex mandala. A slow river through
+  sugar maples at peak colour under a moon that rises, crosses and sets twice
+  an hour; a true planar reflection of sky, moon, trees, fire and roosting
+  birds, bent by the current and broken by rings where leaves land; five
+  parallax planes with atmospheric perspective; mist in two layers, breath
+  fog and a first frost on the near bank; leaves that fall, land and drift
+  downstream; a campfire whose light moves on the canopy, the water and every
+  silhouette; and wildlife with behaviour on the scene clock — a deer family
+  (jointed, hooves planted) that drinks, watches the passing lantern canoe and
+  bolts at the beaver's tail slap, a heron that crosses the moon, and six
+  turkeys that fly up one by one at dusk to roost. Built with the Haunted
+  Hollow's techniques (Core Graphics drawings baked into a distance-field
+  atlas on selection, released on deselection); settings, persistence and
+  Midnight Noel are unchanged, with the layer switches remapped (atmosphere →
+  mist/frost, centerpiece → reflection and moon, ornaments → wildlife,
+  particles → leaves and sparks, surprises → canoe and heron flights).
+  `docs/HolidayUnderlays.md`, `docs/RiverbankArtwork.md`.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `c2b6f97ed651cf5ad93550c58228c722251d169b61c44dbf76a2a7222c9dea0d`.
 
 ## New in 2026.1108_004
 
@@ -2460,7 +2654,7 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | Radios | Hermes-Lite 2 / SquareSDR (openHPSDR Protocol 1) · Apache Labs ANAN Orion-class, e.g. 7000DLE MK2 (Protocol 2) · every other ANAN on Protocol 2 — ANAN-10/100 (Hermes), ANAN-10E/100B, ANAN-100D (Angelia), ANAN-200D (Orion), ANAN-G2 (Saturn) and an Atlas/Metis backplane — is recognised by name and receives through its Alex filter and antenna relays, transmit closed until validated on the hardware · Protocol 1 Hermes, Griffin, Angelia, Orion and Orion MkII boards are named and receive-only · RFSpace NetSDR (receive-only direct-sampling HF receiver: TCP control + UDP I/Q on port 50000, its own LAN discovery, in-app static-IP/DHCP assignment) · SDRplay RSPdx over USB (receive-only, 1 kHz – 2 GHz, through SDRplay's API 3.15 loaded by a signed helper process; antenna A/B/C, LNA state table, IF gain + AGC, HDR mode, bias-T, notches) · FlexRadio over SmartSDR LAN (FLEX-8400 receive and transmit, bench-validated; FLEX-6300, 6400/M, 6500, 6600/M, 6700, 8400M and 8600/M receive the same way and transmit on the assumed 8400 contract) |
 | RX / TX | Receive + transmit live-validated on both openHPSDR protocols (dummy load; on-air QSOs user-gated) · the NetSDR and SDRplay RSPdx are receive-only · FLEX-8400 on SmartSDR 4.3.16.42034 has a DAX TX path for USB, LSB, AM, FM, NFM and digital modes with dummy-load bench validation · radio-keyed CW and live forward/reflected power, SWR and PA-temperature meters on every Flex (from the SmartSDR API, not yet bench-validated) · the other supported FLEX-6000/8000 models on SmartSDR 3+ get the same transmit path on the assumption that they follow the 8400 contract (labelled TX ASSUMED; not hardware-validated) |
 | Sample rates | 48–384 kHz (P1) · up to 1536 kHz (P2) · 48–768 kHz on the NetSDR (the radio streams 50–800 kHz, resampled 24/25 to the chain rate) · 48 kHz – 1536 kHz on the RSPdx (decimations of its 3.072 MHz ADC clock) · 48, 96 and 192 kHz on FlexRadio |
-| Demod modes | USB, LSB, CW, AM, SAM, FM, NFM, DSB, DATA-U, DATA-L (USB / LSB for sound-card digital modes: 3 kHz filter from 100 Hz by default, own filter memory, selected by CAT PKTUSB / PKTLSB, TCI DIGU / DIGL and Kenwood MD 9 / 6) · separate wide/narrow FM deviation · CTCSS encode/decode · CTCSS tone squelch (TSQL: FM / NFM audio opens only on the selected tone, ~¼ s to open, 250 ms hang) · FM sub-audio filter (the repeater's CTCSS tone leaves the speaker audio; on by default) · AM, SAM and DSB filters to 20 kHz, with 10 kHz audio at the speakers above 11 kHz of width · main SAM Both / Upper / Lower RF sidebands (single-sideband mono; SUB stays Both) |
+| Demod modes | USB, LSB, CW, AM, SAM, FM, NFM, WFM, DSB, DATA-U, DATA-L (USB / LSB for sound-card digital modes: 3 kHz filter from 100 Hz by default, own filter memory, selected by CAT PKTUSB / PKTLSB, TCI DIGU / DIGL and Kenwood MD 9 / 6) · separate wide/narrow FM deviation · CTCSS encode/decode · CTCSS tone squelch (TSQL: FM / NFM audio opens only on the selected tone, ~¼ s to open, 250 ms hang) · FM sub-audio filter (the repeater's CTCSS tone leaves the speaker audio; on by default) · AM, SAM and DSB filters to 20 kHz, with 10 kHz audio at the speakers above 11 kHz of width · main SAM Both / Upper / Lower RF sidebands (single-sideband mono; SUB stays Both) |
 | FT8 / FT4 | Receive: waterfall spots, decode panel, stations-heard ADIF (FT4 exported as MFSK/FT4), PSKReporter uploads, 15 s / 7.5 s UTC slots, automatic station clock-drift estimation with bounded slot correction, time-machine replay. Transmit: native slot-clocked modulator + auto-sequencer behind ARM/TXCoordinator (native FT8 dummy-load validated; on-air validation pending), or WSJT-X via CAT PTT + audio routing · **native JS8 (normal) encoder** — clean-room port of JS8Call's varicode/CRC-12/LDPC(174,87) path, frame programs one slot at a time, decoded by JS8Call 3.0.3 |
 | SSTV | Martin M1, Martin M2, Martin M3, Martin M4, Scottie S1, Scottie S2, Scottie S3, Scottie S4, Scottie DX, Robot 36, Robot 72, PD50, PD90, PD120, PD160, PD180, PD240, PD290, Robot 8 B/W, Robot 12 B/W, Robot 24 B/W, Wraase SC2-60, Wraase SC2-120, Wraase SC2-180, Pasokon P3, Pasokon P5, Pasokon P7, MP73, MP115, MP140, MP175, MR73, MR90, MR115, MR140, MR175, ML180, ML240, ML280, ML320, FAX480 — auto VIS + manual mode/start, slant/phase correction, PNG export |
 | WEFAX | IOC 576 · 120 LPM, IOC 576 · 90 LPM, IOC 576 · 60 LPM, IOC 288 · 120 LPM — polarity, slant/phase, crop/rotate, PNG with metadata |
@@ -2470,7 +2664,7 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | Contestia | 4–64 tones · 125–2000 Hz · Walsh-FEC block sync with S/N gating · normal/reverse · receive only |
 | NAVTEX / SITOR | 518 / 490 / 4209.5 kHz presets (USB, tone pair at the configured audio centre) · 100 Bd 170 Hz FSK with bit sync and bounded AFC · CCIR 476 4-of-7 · SITOR-B FEC (DX/RX time diversity, phasing, error marking) · SITOR-A ARQ listener (both sides of a simplex exchange, repeat suppression) · ZCZC … NNNN messages with station, subject and serial, the 4 % error criterion and 72 h duplicate suppression · now / next NAVAREA schedule · plain-text export · receive only |
 | Digital Modes | PSK31/63/125 · QPSK31/63/125 (upper/lower phase sense, receive only) · Olivia · MFSK16/32/64/128 (+ MFSK8/4) with fldigi picture reception — Shortwave Radiogram images paint in the window, auto-save as PNG and re-render with slant/shift · THOR · DominoEX · Hellschreiber · packet/APRS at 300 Bd (HF, 1600/1800 Hz) and 1200 Bd Bell 202 (1200/2200 Hz — 6 m APRS inside the radio's range, 2 m through a transverter profile) with the APRS fields parsed per the Protocol Reference 1.0.1 (uncompressed, compressed and Mic-E positions, timestamps, PHG, symbols, weather, messages/acks, objects/items, status, raw telemetry), a summary column in the panel and APRS stations with symbol and age on the heard map, plus an opt-in read-only APRS-IS Internet feed (passcode −1, login line only, never uploads) whose stations are labelled apart from the ones heard off the air · GMDSS DSC (ITU-R M.493 100 Bd FSK on the six HF distress channels, DX/RX time diversity, every format specifier field-parsed with MMSI → country, per-radio searchable message database, coast-station summary, stations and reported positions on the heard map) · JS8 (normal speed; the JS8 Conversations window assembles directed / multi-frame messages, relays, @groups, MSG / MSG TO:, queries, ACK and HEARING into threads, an inbox with unread badge and a heard roster, kept across launches, read-only) · WSPR · JT65 · JT9 · Q65 — one hosted decoder at a time, receive only |
-| Offline RDS / RBDS | Read station name, RadioText, traffic flags and broadcast clock from a mono FM multiplex WAV or HermitSDR IQ recording · JSON output with synchronization and correction counts · [recording requirements](docs/RDSOffline.md) |
+| Broadcast FM / RDS | Live **WFM** receive mode (#121) on any radio that tunes above 64 MHz (or through a receive transverter profile) at a 384 kHz or higher sample rate — today the SDRplay RSPdx: 200 kHz channel (100–300 kHz) on a 384 kHz IF, ±75 kHz discriminator, 19 kHz pilot PLL with 38 kHz L−R decode and stereo blend on a weak pilot, 75 / 50 µs de-emphasis (default by region), L+R mono to the single-channel speaker path (decoded L/R pair exposed for the follow-up stereo output) · live RDS / RBDS from the 57 kHz subcarrier: PS, PI (RBDS call sign), PTY by RDS or RBDS table, RadioText, TP/TA, music/speech and the station clock as chips beside the decoder row and in the DSP popover, cleared on every retune · sound-card decoders are not fed WFM audio and say so · [operator guide](docs/BroadcastFM.md) · Offline RDS / RBDS: read station name, RadioText, traffic flags and broadcast clock from a mono FM multiplex WAV or HermitSDR IQ recording, JSON output with synchronization and correction counts · [recording requirements](docs/RDSOffline.md) · **FM DX Catalog** (Radio menu): every RDS station heard logged by (channel, PI) — PS and its variants, call sign, PTY, RadioText history, TP/TA, first / last seen, times seen, last / best level, BLER, tag — most recent first, 5,000-entry JSON store, CSV export · **FM DX Scan**: the RSPdx parked on 1536 kHz spans with seven 200 kHz channels (thirteen on the 100 kHz raster) channelized and RDS-decoded in parallel per 1.5 s hop, the whole band in ~25 s, hops through the normal tuning path, speakers muted and the receiver restored on stop · locals by persistence (≥ 80 % of the last 20 passes) and by distance from a US ZIP (bundled public-domain Census ZCTA centroids) or grid against an operator-imported FM station CSV (FCC FM Query layouts read; nothing downloaded), hide-within-N-miles filter · new or returning (6 h) stations highlighted, toast + Meshtastic **FM DX** alert · [operator guide](docs/FMDXScanner.md) |
 | Tone signalling | DTMF (ITU-T Q.23 pairs, Q.24 timing and twist limits: ≥ 40 ms accepted, ≤ 23 ms rejected, ≤ 10 ms interruption bridged, −8 … +4 dB twist) · ICAO SELCAL (Annex 10 Vol III Table 3-1, all 32 tones incl. SELCAL 32, two 1 s pulses with a 0.2 s gap → "AB-CD", crab / window watch alert) · EAS/SAME (47 CFR 11.31: 520.83 Bd AFSK 2083.3 / 1562.5 Hz, 0xAB preamble, ZCZC header voted over its three bursts, event / originator / state tables, NNNN end of message, 853 + 960 Hz and 1050 Hz attention signals) — Goertzel bank on the hosted-decoder thread, Decoder Activity sessions, waterfall marker per detection, bounded persisted log · receive only |
 | Decoder Activity | Live decoder status plus local recent-history search by mode, frequency and stored text, decoder/outcome filters, result counts and Reset; live sessions remain unfiltered |
 | Received images | Library of every SSTV / Weather Fax / MFSK picture the decoders save (#268): persisted metadata index (mode, submode, UTC, dial, receiver mode, radio, editable callsign, size), existing PNGs indexed on first launch, thumbnail grid with mode / date / text filters and sort, detail pane, Reveal in Finder, Delete to the Trash, Export selection · optional auto-export folder with a `{date}-{time}-{mode}-{freq}` filename template (UTC tokens, collision-safe suffixes), remembered per physical radio · receive only, no upload |
@@ -2478,6 +2672,7 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | Carrier Sleuth | Sub-hertz carrier waterfalls of a Band DVR segment or `.hiq` recording (#282): every 9 kHz (ITU R1/R3, LW + MW) or 10 kHz (R2) channel inside the recorded span, or a custom kHz list · ±50/±100/±150/±200 Hz per channel · one streamed pass channelises the file (1.46 Hz FFT bins, tapered bin selection, ~140–560 Hz per channel on disk), then Hann-windowed 2^14–2^24-point FFTs with ⅛×–8× speed-up give rows at 0.5 mHz–34 mHz resolution, max-pooled into 4096 columns (≤ 0.1 Hz) · hour / ten-minute / minute UTC markers from the recording clock, cursor Hz + UTC readout, Min/Max dB, detail view, per-channel notes, carrier-offset table (TSV), annotated PNG export and clipboard with the facts in the PNG Description · results cached under Application Support (512 MB, oldest-touched evicted, Clear Cache) keyed by file fingerprint + parameters · one private queue, bounded memory (≤ 256 MB of spectrogram rows, spill files for the decimated streams), cancel and progress; never touches the live chain |
 | CW | Adaptive 8–60 WPM decoder at a selectable 300–1000 Hz receive pitch (700 Hz default) · **OmniSkimmer**: GPU polyphase channelizer skims every CW signal across the whole span at once (~375 Hz bins, per-signal decoders, waterfall labels + panel) |
 | Receive DSP | Optional automatic AGC threshold from post-EQ noise, bounded slew and manual takeover · named receive DSP presets with preview and recoverable removal · single/double-pole CW audio peak filter and binaural CW |
+| Noise reduction | Four exclusive post-detector reducers on main and SUB: spectral gate · RNNoise ("ML", vendored BSD) · adaptive statistical NR2/EMNR class with Minimum/MMSE trackers and level-matched A/B · **DeepFilter** (#299): DeepFilterNet3 (MIT/Apache-2.0) on Core ML — 32 ERB gains plus a five-tap complex deep filter per bin at 100 frames/s through a bounded worker (the DSP thread never waits on inference), strength = attenuation limit, optional perceptual post-filter, model status and identity bypass when the model is unavailable, ≈31 ms added delay · [DeepFilterNet notes](docs/DeepFilterNet.md) — synthetic-fixture metrics only, no listening acceptance yet |
 | Tuning & memories | Receive-only bookmark activity scanner: up to 32 named lists of 128 memories, power hold/hysteresis/hang, Skip/lockout, fresh tagged meters, guarded restore and explicit restart after interruption · Session-only SAT / reverse-SAT linked VFO tuning in displayed RF units, either dial leading, atomic range refusal and TX-active hold; portable validated whole/displayed bookmark JSON import/export and CSV spreadsheet export with duplicate-safe merge and local name/mode/frequency search with display-only sorting and in-place renaming; [CHIRP generic CSV](docs/CHIRP.md) import with a pre-import preview (counts, keep / replace / add-both conflicts, lossy report) and whole/displayed export in CHIRP's own formatting — offsets and tones stored, never used to transmit; Band DVR segment/interval duration-size preview and export to standalone .hiq recordings outside the rolling shelf |
 | I/Q import | Third-party I/Q recordings open in replay, the time machine and Decode a Recording (#280): RIFF/WAVE with the RFSpace `auxi` chunk (SpectraVue, SdrDx, HDSDR, SDRuno, Elad SW2), SDR# and SDR++ file names, Perseus (`rcvr` chunk / name), KiwiSDR browser captures (`kiwi` GPS stamps / name) and any stereo WAV with an operator-entered centre and start kept in a `.hiqmeta` sidecar · 8/16/24/32-bit PCM and 32-bit float, WAVE_FORMAT_EXTENSIBLE accepted, RIFX/RF64 refused with a reason · streamed in 20 ms blocks, never loaded; resampled to the nearest 48 kHz × 2ⁿ chain rate · local SigMF sibling-pair interchange (#296): one fixed-rate complex channel, cf32_le / ci16_le, exact resampling, capture offsets and fractional UTC; selected .hiq / DVR interval export to cf32_le with RF-normalized transverter geometry, metadata preview and no personal metadata · `.hiq` stays the native format, unchanged |
 | CW keyer | Sample-clock keyer, straight / iambic A / iambic B · 5–80 WPM · 25–75 % weighting · paddle swap · 0–2000 ms TX hang · 200–1200 Hz sidetone riding the exact RF envelope · stuck-key watchdog (≤300 s, physical release to rearm) · keyboard paddles or hamlib CAT b / send_morse (≤256 bytes, CW mode only) — every key request goes through ARM + TXCoordinator |
@@ -2489,10 +2684,11 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | Scheduled recording | Recording Schedule window (Radio menu): timed audio (WAV) / IQ (.hiq) / both captures by UTC time — daily, weekday set or one date — optional receive preset (dial + mode) applied at start and restored afterwards, file-size roll-over into numbered parts, next-run column, scheduler log, per-radio persistence · exact-once per occurrence from the 60 s clock; refused while the transmitter is armed, keyed or owned by a program or while a recorder is in use; a start missed while asleep is logged, never back-filled · crab `recording_schedule` ("record 9.420 MHz AM at 0300Z for 30 minutes", list / toggle / stop) |
 | MW stations | FCC AM Query extract (US Government public domain; fetched only on Refresh or by opt-in weekly refresh, cached under Application Support, never bundled) plus an optional operator CSV (MWList-style column names) · MW Stations window (Radio menu): fuzzy call-letter search (WBZZ finds WBZ), every station on a channel nearest the station grid first, city / state / licensee search, day / night power and directional flag, class, licence status, distance and bearing, Tune in AM, Plot on the Stations Heard map (at most 200 pins) · 9 / 10 kHz channel labels on the panadapter naming the likely station per channel (View menu; at most 24 in the visible span, nearest the display centre) · Crab `mw_station` answers "what's on 1030 kHz" and resolves misheard call letters |
 | Space weather | Header Kp + SFI chips · Space Weather window (Log menu) with NOAA SWPC public products: 3-hourly Kp, daily A-index and sunspot number, GOES X-ray flux + flare list, solar wind speed/density/Bz, proton and electron flux, R/S/G scales with three-day outlook, 27-day outlook, 45-day AP forecast, SWPC alert/watch/warning feed · one-month and one-day plots · twelve fixed HTTPS GETs hourly with per-product freshness limits (2 h minute products, 48 h daily, 10 d outlooks), stale or unreadable products show a dash · crab watches that fire once per event (flare ≥ class, Kp ≥ n, R/S/G ≥ n, proton event) with optional spoken alerts, off by default · the crab's `band_conditions` tool reads the same values |
+| Satellite passes | Satellite Pass Planner window (Radio menu): a native near-Earth SGP4 propagator (WGS72, Vallado et al. 2006, verified against the published Spacetrack Report #3 set) reads a local two-line element file — up to 16 low-Earth satellites with 70–150 min periods and eccentricity ≤ 0.2, 1–72 h ahead at the operator's minimum elevation — and predicts rise, peak and set with true azimuth, range and modeled range rate from the station grid center or entered WGS84 coordinates; the same window imports JSON plans from the optional Skyfield converter · element-epoch age warning, sky plot, favorites, downlink Doppler preview and a local transponder catalog · **live Doppler receive tracking**: Track on a pass (from two minutes before AOS) follows the predicted downlink on VFO A about once a second from the propagated elements (20 Hz hysteresis, operator nudge kept as an offset, transverter-aware dial mapping with range refusals), stops by itself at LOS, on disconnect, on ARM, when the dial is tuned outside the passband or when the elements pass 14 days · receive only: never keys, never touches TX frequency, split or transverter TX; the window is otherwise passive and never moves an antenna |
 | Logbook | ADIF import/export with preserved fields · Cabrillo 3.0 contest export (persisted per-contest header, UTC day / saved-filter selection, flagged missing exchanges) · editing, bulk changes, saved filters and backups · precise LoTW contact matching · [LoTW / eQSL / QRZ Logbook confirmation sync](docs/QSLSync.md) (dry-run reconciliation with tolerant call/band/mode/time matching, explained unmatched records and conflicts, per-source ADIF fields, incremental LoTW download, per-source coverage summary) · optional QRZ Logbook / eQSL / Club Log / Wavelog uploads (Keychain, durable bounded queue, per-contact receipts, manual selected/failed upload; off by default) · DXCC/WAS/WAZ/grid coverage · interactive worked-world globe, gray line and local DX radar · QRZ.com / HamQTH callsign lookup that fills empty station fields on commit and from the editor (Keychain credentials, off by default) · 100,000-contact performance fixture · statistics window (contacts per UTC day / month / year, band, mode, DXCC entity, CQ zone and continent, worked versus confirmed, charts + tables, CSV) · 100,000-contact performance fixture · **Contest** window (log only): ARRL Field Day and CQ WW DX SSB / CW rule sets (versioned, data-driven), sent / received exchange fields that follow the rules with section, zone, class and RST validation, live DUPE indicator with the earlier contact's time, QSO points, multipliers, total, rate and a per-band table over the logbook's `CONTEST_ID` contacts (edits and deletions in the QSO Log change the score), serial allocation, optional MASTER.SCP Super Check Partial suggestions, End contest → Cabrillo export with the header prepared; no CW / voice message sending (`docs/Contest.md`) |
 | Local MCP | Opt-in read-only RX and TX snapshots, offline SSB experiments, waterfall timing and receive-watch evidence over stdio · per-share expiry and revocation · [setup](docs/LocalMCP.md) |
 | Club Field Day | Merge local position journals or sync them with an authenticated private LAN host · score contacts and duplicates · read-only browser scoreboard export · [setup](docs/Contest.md) |
-| Feature catalog | Searchable inventory of 110 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
+| Feature catalog | Searchable inventory of 111 tools and surfaces · dependency-aware menu/control visibility · direct settings links · safe visibility reset |
 | Extras | Sub-RX (VFO B) · diversity RX (P2, with a one-shot Find-null estimator: preview, Apply, Restore) · radio audio output — the receiver through the radio's own headphone / speaker jacks (ANAN Orion MkII on P2; HL2 / SquareSDR with the AK4951 audio codec companion board announced to the gateware on P1; both off by default and not yet verified on a radio) · N2ADR IO Board band-follow (HL2: the TX frequency written to the IO Board over the Protocol 1 I2C bridge so a serial- or band-data-wired amplifier follows the dial; off by default, never keys or changes drive; [setup](docs/HL2IOBoard.md)) · RF time machine (180 s IQ) with decoder-event replay + excerpt export · IQ record/replay (.hiq) · 3D waterfall + ×2–×8 history compression (~9 min of band activity) · analog multimeter + GPU TX meters · lightning-static watch · hamlib NET rigctl CAT (LAN peers pair before tuning or keying) · Kenwood TS-2000 / PowerSDR-Thetis `ZZ` CAT emulation for loggers and digital programs (TCP, pseudo-terminal or serial adapter; receive-side command set, every keying or transmit-side command refused) · transverter profiles (IF→RF dial/CAT/log mapping with per-profile drive ceiling) · Speaker Tracker (local voiceprint clustering and naming of received voices, off by default) · tuning-device knobs (Ulanzi D100H template, user-remappable with per-control tune steps, off by default) · named multi-radio instances + local Master/Follower microphone/Deck audio (independent ARM/PTT; hardware acceptance pending; [setup](docs/SharedProgram.md)) · MIDI controllers (multiple CoreMIDI sources: device-specific mappings and lamp routes, learn-mapped encoders with speed acceleration, pickup knobs, Input Mixer faders/mutes/EQ/effect controls, nanoKONTROL2 profiles with mute/ducking strip-LED feedback (off by default), pads on the Stream Deck action model; off by default, keying assignments work behind ARM and every interlock) · optional Discord integration (status bot + Opus voice streaming + /waterfall snapshots, off by default) · **MAGNET HF Emergency** (magnethf.com watch/net availability, native JS8 transmit verified against JS8Call 3.0.3, JS8Call API hand-off, CW auto-key, voice script) |
 | OC outputs | Per-band open-collector matrix for the accessory connector (OC1–OC7 × band for receive, transmit and TUNE, tune pulse timers), stored per physical radio · the receive row drives Protocol 1 register 0 C2 and Protocol 2 high-priority byte 1401 while receiving · keyed transmit and TUNE rows follow the coordinator, with tune pulse timers and filter-board pin merging · all-zero default is byte-identical to the previous wire |
 | Band data to station devices | HermitSDR plays the radio side of a CAT or logger link so an amplifier or tuner follows the dial (Station › Control Devices › Station Devices): VK-Amps "CAT Yaesu" (`FA…;` on a serial port, polls answered) and "CAT Icom" (CI-V transceive frames) band switching, a Kenwood TS-2000 stream, and the Palstar HF-AUTO through W1TR's HF Auto app as N1MM `RadioInfo` or `USERDOC` XML over UDP · RF-side (transverter-mapped) frequency, pushed on change and repeated each poll interval · no device feedback is interpreted, nothing keys the radio · fixture-verified against virtual devices; not yet tried on the hardware |
@@ -2501,6 +2697,8 @@ Every release ships with a `SHA256SUMS` file; verify a download with
 | Logger broadcasts | WSJT-X UDP protocol output for GridTracker2, JT-Bridge, MacLoggerDX, RUMlogNG and any WSJT-X-aware logger — Heartbeat, Status, Decode (FT8 / FT4 only), Clear, QSO Logged, Logged ADIF, Close to a unicast host or a multicast group (127.0.0.1:2237 by default, multicast TTL 1), with optional inbound Reply (selects the decoded station exactly like a click on its row) and Halt Tx (the panel's STOP) · N1MM Logger+ `contactinfo` / `contactreplace` / `contactdelete` XML for every logged, edited or deleted contact (port 12060 by default; imports and restores excluded) · both off by default, one owning queue with a bounded send queue, nothing here can key or arm the radio (docs/LoggerBroadcasts.md) |
 | Web console | Browser receiver and remote console (#154, first slice of #91): one static page served by the overlay HTTP server at `/console`, pairing with the Control API over `wss://` with the same code, certificate and grants — panadapter + WebGL2 waterfall in the shack's palette (2D-canvas fallback), S-meter, dial, 12 kHz receiver audio through Web Audio, click-to-tune, step / arrow keys, mode, filter presets and custom width/shift in Hz, bands, AGC, VFO A⇄B, phone-width layout · installable secure-origin PWA with a removable static offline shell (no cached receiver or pairing data) · browser-session cap (1–4) and optional time limit · no transmit control anywhere; off by default |
 | Serial lines | USB-serial adapter modem-control lines as station I/O (#128): footswitch PTT and TX-inhibit inputs on CTS/DSR/DCD/RI, TX and TUNE outputs on DTR/RTS, 20 ms TIOCMGET poll with debounce, invert, lead/tail and pulse settings, reopen on loss, demo adapter · footswitch keys through the hardware-PTT path (ARM + coordinator, released on port loss / remap / quit) · inhibit input and lost port fold into the station interlock · TX line follows the coordinator with lead/tail, TUNE line pulses |
+| Meshtastic | Receive-only client of a local Meshtastic node over TCP 4403 or USB (Station › Control Devices › Meshtastic Receive, [docs](docs/Meshtastic.md)): node snapshot with names, positions, battery, SNR, hops and telemetry, live monitor with a node map and the last 128 decoded texts, Copy to MAGNET Draft · opt-in **alerts to the mesh** (#156 phase 1): the lightning-static warning, crab watch fires, Receive Watch recipe detections, SignalFind spots matching an operator watch list and Needed DX alerts become one-line UTC-stamped texts (≤ 200 bytes, TEXT_MESSAGE_APP) that the node transmits on its LoRa channel to every node or one chosen node — off by default behind a one-time confirmation, only while a monitor session is open, 1 message / 30 s with a burst of 3 and a 200-per-session cap, sent / dropped counters · opt-in **commands from the mesh** (#156 phase 2): `!`-texts from allowlisted nodes run through the viewer-chat gate and the receive-only `.remoteClient` tuning source (`!freq` `!mode` `!band` `!zoom` plus read-only `!smeter` `!status` `!decodes` `!help`), every transmit word refused with a reply, nothing while armed or keyed, broadcast texts ignored unless opted in, replies on the alerts token bucket, counted and logged · **mesh nodes as station devices**: battery, voltage, temperature, humidity, pressure, rain, SNR, hops and last-heard with per-reading age and a STALE chip under Station Devices, display only (no interlock coupling) · nothing reaches the HF transmitter |
+| Virtual camera | **HermitSDR Camera** (#147): an embedded macOS Camera Extension that OBS, Zoom, Meet, FaceTime and QuickTime select like a webcam · any HermitSDR window or a percentage crop of it (waterfall only), 1280 × 720 or 1920 × 1080 at 30 fps, letterboxed · activated only on the operator's click with the one-time System Settings approval, status and frame/drop counters in Station › Audio & Streaming › Virtual Camera · "No signal" card when nothing is published · video only ([guide](docs/VirtualCamera.md)) |
 | Platform | macOS 15+, Apple silicon only |
 
 ## The story so far

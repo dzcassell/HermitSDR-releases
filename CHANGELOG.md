@@ -9,6 +9,230 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.1109_001] — 2026-11-09
+
+### Added
+
+- **FM DX Catalog and band scan** (Radio menu; the list button beside the
+  WFM chips). A persisted catalog of every broadcast-FM station whose RDS
+  has been decoded, keyed by channel and PI — PS and the PS variants seen,
+  RBDS call sign, PTY, RadioText with history, TP/TA, first / last seen,
+  times seen, last / best channel level, BLER, free tag — most recent
+  first, 5,000 entries (oldest-last-seen evicted), JSON under Application
+  Support, CSV export, double-click to listen in WFM. **FM DX Scan** mutes
+  the speakers, switches the RSPdx to 1536 kHz WFM and parks its centre on
+  successive spans, running seven 200 kHz channels (thirteen on the 100 kHz
+  raster) through a parallel channelizer — frequency shift, 95 kHz
+  low-pass to the 384 kHz IF, discriminator, one RDS decoder and a
+  channel-power meter each — per 1.5 s dwell (1–5 s), so the Americas
+  band is swept in 15 hops ≈ 25 s; hops tune through the normal path as
+  the deliberate `fmDXScan` source, the scan stops on manual tune, mode or
+  rate change, disconnect, TX arm or Stop, and restores frequency, mode,
+  sample rate and mute. Locals are told from DX by persistence (present in
+  ≥ 80 % of the last 20 complete passes, after five) and optionally by
+  distance: a home from a US ZIP code (bundled public-domain Census ZCTA
+  centroid table, `docs/licenses/ZCTA-Gazetteer.md`) or a grid, against an
+  operator-imported FM station CSV (header CSV or the FCC FM Query pipe
+  layout; never downloaded), with a hide-within-N-miles filter. A station
+  new to the catalog or back after six hours is highlighted, toasted and
+  offered to the mesh as the new **FM DX** Meshtastic alert kind.
+  Synthetic-fixture tests cover the seven-channel decode within one dwell
+  (power within 0.01 dB), the worker's settle and rate guards, catalog
+  merge / sort / eviction / persistence / CSV, the local heuristic, ZIP
+  centroids and great-circle distance, station-table parsing and the hop
+  sequencer (`FMDXScannerTests`). `docs/FMDXScanner.md`. First live run
+  (Boston, RSPdx): 26 stations in 3 passes within 90 s, ≈ 25 s per pass;
+  because a 1.5 s hop rarely hears all four PS segments, the catalog now
+  keeps each station's PS / RadioText segments and completes them across
+  hops and passes (partial names shown as `WB·R····`), and an optional
+  **Adaptive** dwell leaves a hop early once every carrier has a complete
+  name or no RDS after 0.6 s.
+- Satellite Pass Planner: **Import TLE…** predicts passes natively (#319,
+  first two scope items). A clean-room near-Earth SGP4 propagator (WGS72
+  constants, Vallado, Crawford, Hujsak and Kelso 2006) reads a local
+  two-line element file with checksum verification, rotates TEME states
+  through IAU 1982 sidereal time into the Earth-fixed frame and produces
+  topocentric azimuth, elevation, range and modeled range rate for a WGS84
+  observer taken from the station grid center (or coordinates entered in the
+  sheet). Passes are found by 10 s elevation sampling with bisection-refined
+  rise and set and a golden-section peak, within the importer's bounds (16
+  satellites, 70–150 min periods, eccentricity ≤ 0.2, 1–72 h, 256 passes,
+  1 MiB). The result is stored exactly like an imported plan, so the sky
+  plot, Doppler preview and transponder catalog work unchanged, and the
+  element provenance reads file name plus import date. Deep-space objects
+  are refused with a reason; the Skyfield converter remains the alternative.
+  Verified against the nine near-Earth cases of the published SGP4
+  verification set (`Tests/DSPTests/Fixtures/SGP4`).
+- **Commands from the mesh and mesh nodes as station devices** (#156,
+  phase 2). With the new **Mesh commands** toggle on (off by default, its
+  own one-time confirmation, never restored on without it), a text that
+  starts with `!` from a node on the operator's allowlist (node ids; empty
+  = nobody) is parsed by the viewer-chat command gate and carried out
+  through the receive-only executor viewer chat already uses — tuning via
+  the Control API's `.remoteClient` source, so dial lock, history and CAT
+  semantics match: `!freq 7.074 lsb`, `!mode`, `!band 20m`, `!zoom`, plus
+  read-only `!smeter`, `!status`, `!decodes` and `!help`. Every transmit
+  word (`!ptt`, `!tx`, `!tune` without a frequency, `!arm`, `!drive`,
+  `!power`, …) is refused with a reply and has no action by construction;
+  tuning is refused while the transmitter is armed or keyed; broadcast
+  texts are ignored unless **Accept broadcast commands** is on; strangers
+  and the node's own echoes are ignored silently. Each command gets a short
+  reply to the sender node on the inbound channel through the phase-1 link,
+  sharing its token bucket and session cap but counted apart (received /
+  executed / refused / ignored, replies sent / dropped), and the window logs
+  time, node, text and outcome. Allowlist edits take effect for the next
+  text. Nodes heard by the monitor also appear as display-only devices
+  under Station Devices — battery, voltage, temperature, humidity,
+  pressure, hourly rain, SNR, hops and last-heard, every reading with its
+  age and a STALE chip after an hour — with no interlock, inhibit or
+  control coupling. Settings persist per station profile. Loopback fixture
+  node emitting FromRadio texts and telemetry, gate, counter, persistence
+  and transmit-probe tests. See [docs/Meshtastic.md](docs/Meshtastic.md).
+- **Alerts to the mesh** (#156, phase 1): the Meshtastic window can hand
+  short alert texts to the connected node, which transmits them on its LoRa
+  channel so an operator in the field reads them on a phone. Wired events:
+  the lightning-static warning, crab watch fires, Receive Watch recipe
+  detections, SignalFind spots whose callsign, park/summit reference or
+  program is on an operator watch list, and Needed DX alerts. One line each
+  with a UTC HH:MM stamp, ≤ 200 bytes cut on a UTF-8 boundary, to every node
+  or one chosen node, channel index, optional ACK request. Everything is off
+  by default behind a master toggle with a one-time confirmation; alerts go
+  only while a monitor session is open (never queued across reconnects), one
+  message per 30 s with a burst of three, a 200-per-session cap with a
+  visible notice, and sent / dropped counters plus the last line in the
+  window. Settings persist per station profile; the master toggle is never
+  restored on without the confirmation. Receive side only — nothing here
+  touches the HF transmitter, and inbound mesh texts are never treated as
+  commands (phase 2 stays in #156). Loopback fixture node, golden-byte,
+  truncation, rate-limit, session-cap and watch-list tests. See
+  [docs/Meshtastic.md](docs/Meshtastic.md).
+- Satellite Pass Planner: **live Doppler receive tracking** (#319, third
+  scope item). Select a pass, confirm the nominal downlink (seeded from the
+  local transponder catalog) and press **Track**: VFO A follows the predicted
+  downlink about once a second — `nominal × (1 − ṙ/c)` plus the operator's
+  nudge — propagating the imported elements with the native SGP4 model
+  (plans imported as JSON interpolate their stored looks). Retunes are
+  skipped inside a 20 Hz hysteresis, the dial is mapped through the active
+  transverter profile with range refusals before anything moves, and Track
+  may start two minutes before AOS (**Waiting for AOS**). Tracking stops by
+  itself at LOS, on disconnect, on ARM, when the dial is tuned outside the
+  passband (smaller moves become the kept nudge), when the elements pass the
+  14-day stale threshold or on Stop, and it is never persisted. Receive
+  only: no PTT, TX frequency, split or transverter TX offset is touched. New
+  `TuningSource.satelliteTracking` names the path through the dial-lock
+  gate. ([docs](docs/SatellitePassPlanner.md#live-doppler-tracking))
+- Live wideband broadcast FM (#121): a **WFM** receive mode with a 200 kHz
+  channel (100–300 kHz) on a 384 kHz IF, a ±75 kHz discriminator whose
+  composite multiplex feeds a 19 kHz pilot PLL, 38 kHz L−R stereo decode
+  with mono blend on a weak pilot, 75 / 50 µs de-emphasis (default by the
+  Mac's region, switchable in the DSP popover) and L+R mono into the
+  speaker path; the decoded left / right pair is published for a later
+  two-channel output (the receive chain is mono today). The offline RDS
+  decoder now runs live on the multiplex: station name, PI (RBDS call
+  sign), programme type by the RDS or RBDS table, RadioText, TP/TA,
+  music/speech and the station clock appear as chips beside the decoder
+  row while WFM is selected and clear on every retune. WFM is only offered
+  when the connected radio tunes above 64 MHz (or a receive transverter
+  profile reaches the band) and streams at 384 kHz or more; a CAT or
+  bookmark request elsewhere is refused with the reason, and the sound-card
+  decoders are gated off with a receive-health explanation. Synthetic
+  multiplex fixtures pin separation, SNR, pilot lock time, mono blend,
+  de-emphasis against the analog curve and live PS / RadioText decode;
+  `docs/BroadcastFM.md` is the operator guide. Hardware validation on an
+  RSPdx is still owed.
+- Add a fourth receive noise-reduction mode, **DeepFilter** (#299, the top
+  public request for "premium" neural NR): the pretrained DeepFilterNet3
+  network (Schröter et al., MIT / Apache-2.0 code and weights — nothing from
+  WDSP) exported to three streaming Core ML models and driven by a native
+  Swift feature pipeline (960/480 Vorbis STFT, 32 ERB bands, five-tap deep
+  filter, upstream local-SNR staging) over the same ×4 bridge RNNoise uses.
+  Selectable next to Spectral / RNNoise / Adaptive on main and SUB, in the
+  `N` key cycle, presets and crab flags; a strength slider caps the
+  attenuation and an optional perceptual post-filter is off by default. A
+  bounded worker owns the models, so the DSP thread never waits on
+  inference, overload degrades to a plain delay and a missing model passes
+  audio through with a status line. Adds ≈31 ms of delay (RNNoise ≈11 ms).
+  Every DSP stage is pinned against the upstream Python package and the
+  Core ML models against PyTorch (< 5e-6); the offline A/B numbers in
+  `docs/DeepFilterNet.md` are synthetic-fixture metrics, not listening
+  acceptance, which is still owed.
+- **HermitSDR Camera** (#147): the virtual camera is now a real macOS Camera
+  Extension embedded in the app (`Contents/Library/SystemExtensions`), so
+  OBS, Zoom, Meet, FaceTime and QuickTime can select "HermitSDR Camera" and
+  see a HermitSDR window — the waterfall, a decoder or the whole console —
+  at 1280 × 720 or 1920 × 1080, 30 fps. Activation happens only on the
+  operator's **Activate** click (one-time approval in System Settings ▸
+  General ▸ Login Items & Extensions; never at launch); the window shows
+  needs-approval / active / restart-required / failed-with-reason, opens
+  System Settings for you, and counts frames sent and dropped while
+  publishing. Clients see a dark "No signal" card whenever nothing is being
+  published. The extension accepts frames only from the HermitSDR app it
+  shipped in (same bundle identifier, HermitSDR's team signature); the Dev
+  build carries its own `com.hermitsdr.app.debug.camera` so it never
+  collides with the installed app. Video only. The release pipeline builds,
+  signs, notarizes and verifies the extension with the app
+  (`tools/verify-camera-extension.sh`); the app can install it once releases
+  are signed with the System Extension provisioning profile
+  (`HERMITSDR_CAMERA_PROFILE`), and says so in the window until then.
+  [Operator guide](docs/VirtualCamera.md).
+### Removed
+
+- Remove the CRT Glass waterfall effect (barrel distortion, scanlines,
+  aperture mask and grain); saved preferences that had it on are ignored.
+
+### Changed
+
+- Internal refactor, no behaviour change (#60): the transmit-drive register
+  decision, the open-collector outputs (band value, key-down latch, TUNE
+  pulse) and the aircheck WAV logger left `RadioEngine` for three small
+  compiler-checked `Sendable` services (`TXDriveResolver`,
+  `OpenCollectorOutputs`, `AircheckLogger`), each with a fixture that pins
+  the engine's previous call sequence against a recording link. The engine
+  keeps every call site and the single link write, so MOX / drive / OC
+  ordering on the wire is identical; `RadioEngine.swift` goes from 2,822 to
+  2,719 lines and its ratchet in `DocsConsistencyTests` drops to 2,750.
+  `docs/ConcurrencyOwnership.md`, `docs/StateOwnership.md`.
+- The Thanksgiving dynamic underlay is a new scene, **Riverbank at First
+  Frost**, replacing the flat Harvest Vortex mandala. A slow river through
+  sugar maples at peak colour under a moon that rises, crosses and sets twice
+  an hour; a true planar reflection of sky, moon, trees, fire and roosting
+  birds, bent by the current and broken by rings where leaves land; five
+  parallax planes with atmospheric perspective; mist in two layers, breath
+  fog and a first frost on the near bank; leaves that fall, land and drift
+  downstream; a campfire whose light moves on the canopy, the water and every
+  silhouette; and wildlife with behaviour on the scene clock — a deer family
+  (jointed, hooves planted) that drinks, watches the passing lantern canoe and
+  bolts at the beaver's tail slap, a heron that crosses the moon, and six
+  turkeys that fly up one by one at dusk to roost. Built with the Haunted
+  Hollow's techniques (Core Graphics drawings baked into a distance-field
+  atlas on selection, released on deselection); settings, persistence and
+  Midnight Noel are unchanged, with the layer switches remapped (atmosphere →
+  mist/frost, centerpiece → reflection and moon, ornaments → wildlife,
+  particles → leaves and sparks, surprises → canoe and heron flights).
+  `docs/HolidayUnderlays.md`, `docs/RiverbankArtwork.md`.
+
+### Fixed
+
+- Auxiliary-window close-out for the Aether UI sweep (#160): every one of the
+  99 windows reachable from the menu bar was opened in an isolated Demo
+  build, shrunk to its minimum, set to 820 points and read through
+  accessibility, in Aether Dark and Light. Fixed what that found: the RTTY
+  decoder, Carrier Sleuth, QRSS Grabber, Radiofax Schedules, Needed DX,
+  Stations Heard and ALE Monitor control rows wrapped labels into vertical
+  text or overflowed the window at their minimum widths (they now reflow
+  onto a second line, like the SignalFind header); SignalFind's "Hide WKD
+  B/M" wrapped at 960 points; the Deep Space, Night Garden, Haunted Hollow,
+  Riverbank and Midnight Noel settings windows could be shrunk until every
+  control was hidden (scroll area now keeps a 300-point floor); the ALE
+  Monitor's minimum height let the window hide the top of its content;
+  Virtual Camera's window minimum (470) was narrower than its view (520) and
+  clipped the first line; Console Layout Presets showed a blank panel on a
+  fresh install (now says no layouts are saved yet); the About window's
+  e-mail link had no accessible name. Keyboard pass: Escape dismisses sheets
+  and the Set Frequency dialog without muting the receiver, Tab reaches the
+  EQ faders and arrow keys step them. `docs/AetherConsole.md` "Close-out
+  2026-11-09" records every window and size checked.
+
 ## [2026.1108_004] — 2026-11-08
 
 ### Added
