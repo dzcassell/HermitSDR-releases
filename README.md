@@ -31,7 +31,24 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1109_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1109_002** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1109_002
+
+- Lower CPU on the receive path: Protocol 1 / Hermes-Lite 2 packet decode
+  (1.40 → 0.18 µs per datagram), the noise blanker and lightning-watch
+  detector (about 45 % less at 1536 kHz), the SDRplay helper and client IQ
+  framing, NetSDR per-packet allocations, and OmniSkimmer GPU staging.
+- Lower CPU on the network side: Hermit Remote IQ, TCI audio, Control API /
+  web console audio (encoded once per frame, not once per listener) and
+  RTMP chunking. Wire formats are byte-identical.
+- Save Buffer no longer stalls the receive thread at 768/1536 kHz; Band
+  Geology history loads and saves more than ten times faster.
+- Less main-thread work: SignalFind and DX Cluster publish once per batch,
+  idle one-second ticks no longer republish unchanged state, the per-radio
+  settings catalog is written only when it changed, and the waterfall
+  marquee resolves its font once instead of every frame.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `71c3ede8bd7b18ca297c27acc2df9efaf180bda3cd98d92419cd8eb8f8b3737f`.
 
 ## New in 2026.1109_001
 

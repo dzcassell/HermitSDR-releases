@@ -9,6 +9,107 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.1109_002] — 2026-11-09
+
+A bug sweep and performance pass over the whole application after the
+2026.1109_001 batch: nine parallel reviews (new receive features, mesh and
+SignalFind, audio and noise reduction, radio protocols, rendering and
+recording, engine and state, network servers, digital decoders, views), each
+fix pinned by a regression test where the code is in the test package. No
+transmit behaviour changed; transmit-path findings are filed for review.
+
+### Fixed
+
+- **ML (RNNoise) noise reduction now works at receive level.** The reducers
+  run ahead of the AGC, where receive audio is 60–110 dB below full scale
+  (measured on a 40 m Hermes-Lite 2 recording: band noise −103 dBFS, SSB
+  speech −73 to −80 dBFS), and RNNoise's features are absolute: it removed
+  no noise there and could attenuate a weak voice. The audio is now
+  level-shifted by an exact power of two around the network; on the same
+  recording the pauses drop 29–57 dB with under 1 dB of loud-speech loss.
+- DeepFilter: moving the strength or post-filter control no longer dips the
+  audio, and a fragment of pre-transmission audio is no longer replayed at
+  unkey. (Known limitation, unchanged in this release: DeepFilter's
+  silent-frame gate skips signals below roughly S8. Lifting it showed the
+  model cutting band-limited SSB speech by 11–16 dB, so that change waits
+  on a listening test.)
+- Auto-notch catches a carrier in about 0.1 s after it is switched on or
+  after unkeying, instead of up to a second on weak signals.
+- A misbehaving Audio Unit insert that emits a non-finite sample can no
+  longer leave receive audio dead until the next transmission.
+- **FM DX Scan** can be started again after a scan has stopped (it needed a
+  relaunch), the catalog's "fresh" highlight ages out during a running
+  scan, and the table stays responsive with a large imported station table.
+- **SDRplay RSPdx:** the app no longer quits if the SDRplay helper exits
+  while a command is being sent to it; one helper crash counts once, so the
+  full relaunch budget and back-off are used. A dial above 54 MHz (FM
+  broadcast, VHF) is restored after relaunch and reconnect instead of
+  snapping to 54.000 or 61.440 MHz.
+- **FlexRadio:** a single dropped network packet no longer clears the
+  time-machine history or resets FT8 timing; a sample-rate change during an
+  over or a tuner cycle no longer leaves the receiver silent until
+  reconnect; and per-radio settings no longer become read-only for every
+  radio after a Flex session (affected installs recover on the next launch).
+- Rewinding with the RF time machine and then retuning, changing rate or
+  reconnecting no longer leaves FT8, JS8, WSPR, JT9, JT65 or Q65 decoding
+  against the old rewind.
+- JS8: a 15-second slot is no longer thrown away when its last audio block
+  arrives a fraction of a second after the slot boundary.
+- **Station Devices / Meshtastic:** nodes without a valid clock keep
+  updating battery, voltage and sensors, and a position packet no longer
+  makes old telemetry look fresh.
+- **SignalFind:** the Quick Log sheet no longer resets while spots arrive or
+  the VFO moves; watch-list spots that arrived while the table was paused
+  are reported to the mesh on resume.
+- DX Cluster: spots from nodes that end lines with bell characters keep
+  their time and grid.
+- QSL sync: eQSL, QRZ and LoTW downloads with Latin-1 accented characters
+  import; a contact cancelled just as its upload starts is no longer sent.
+- Kenwood / PowerSDR CAT: a burst of commands arriving together is answered
+  in full instead of with a single `?;`. The CAT and TCI servers pause a
+  client that floods commands and close one that never reads its replies,
+  instead of growing memory.
+- Diversity "Find null" enables as soon as Diversity RX is on and stops when
+  the transmitter keys; radiofax timed capture follows its switch and plan
+  edits at once; the Performance plan table, Digital Mode Check and Band DVR
+  timeline update with the change that caused them.
+- Cancelling a NetSDR clock measurement puts the dial back and cancels on the
+  first press. Clicking the bandscope above 30 MHz tunes there.
+- A Crab band sweep stops when the radio disconnects or a replay starts and
+  can no longer leave a radio's saved settings on a sweep stop. The detected
+  CTCSS tone clears on disconnect. A saved co-host setting no longer touches
+  the Keychain at launch.
+- JS8 messages and received pictures from the last seconds before quitting
+  are saved. Logger broadcasts report an accurate dropped-datagram count.
+- Display: the Receiver panel zoom shows fractional zoom (×1.9 no longer
+  reads ×1); volume percentages round instead of truncating; the WFM filter
+  width reads "200 k" instead of a clipped value; the Frequency colors
+  popover is readable in the Light palette.
+- **Crashes fixed:** the frequency display with a transverter profile that
+  maps the dial below 0 Hz; CAL PROFILE when a row or the draft goes away
+  under a field being edited; a malformed APRS item report or NMEA sentence
+  (off the air or from APRS-IS); opening an I/Q WAV whose name carries a
+  date in non-ASCII digits; an auto-clip render over a row with no finite
+  bins; malformed numbers in cty.dat, the SOTA feed, the NOAA flare list,
+  JS8Call API replies, a QRZ reply, a CHIRP CSV and a Crab recording
+  request.
+
+### Changed
+
+- Lower CPU on the receive path: Protocol 1 / Hermes-Lite 2 packet decode
+  (1.40 → 0.18 µs per datagram), the noise blanker and lightning-watch
+  detector (about 45 % less at 1536 kHz), the SDRplay helper and client IQ
+  framing, NetSDR per-packet allocations, and OmniSkimmer GPU staging.
+- Lower CPU on the network side: Hermit Remote IQ, TCI audio, Control API /
+  web console audio (encoded once per frame, not once per listener) and
+  RTMP chunking. Wire formats are byte-identical.
+- Save Buffer no longer stalls the receive thread at 768/1536 kHz; Band
+  Geology history loads and saves more than ten times faster.
+- Less main-thread work: SignalFind and DX Cluster publish once per batch,
+  idle one-second ticks no longer republish unchanged state, the per-radio
+  settings catalog is written only when it changed, and the waterfall
+  marquee resolves its font once instead of every frame.
+
 ## [2026.1109_001] — 2026-11-09
 
 ### Added
