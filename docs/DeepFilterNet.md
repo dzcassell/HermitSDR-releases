@@ -186,6 +186,19 @@ channel, fading, QRM or how it *sounds*.
   has happened. #299's acceptance list (matched recordings — weak HF
   speech, fading, interference, transients, clean strong speech and CW —
   and owner listening) is still owed before this is advertised as shipped.
+* **Receive level (found 2026-11-09, open on #299).** The reducers sit
+  ahead of the AGC, where audio is far below the −20 dBFS used for the
+  measurements above: on a 40 m Hermes-Lite 2 recording band noise is
+  −103 dBFS and SSB speech −73 to −80 dBFS. The pipeline's silent-frame
+  gate (mean square < 1e−7, −70 dBFS) therefore skips the network for
+  almost every frame — the encoder ran on 663 and 5 of 9,996 frames for
+  two stations — so the mode does little below roughly S8. Lifting the
+  gate with an exact ×1024 level shift (branch
+  `stage/299-deepfilter-level`) makes the network run on every frame, and
+  it then cuts band-limited SSB speech by 11–16 dB (49–72 % of speech
+  frames attenuated more than 20 dB). That change was held back from
+  2026.1109_002 pending a listening test. RNNoise had the same level
+  problem without the speech loss and was fixed in that release.
 * **Speech-trained.** Expect CW, data, carriers and broadcast music to be
   attenuated hard; do not run it ahead of decoders (the pre-NR decoder tap
   is unchanged, so decoders never hear it).

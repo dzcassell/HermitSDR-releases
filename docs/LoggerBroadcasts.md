@@ -41,8 +41,9 @@ UDP feed; CAT for the logger itself is still the hamlib rigctl or
 - **Several programs at once** — give HermitSDR a multicast group such as
   `239.255.0.1:2237` and set every program to the same group. Multicast is
   sent with TTL 1 (this LAN only) and loopback on, so programs on this Mac
-  hear it too. If a program insists on a unicast port, keep HermitSDR on
-  unicast and let GridTracker2 forward.
+  hear it too; HermitSDR drops its own datagrams when they come back, so
+  "in" counts only other programs. If a program insists on a unicast port,
+  keep HermitSDR on unicast and let GridTracker2 forward.
 - **N1MM Logger+ / N1MM-compatible loggers** — enable the logger's inbound
   "N1MM contact info" UDP listener on **12060** (the option is named after
   N1MM in most general loggers). HermitSDR's `contestname` is `DX` and
@@ -55,7 +56,10 @@ how many came in, and dropped / failed counts. A dropped datagram means the
 bounded send queue (256 datagrams) was full — a map program that stalls
 for several slots loses the newest decodes, never the application's
 real-time paths. `failed` is a socket error (host unreachable); the next
-heartbeat retries.
+heartbeat retries. If the socket cannot be opened at all (a name that does
+not resolve yet, a busy port at login) the row shows `failed: …` and the
+open is retried after 2, 5, 15, 30 and 60 s; after that it stays failed
+until a setting changes or the switch is turned off and on.
 
 ## What each WSJT-X message carries
 
@@ -152,7 +156,9 @@ the record before the edit.
   `hermitsdr.logger` serial queue; `enqueue` pushes into a bounded queue
   (256) under a lock and never blocks, sends drain on the queue, and
   inbound datagrams are read on the queue and handed to the main actor as
-  copies. Multicast destinations get `IP_MULTICAST_TTL` 1 and loopback.
+  copies. Multicast destinations get `IP_MULTICAST_TTL` 1 and loopback;
+  a reading multicast link remembers what it sent for 2 s
+  (`LoggerEchoFilter`) and drops one byte-identical inbound copy of each.
 - Settings keys: `loggerWSJTXOn`, `loggerWSJTXHost`, `loggerWSJTXPort`,
   `loggerWSJTXInbound`, `loggerN1MMOn`, `loggerN1MMHost`, `loggerN1MMPort`
   (they ride along in the Settings.plist mirror).

@@ -9,6 +9,107 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.1110_001] — 2026-11-10
+
+The receive-side, interface and performance findings left open by the
+2026.1109_002 bug sweep (#401), each fix pinned by a regression test where
+the code is in the test package. No transmit behaviour changed.
+
+### Fixed
+
+- The S-meter can no longer crash the app. A corrupt recording or a
+  misbehaving source that delivered a not-a-number or infinite sample made
+  every S-meter readout trap; the reading is now always a real number
+  within −120…+60 dBFS, on the main, SUB and independent receivers.
+- QSO uploads: the upload outbox no longer fills up for good. After 10,000
+  lifetime uploads every new contact was refused with "Upload queue full";
+  the oldest finished receipts (accepted, already present, cancelled) now
+  make room. Waiting and failed uploads are never dropped.
+- QRZ confirmations: a QRZ logbook with more than 50,000 records is now
+  downloaded to its end. If a download has to stop early it says
+  "incomplete", keeps the last-sync date where it was, and the next
+  Download continues where the applied part ended.
+- Contest: the Cabrillo export opened from the Contest window now contains
+  exactly the contacts the score counts. It used whole UTC days, so
+  contacts logged the same day before the start or after the end were
+  exported but not scored.
+- DXpedition calendar: notes containing a Unicode line or paragraph
+  separator (common in pasted text) no longer produce an .ics file the app
+  cannot read back, and one malformed event in the afu.tools feed is
+  skipped and counted instead of failing the whole refresh.
+- Logger broadcasts: with a multicast WSJT-X address HermitSDR no longer
+  reads back its own datagrams, so the "in" count and the receipt line
+  show other programs only. A feed that could not open at launch is
+  retried after 2, 5, 15, 30 and 60 s instead of staying failed.
+- WSPR, JT9, JT65 and Q65: a slot that was still being decoded when you
+  stopped, restarted or retuned the decoder (or moved the replay
+  position, or changed the Q65 sub-mode) is now thrown away instead of
+  showing up as a spot in the new session. Retuning JT65 or Q65 in the
+  middle of a slot no longer shifts the rest of that slot seconds early;
+  the part already gone is treated as silence, so the remainder decodes
+  with the right DT or not at all.
+- RSID: two mode identifiers sent at the same time on different audio
+  frequencies (more than about 176 Hz apart) are now both reported. The
+  second one used to be ignored while the first was being confirmed.
+- Flex: a very long reply from the radio, such as the full meter list, no
+  longer drops the connection. Control lines up to 1 MB are accepted;
+  before, anything over 8,192 bytes ended the session.
+- NetSDR: at the 2 MHz span, a network dropout of about 4 to 5 seconds no
+  longer ends in "No NetSDR I/Q data has arrived". The stream picks up
+  again when the packets return instead of being discarded as late.
+- Hermit Remote: a shack radio whose sample rate cannot be relayed is now
+  refused with a message naming the rate, instead of the client reporting
+  "malformed WELCOME". No supported radio produces such a rate today.
+- TCI: if the TCI listener fails, its clients are now closed and counted
+  out properly, and the server stops polling for them. Commands and
+  replies are also delivered strictly in the order they were sent.
+- OBS overlay: a browser or program that asks for a page, snapshot or
+  audio segment and then stops reading is disconnected after 30 seconds,
+  so it can no longer hold one of the 16 connection slots indefinitely.
+  Live streams are not affected: a paused audio player stays connected
+  and skips ahead to current audio when it resumes.
+- IQ recording: when a recording stops because the disk is full, the
+  reported length now matches what was saved. It used to count one
+  buffer (up to 65,536 samples) that never reached the file.
+- SDRplay: the "is the SDRplay API installed" check can no longer hang
+  on a system tool that never finishes; it gives up after 5 seconds.
+- Disconnecting clears the broadcast-FM display. The last station's RDS
+  name, RadioText and the stereo lamp used to stay on screen with no radio
+  connected.
+- The Decoders…, local-clock settings and VFO B popovers opened from the
+  black tuning strip now follow the chosen palette instead of the strip's
+  fixed dark look — readable text and normal button faces in the Light
+  palette.
+
+### Performance
+
+- The Stations Heard map redraws only when a heard grid, path or APRS
+  station changes, not on every character a CW, RTTY or other decoder
+  prints.
+- The console's VOX rows no longer redraw at the S-meter and transmit-meter
+  rates. Display only: VOX behaviour and its settings are unchanged.
+- The FM DX catalog window sorts the catalog once per change instead of
+  several times a second during a scan.
+- The local-clock settings popover no longer rebuilds its 400-entry
+  time-zone list every second while it is open.
+- Contest logging: Super Check Partial suggestions are computed once per
+  keystroke instead of twice, and the search through a large MASTER.SCP is
+  faster. The suggestions are the same.
+- MW Stations search is lighter on each keystroke: call signs are prepared
+  once when the station list loads. Results and their order are the same.
+- The APRS-IS feed updates its packet count and rate together, halving the
+  redraws each packet caused in Settings and on the Stations Heard map.
+- NetSDR: the receive path no longer allocates memory for every data packet
+  when resampling to the chain rate (about 15,600 allocations a second at
+  the widest span). Received samples are bit-for-bit the same.
+- Q65: the receive front end no longer shuffles its filter history for
+  every audio sample. Same decodes, bit for bit, at about two thirds of
+  the front-end CPU cost.
+- Riverbank at First Frost and Haunted Hollow: the scene artwork is now
+  prepared in the background instead of inside the first frame, removing
+  most of the stutter when the theme first appears. The trees, animals and
+  lanterns appear a moment after the sky and water.
+
 ## [2026.1109_002] — 2026-11-09
 
 A bug sweep and performance pass over the whole application after the

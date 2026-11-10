@@ -126,7 +126,9 @@ other contact.
 the header prepared from the session: `CONTEST`, `CATEGORY-MODE`,
 `CATEGORY-POWER` (Field Day), the sent exchange, the claimed score, and the
 callsign when the header had none; the selection is the contest id over the
-session's UTC days from the full log. The rest of the header (name, address,
+session's exact period (start to end, the same contacts the score counts)
+from the full log; switching **Contest session period** off in the sheet
+gives the whole-UTC-day range instead. The rest of the header (name, address,
 club, operators…) is the operator's persisted header as before.
 
 Field Day QSO lines are written without the RST columns

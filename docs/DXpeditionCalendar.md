@@ -34,14 +34,17 @@ An all-day event uses midnight UTC and an exclusive end date. Export
 recurrences as individual events and use UTC for ambiguous clock-change
 times. An older publisher revision cannot overwrite a newer one.
 Exports carry stable IDs, UTC dates, source links and cancelled status.
-Reminders stay in HermitSDR. The format follows [RFC 5545](https://www.rfc-editor.org/rfc/rfc5545).
+Reminders stay in HermitSDR. Every line break in a note, including the
+Unicode line and paragraph separators, is written as an escaped line break.
+The format follows [RFC 5545](https://www.rfc-editor.org/rfc/rfc5545).
 
 Choose **Plans → Refresh afu.tools Calendar…** to check the publisher’s
 public DXpedition feed. Each refresh makes one HTTPS request. HermitSDR
 shows when it last successfully checked the feed and keeps that snapshot
 in the station profile. The publisher supplies announcement dates,
-calls and source notes. Provisional prefixes and unsupported events are
-skipped and counted. Bands and modes display as fields when the publisher
+calls and source notes. Provisional prefixes and unsupported, malformed or
+repeated events are skipped and counted; one bad event does not stop the
+refresh. Bands and modes display as fields when the publisher
 supplies them in the supported calendar extensions.
 
 Cached announcements older than 24 hours, or omitted from a subsequent

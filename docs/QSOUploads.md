@@ -102,7 +102,11 @@ payloads at 8 MiB. Accepted payloads are discarded while their duplicate
 receipts remain. Each ADIF payload is capped at 128 KiB and each response at 64 KiB;
 HTTP encoding and credential fields add their normal request overhead.
 **Cancel waiting** frees pending capacity without deleting contacts or receipts.
-A full or unreadable outbox leaves the log local with a visible status; an
+When the store reaches 10,000 receipts the oldest finished ones (accepted,
+already present, cancelled) are dropped to make room; a contact whose receipt
+was dropped shows no upload state and a later **Upload selected** sends it
+again. Waiting and failed uploads are never dropped. An outbox full of those,
+or an unreadable one, leaves the log local with a visible status; an
 unreadable file is preserved rather than replaced. Symbolic links (including
 dangling links) and nonregular outbox paths are refused; reads are capped at
 32 MiB through the opened file, even if it grows. Retain it with logbook backups.

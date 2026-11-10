@@ -28,7 +28,11 @@ once, on the button, and encodes it straight into the one documented request:
   under `/qslcard/`. An empty inbox is not an error.
 - QRZ Logbook: `POST logbook.qrz.com/api` with `KEY`, `ACTION=FETCH`,
   `OPTION=TYPE:ADIF,MAX:250[,MODSINCE:YYYY-MM-DD][,AFTERLOGID:n]`, walked by
-  log id until a short page. A record is a QRZ confirmation only with
+  log id until a short page. A walk that reaches 2,000 pages or the 32 MiB
+  budget first is reported as **incomplete**: apply that part, then download
+  again and the walk continues after the last log id with the same window;
+  the cursor moves only when the whole walk has been applied. A record is a
+  QRZ confirmation only with
   `APP_QRZLOG_STATUS=C`; a relayed `LOTW_QSL_RCVD` inside a QRZ record is
   LoTW's confirmation and is ignored here (download the LoTW report for it).
 
