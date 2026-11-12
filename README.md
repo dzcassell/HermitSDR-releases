@@ -31,7 +31,146 @@ ANAN-7000DLE MK2 — correct sideband both ways on each, clean key/unkey,
 hardware PA interlocks, keyboard **CW keying**, and a complete
 **WSJT-X FT8 cycle** validated end to end through CAT PTT.
 
-Current version: **2026.1110_001** (see [CHANGELOG.md](CHANGELOG.md)).
+Current version: **2026.1111_001** (see [CHANGELOG.md](CHANGELOG.md)).
+
+## New in 2026.1111_001
+
+- Decoders at real receive levels. SELCAL, DTMF and the EAS attention-tone
+  detector needed tones louder than about −67 dBFS, which test signals reach
+  and an HF signal ahead of the AGC never does; they now decode down to the
+  noise. PSK31/63/125 no longer shows lock while printing nothing on very
+  quiet audio, and QPSK finds a signal that is off the dial at receive
+  level. The ALE monitor no longer misses weak calls in its first minute,
+  the ALE skimmer decodes weak soundings, Hell no longer paints the first
+  characters of a weak transmission too faint to read, and the CW skimmer
+  keeps its sensitivity on quiet bands and with the attenuator in.
+- Sub Receiver: the window no longer crashes when SUB is in, or follows a
+  main receiver in, WFM.
+- Files that could crash the app at every launch or window open no longer
+  do: a MIDI mapping file with an impossible channel number, a Stream Deck
+  layout with an out-of-range page, band-memory or tune amount, and a Media
+  Deck file with an impossible grid size (grid sides are held to 1–32).
+- A malformed message from the program on the OBS WebSocket port, or a Zoom
+  link with a damaged host name pasted into Meeting Share, could crash
+  HermitSDR.
+- Receive audio survives an output device (aggregate, Bluetooth) that is
+  momentarily unusable during a device change: the speaker engine retries
+  instead of the app quitting.
+- A MIDI knob assigned to AF volume no longer snaps the volume back to the
+  knob's position after you change the volume on screen or from another
+  controller; turn the knob through the current setting to pick it up again.
+- Replay and Demo Mode: band buttons and spot clicks no longer overwrite the
+  band memory of the band the recording sits in; switching VPN Mode or Full
+  Experience during a replay no longer shrinks the frequency scale and
+  click-to-tune span; opening a recording below 384 kHz with WFM selected
+  falls back to FM; a scheduled preset recording is refused while a file is
+  replaying; and starting Demo Mode for the first time no longer disconnects
+  a radio you connected while the demo band was being generated.
+- Quitting during a crab band sweep, or quitting or disconnecting during an
+  FM DX scan, no longer saves the sweep's or scan's temporary dial, mode,
+  rate and mute as your settings.
+- Transverters: a scheduled, broadcast or radiofax tune that the transverter
+  profile refuses no longer changes the mode, and Set Frequency starts from
+  the frequency the dial shows.
+- Recalling a broadcast-FM bookmark on a radio that cannot run WFM is refused
+  with the reason, and a bookmark's filter width is held to its mode's range.
+- A panadapter ceiling below −115 dB is restored as saved.
+- RF Vision no longer keeps out-of-date signal regions after a SUB or
+  diversity switch, a stream gap or a memory-budget change ends a rewind.
+- Satellite Pass Planner: reopening the window no longer stops Doppler
+  tracking in the middle of a pass.
+- Received Images: reopening the window no longer shows an empty callsign
+  field that erases the saved callsign when you press Set.
+- Social: a Mastodon token or Bluesky app password you pasted and used is
+  saved when the window closes, not only on Return or Test.
+- Stream Deck Setup: the page-name field follows the page after removing a
+  page or importing a layout, so renaming no longer hits the wrong page.
+- Logger broadcasts: a WSJT-X feed on a multicast group that could not join
+  the group at launch (no network yet) now says so and retries, instead of
+  looking connected and never hearing Reply or Halt Tx; and a burst of
+  inbound datagrams can no longer queue without limit and stall the
+  interface.
+- DX cluster and APRS-IS reconnect on their own after the server refuses a
+  connection (for example while it restarts) or its name does not resolve.
+- TCI: connections that never complete the WebSocket handshake are closed
+  after 10 seconds, so they can no longer hold all eight client slots.
+- Kenwood CAT: when the listener fails, its clients are reported
+  disconnected and the client count returns to zero.
+- Streaming: a destination whose connection dropped in the instant its first
+  video arrived could show as live with nothing being sent; it now retries.
+- OBS: a band or mode scene rule is applied again after you switch scenes by
+  hand in OBS and then tune back.
+- Discord `/signal` and `/status` report the same calibrated S-meter reading
+  as the console (they showed the uncalibrated level).
+- The co-host answers viewer questions again after the crab's provider is
+  switched mid-answer.
+- The spectrum trace no longer flares white, or stays white, and the header
+  S-meter bar no longer goes dead, when the Mac's clock is set back while
+  HermitSDR is running (for example by a time sync).
+- Haunted Hollow and Riverbank at First Frost: clouds, mist and the river's
+  fine ripples no longer jump to a different shape (the ripples did so every
+  40 seconds, the clouds a few times an hour). Some drift speeds changed
+  slightly to make that possible.
+- Carrier Sleuth removes its working files before it reports an analysis
+  cancelled, failed or complete, and working folders left behind by a crash
+  or force-quit are removed the next time an analysis starts.
+- A repeated JS8 message is no longer listed twice after an older,
+  incomplete message expired; a JS8 conversation opens at its newest message.
+- The NCDXF beacon history and the FM DX catalog are saved while they are
+  being collected, not only on a clean stop or quit; a DSC message received
+  just before quitting is kept.
+- Times shown in UTC where the window says UTC: Decode a Recording results,
+  the Digital Modes spot list, LoTW QSO rows, and the Space Weather daily Ap
+  and 27-day bars west of Greenwich.
+- Logs that stopped following once full keep scrolling to the newest line:
+  the FT8 decode list (with a filter on), Viewer Chat, the YouTube Live and
+  Discord diagnostics, and the Ask The Crab transcript while a reply streams.
+- Smaller display fixes: the classic control bar's zoom label shows ×1.9
+  rather than ×1; the Auto-clips "armed — N s buffered" line counts up; TX
+  Meters peak markers fall at their intended rate; the TX passband caption
+  shows the real occupied width in DSB, FM and NFM; the Wave Editor and QRSS
+  Grabber show their content when reopened; the beacon history's "ago"
+  column keeps moving; Station Devices ports read 4533, not 4,533; a
+  successful ADIF export is green, not red; the CW decoder window no longer
+  offers an Enable button that does nothing outside CW mode; the Trophy Case
+  lists the UFO, sasquatch and flying-toaster achievements; LUMEN (lab)
+  playback keeps its pacing after Stop then Play.
+- VoiceOver: the FT8 transmit audio-offset slider and the bookmark delete
+  buttons are named correctly.
+- Receive DSP costs about 19 % less per block at every sample rate (USB at
+  384 kHz: 30 → 25 µs per 5 ms block; at 1536 kHz: 115 → 93 µs), with
+  bit-identical audio and waterfall on a real 40 m recording.
+- The network thread hands IQ packets to the DSP queue 4× faster at 384 kHz
+  and 11× faster at 1536 kHz, and IQ recording interleaves samples about 3×
+  faster.
+- Choosing a living-scene palette (Aquarium, Night Garden, Deep Space,
+  Haunted Hollow, Riverbank, Midnight Noel) no longer stalls the display
+  while the scene loads; it is built in the background and appears a moment
+  later. A 3D or Niagara waterfall under a living-scene palette no longer
+  blurs the whole picture every frame for an effect it does not show.
+- Windows that redrew far more often than they changed: the Multimeter on a
+  steady reading, the FT8 map button, the time-machine button and JS8
+  Conversations on every decoder update, the Control API settings pane and
+  web console ten times a second with TX disarmed, the Wave Editor thirty
+  times a second while paused, and the arcade overlay at 60 frames per
+  second for one lightning-watch chip.
+- Lists searched once per update instead of three or four times, including
+  while you tune with the window open: MW Stations, Shortwave Schedule, the
+  DSC panel and JS8 search. The bookmark list is filtered only while its
+  popover is open.
+- SignalFind parses spot times directly instead of building two date
+  formatters per spot, removing a hitch on every 30-second refresh.
+- The ALE heard log is written in the background once per burst, not in
+  full on every decoded word.
+- The OBS and Viewer Chat windows no longer query the Keychain several times
+  a second while open.
+- Waterfall Studio no longer re-decodes the capture on every mouse move of a
+  crop or annotation drag; Carrier Sleuth's dB sliders no longer queue a
+  full-resolution render per tick; the Feld Hell preview is drawn from one
+  rasterization instead of one per pixel.
+- Downloaded update archives are deleted after installing instead of
+  accumulating in Application Support.
+- **Verified download.** Developer ID signed, notarized and stapled. VirusTotal reported 0/75 detections for the DMG, SHA-256 `5384441aa0499e01da4014aac0caeb237be03c4e5b7946878023b56f080fe27a`.
 
 ## New in 2026.1110_001
 

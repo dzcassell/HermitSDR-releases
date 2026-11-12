@@ -159,6 +159,11 @@ the record before the edit.
   copies. Multicast destinations get `IP_MULTICAST_TTL` 1 and loopback;
   a reading multicast link remembers what it sent for 2 s
   (`LoggerEchoFilter`) and drops one byte-identical inbound copy of each.
+  At most 64 inbound datagrams wait for the main actor
+  (`LoggerInboundGate`); a sender faster than that loses the excess.
+  A reading link that cannot join its group (no multicast route yet at
+  login) fails the open with `cannot join …` and is retried like any other
+  failed open.
 - Settings keys: `loggerWSJTXOn`, `loggerWSJTXHost`, `loggerWSJTXPort`,
   `loggerWSJTXInbound`, `loggerN1MMOn`, `loggerN1MMHost`, `loggerN1MMPort`
   (they ride along in the Settings.plist mirror).

@@ -82,8 +82,11 @@ finished or cancelled job holds nothing. Two streamed stages:
    wrapped edges of each block. The carrier's residual from the bin centre
    (at most ±0.73 Hz) is corrected when the display window is cut, not by a
    per-sample mixer. Working memory is a few L-sample buffers plus a
-   256 KB write buffer per channel; the spill files are removed when the
-   job ends, whatever the outcome.
+   256 KB write buffer per channel; the spill files are removed before
+   the job reports its outcome, whatever the outcome. The directory
+   (`carrier-sleuth-spill-<UUID>`) is held by an advisory lock while the
+   job lives; one left behind by a killed process is unlocked, and the
+   next analysis removes it.
 2. **Transform.** Channel by channel — a bounded number at a time, chosen
    so the workers' buffers (3 × N floats each) stay under 512 MB — the
    spill stream is Hann-windowed in windows of N = 2^FFT samples advanced
