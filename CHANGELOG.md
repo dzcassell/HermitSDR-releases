@@ -9,6 +9,91 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.1114_001] — 2026-11-14
+
+A neural CW decoder for the receiver and the skimmer, a MUF reading for your
+own location, and a seq-err counter you can reset. No transmit behaviour
+changed.
+
+### Added
+
+- MUF chip beside Kp and SFI in the header and the console status strip: the
+  maximum usable frequency (MUF(3000), MHz) over your station grid, from the
+  ionosonde soundings of the past hour. Hover for the highest band below it,
+  foF2 and each ionosonde used with its distance and sounding time. It keys
+  off the Grid in Settings › Station; "Show MUF for my grid" there switches
+  it off. The public ionosonde list is downloaded from prop.kc2g.com every
+  15 minutes and blended on your Mac: the grid is not sent. Where no
+  ionosonde within 3000 km has reported in the past hour the chip shows a
+  dash and names the nearest one, not a number from a different sky. The
+  crab's band-conditions answer includes the reading. See `docs/MUF.md`.
+- **Click the "seq err" counter to reset it.** The status-bar count returns
+  to zero and stays visible as "0 seq err", so a change you make next has a
+  fresh reference point. The link keeps its own running total for the
+  receive-health and usage figures.
+- **The seq-err tooltip says what was lost.** It now reports how many IQ
+  packets never arrived, how many arrived late or twice, and how long the
+  stream was silent before the most recent break (Protocol 1 and 2).
+- **It also warns when the stream needs gigabit.** Above about 80 Mbit/s on
+  the wire the tooltip gives the figure. An ANAN at 1536 k with the Super
+  Skimmer monitors is about 88 Mbit/s; adding SUB asks for more than a
+  100 Mbit/s hop can carry, and the count then climbs by several hundred a
+  second (measured 2026-11-14: the stream pinned at 99.3 Mbit/s).
+
+### Changed
+
+- **The CW decoder is now a neural network (hermitCW)**, and it is the only
+  one: the envelope decoder it replaces is removed. Same CW toggle, same
+  window (Decode › CW Decoder), CW mode only, receive only.
+  - The station no longer has to be zero-beat. The decoder starts at the
+    receive pitch and follows the keyed signal nearest to it, within
+    ±150 Hz, recovering the start of the transmission when it moves. The
+    window shows the sending speed and, while following, the pitch found.
+  - It copies hand-sent, fading and weak code. On 100 synthetic test clips
+    it makes 1.3 % character errors with the receiver on the station and
+    1.5 – 2.1 % with the receiver 60 to 120 Hz off. Clean machine-sent code
+    copies without error from 8 to 55 WPM (0.2 % at 5, 10 % at 60); the
+    network was trained on 5 – 35 WPM.
+  - Decoder Activity no longer shows an SNR figure for CW.
+- **OmniSkimmer copies every CW signal with the same network.** Each row
+  finds the keyed tone inside its 375 Hz channel, waits until there is one
+  (a channel of noise or of two RTTY tones stays empty), and decodes from
+  there. On the same clips, placed as the skimmer would see them, rows on
+  stations the tracker would acquire make 0.6 – 1.9 % character errors; the
+  envelope decoder made 67 – 77 % on those hand-timed clips. A row costs
+  about 0.4 % of one core (debug build), where the envelope decoder cost
+  next to nothing; 64 rows are the limit.
+- Characters the network is unsure of (probability under 0.4) are left out.
+  That is what noise in a narrow filter produces: 14 a minute through a
+  150 Hz filter before, none after, for 0.1 point more errors on the test
+  clips.
+
+The network (three convolution layers and three GRU layers, 1.3 million
+weights, 5.2 MB) was trained in a separate PyTorch project and runs here in
+plain Swift on the CPU. The weights and that Swift are original
+HermitSDR work and carry the same terms as the rest of the application.
+The error rates were measured on synthetic clips and generated signals.
+Scott has since listened to the decoder on real signals and reports the
+copy is very good (2026-11-12). On 2026-11-14 it was run on the air on 40 m
+and against a three-minute off-air recording of the band beside the decoder
+it replaces: both copy the strong stations; the network also copied weak
+ones the envelope decoder turned into noise (a W1AW bulletin, a POTA CQ, a
+station in fading), wrote less on voice signals in the phone segment, and
+took about a sixth longer to process the recording. `docs/HermitCW.md` has the design, the
+measurements, the limits, the licence and how to regenerate the weights
+(`tools/hermitcw-export.py`, `tools/hermitcw-reference.py`).
+
+### Fixed
+
+- CW decoder: text from a signal you had already left could still be printed
+  after switching CW off or retuning while the decoder was busy. Results now
+  belong to the stream they were decoded from and stale ones are discarded.
+- Decode a Recording, CW: a file that ended right after a character lost that
+  character. The decoder now flushes at the end of the file.
+- CW decoder: if its network could not be loaded, switching CW off and on
+  showed "Listening" for a decoder that could never run. Each new session
+  now says why it is unavailable.
+
 ## [2026.1111_001] — 2026-11-11
 
 A second full bug sweep and optimization pass, aimed at the parts the
