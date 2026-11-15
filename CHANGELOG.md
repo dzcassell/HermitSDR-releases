@@ -9,6 +9,170 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.1115_001] — 2026-11-15
+
+Eight receive-side additions from the competitor survey: a band plan strip
+and RF-anchored notches on the panadapter, a voice squelch, recordings that
+keep only the transmissions, a signal-strength history chart, automatic
+attenuation that recovers, a contests window and a "heard by" map layer.
+No transmit behaviour changed.
+
+### Added
+
+- **Signal History** (Radio menu): a chart of how strong the tuned signal has
+  been, from the last minute to the last 48 hours. It plots the S-meter level
+  in dBm, the noise floor inside the filter and the SNR, with SUB as a second
+  trace when it is on. Frequency, band, mode, antenna and filter changes are
+  marked on the chart automatically, and you can stamp your own note
+  ("switched to loop"). Drag to select an interval, Shift-drag for a second
+  one, and the panel compares their medians and spread — an antenna A/B test
+  with numbers. Readings taken while transmitting or overloaded are shaded
+  and left out of the statistics. "Log to CSV" writes the readings to a file
+  under Documents as they arrive (every sample, 1 s, 10 s or 1 min rows) and
+  forces it to disk every 5 seconds, so a crash loses at most that; the chart
+  exports as CSV or PNG. Recording starts when the window first opens and
+  uses a fixed 1.7 MB of memory however long it runs; logging is off until
+  you switch it on. Receive only. See `docs/SignalHistory.md`.
+- **Contests window (Log › Contests).** Shows the contests on the air now and
+  those starting in the next four weeks, in UTC, with each operating period,
+  modes, bands, exchange and a rules link. HermitSDR ships no contest list
+  and contacts no contest calendar by default: import an iCalendar (.ics) or
+  JSON file you downloaded, and the window shows its source and age. A list
+  more than 35 days old is marked unverified and never shown as current.
+  "Open in Contest Logger" selects the matching rule set for ARRL Field Day
+  and CQ WW DX (SSB / CW). Optional, all off by default: a bell on each
+  contest for an in-app reminder before each period starts, an "On now" chip
+  in the header, and a feed address you enter yourself (one request per
+  Refresh, at most weekly otherwise, to the host shown; nothing about your
+  station is sent). Ask The Crab can answer "what contests are on this
+  weekend" from the imported list and says how old it is. See
+  `docs/ContestCalendar.md`.
+- **Heard by: see where your own signal is being received.** A new opt-in
+  layer on the Stations Heard map draws every station that reported your
+  callsign in the last 15 minutes to 6 hours, coloured by band, with a
+  great-circle path from your grid; hover a pin for band, mode, signal
+  report, distance, bearing and age. The chart button beside the "Heard by"
+  checkbox opens a panel with reporters per band over the last hour, the
+  farthest report and best signal report per band, a polar plot of reports
+  by direction (handy for judging an antenna), the report list and CSV
+  export. Reports come from PSK Reporter (its own switch, "Ask PSK
+  Reporter") and from RBN / DX-cluster spots of your callsign on nodes you
+  already have connected, which need no extra request. Both switches are off
+  by default. When on, one request goes to retrieve.pskreporter.info no more
+  often than every five minutes (the interval PSK Reporter publishes; longer
+  after an error, and the panel shows how old the data is); it carries your
+  public callsign and nothing else. WSPRnet is not queried. Nothing here
+  transmits. See `docs/HeardBy.md`.
+- **Record only when open** (Radio → Gated Recordings…): audio recordings can
+  follow the receiver's squelch instead of running continuously, so eight
+  hours on a net frequency, an aero channel or a repeater become a few
+  minutes of transmissions. Each one keeps half a second from before the
+  squelch opened (the first syllable is not lost) and two seconds after it
+  closed; a squelch that reopens inside those two seconds continues the same
+  transmission. Choose one compacted WAV with a cue list beside it
+  (`.cues.json`: UTC start, length, frequency, mode and peak level per
+  transmission) or one WAV per transmission named by UTC, frequency and mode
+  (`20261115-031502Z_7150kHz_LSB.wav`). Key-ups shorter than the minimum
+  length (1 s, adjustable) are dropped and leave no file. The window lists
+  every gated session with its transmissions: play, delete, export the
+  selection. An optional limit (number of transmissions, total megabytes)
+  deletes the oldest files of the running session first; it is off unless you
+  set it. Off by default: with the option off the audio recorder writes
+  exactly what it did before. It applies to the next audio recording you
+  start from the header button, the File menu, the crab or the Recording
+  Schedule, and it needs the squelch on (level squelch, or CTCSS tone squelch
+  in FM). Gated files hold the main receiver's audio; the sub-receiver mix,
+  sidetone and media decks are not in them. See `docs/Recording.md`.
+- **Band plan strip on the panadapter.** A thin coloured strip above the
+  frequency scale shows what each part of the band is for: CW, data and
+  narrow modes, phone, beacons, satellite and broadcast. Dashed lines mark
+  the band edges, and the spectrum outside the amateur band gets a faint
+  wash while an edge is on screen. Move the pointer over the panadapter to
+  read the segment's name, limits, maximum bandwidth and, in the US plan,
+  the licence classes. Small ticks mark the FT8, FT4, WSPR, JS8, SSTV and
+  QRP frequencies; click a label to tune there. Plans included: US licence
+  classes, IARU Region 1, 2 and 3 (160 m to 10 m) and the long, medium and
+  short wave broadcast bands. "Auto" follows the region in Settings › TX
+  operating policy. "My class" dims the US segments your licence class may
+  not use. Your own segments and spot frequencies go in a `BandPlan.json`
+  file; a saved change appears within two seconds and a mistake is reported
+  with its line number. On by default; switch it off or change the plan in
+  the Display popover. Display only: it does not change what the
+  transmitter may do. See `docs/BandPlanOverlay.md`.
+- VoiceOver reads the band-plan segment under the VFO, and "Speak full
+  status" adds "in the CW segment" (or data, phone, beacon, satellite, a
+  broadcast band) while the strip is on.
+- **RF notches that stay on their frequency.** Right-click a carrier on the
+  panadapter or waterfall and a notch is placed on that RF frequency, shown
+  as a shaded bar. Tune, change mode, use RIT or change the CW pitch and the
+  notch stays on the carrier; while the carrier is outside the passband the
+  notch costs nothing. Right-click the bar for depth (Normal 30 dB, Deep
+  50 dB, Very deep 70 dB), width (up to 6 kHz), **Remember for this radio**
+  (green bar, saved with that radio's settings and back on the next
+  connect), Delete and Delete All in View; drag the bar's handle to move it
+  and its edge grips to change the width. The DSP popover has the global
+  switch and a count. Up to 32 notches apply inside one passband. FT8, CW,
+  RTTY and the other decoders are fed from ahead of these notches in the
+  sideband, CW and DATA modes, so a notch never costs a decode ("Decoders
+  hear RF notches" in the DSP popover changes that). The main receiver
+  only; SUB and the independent receiver windows are not notched. See
+  `docs/RFNotches.md`.
+- **Voice squelch for sideband and AM.** The DSP popover's Squelch is now
+  Off / Level / Voice. Voice keeps the receiver silent until somebody
+  talks, whatever the signal level: band noise, static crashes and steady
+  carriers do not open it, speech does within about a quarter of a second,
+  and a tail time (default 1 s) holds it open between words. It works in
+  USB, LSB, AM and SAM, opens and closes without a click, and never touches
+  what the decoders hear. Off by default; Level is the squelch you already
+  had, unchanged. Hand-keyed CW in the passband opens it and FT8 does not.
+  See `docs/VoiceSquelch.md`.
+
+### Changed
+
+- Ask The Crab's band-plan answer for the dial frequency now comes from the
+  same lookup as the strip: one line with every licence class that may
+  operate there (it used to leave Extra out of some lines), plus the IARU
+  plan's segment when an IARU plan is selected and your TX policy's verdict
+  when enforcement is on. A band's exact top edge (for example 7300.0 kHz)
+  now counts as in the band, as it does for the TX policy ranges.
+- Right-clicking the panadapter or waterfall now places an RF notch (above)
+  rather than the old audio-pitch notch, and right-clicking a notch opens
+  its menu rather than removing it. The old notches are still placed from
+  the audio mini-waterfall and still removed by a right-click on their
+  purple marker.
+- **Auto beside the RF gain slider now comes back.** It used to drop the
+  gain 3 dB per overload and leave it there, overwriting your setting and
+  the band memory. It now keeps your RF gain as the ceiling and adds
+  attenuation on top: 3 dB steps while the ADC OVF lamp stays lit, a hold,
+  and after 30 s without overload a return in 3 dB steps every 10 s. A
+  signal that hovers at the threshold cannot make it pump: each step back
+  that runs into the overload again doubles the next wait, up to 10
+  minutes. Moving the slider takes over at once. The attenuation a band
+  needed is remembered per band. It holds still while you transmit. Still
+  off by default; with it off nothing changes. See
+  `docs/AutoAttenuation.md`.
+- An **AUTO ATT +N dB** chip appears right of the ADC OVF lamp while Auto
+  is on: dim when nothing is added, amber with the amount, red with MAX
+  when the radio has no attenuation left. Receive Health names it too.
+- The S-meter, squelch threshold, overload mute and the panadapter's dBm
+  reference follow each automatic step, so a steady signal reads the same
+  before and after.
+- Auto runs on its own 50 ms timer and on the overload flag itself, no
+  longer on the once-a-second statistics tick, so the first step lands
+  within about 150 ms and it keeps working with every window closed.
+
+### Fixed
+
+- Independent receiver windows now say when **Diversity RX** is pausing them
+  ("Paused while Diversity RX is on") instead of sitting at "Waiting for IQ".
+  Diversity borrows the radio's spare receivers, so a started window keeps
+  its slot and resumes when diversity is switched off. Found during the live
+  validation of two independent windows on an ANAN-7000DLE (#383: separate
+  outputs, a sample-rate change, disconnect and reconnect, retune of one
+  window while the other recorded).
+- Contests window: the controls stay at the top and the empty-state message
+  is centred.
+
 ## [2026.1114_001] — 2026-11-14
 
 A neural CW decoder for the receiver and the skimmer, a MUF reading for your

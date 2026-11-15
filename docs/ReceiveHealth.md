@@ -30,7 +30,8 @@ they sit in the signal path. The first one is the verdict you see.
 | disconnected | blocking | No radio or recording is feeding the chain. With Local Network denied the text names the permission. | Connect a radio (or allow Local Network and reconnect); open a recording to replay. |
 | noIQ | blocking | Connected, but no IQ packets arrive. | Check the LAN path and that no other client owns the radio; reconnect. |
 | clockUnlocked | warning | IQ arrives, but at under half the expected rate or with ≥ 5 dropped packets/s, so decoder timing cannot lock. | Wired Ethernet, a lower sample rate, less competing traffic. |
-| overloaded | warning | ADC overload — every decoder sees clipped samples. | Reduce LNA gain or add attenuation until OVF clears. |
+| overloaded | warning | ADC overload — every decoder sees clipped samples. With Auto on, the text says whether automatic attenuation is stepping in or has reached the radio's limit. | Reduce LNA gain or add attenuation until OVF clears. |
+| autoAttenuated | notice | [Automatic attenuation](AutoAttenuation.md) is adding N dB to keep the ADC out of overload, so the weakest signals are N dB closer to the noise. | Nothing: it steps back by itself. Move the RF gain slider to take over. |
 | decoderPaused | warning | A decoder is on but its gate holds it (FT8/FT4 need USB or DATA-U; the CW decoder needs CW mode). | Switch mode; decoding resumes on the next slot. |
 | wrongModeOrBand | warning / notice | Warning: a digital decoder with the receiver in AM/FM/DSB. Notice: FT8/FT4/WSPR/JS8 decoding more than 3 kHz from a conventional dial frequency. | Switch to USB/DATA-U; or tune to the named dial frequency. |
 | clockOffset | warning / notice | The Mac's clock is ≥ 1.5 s (warning) or ≥ 0.75 s (notice) from the FT8 slot clock, with a confident estimate. | Turn on automatic time setting in System Settings › General › Date & Time; leave drift compensation on. |

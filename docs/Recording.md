@@ -11,6 +11,7 @@ operator, the crab or — since #289 — a schedule:
 - **Audio (WAV)** — the demodulated audio you hear (16-bit mono at the
   12 kHz chain rate, `HermitSDR/Audio/WavRecorder.swift`). Works live and
   during replay.
+  **Record only when open** (below) skips the silence.
 - **Band DVR** — continuous, bounded, disk-backed full-span IQ with a
   timeline (`docs/RecordingStoreRecovery.md`).
 - **Clips and excerpts** — bounded `.hiq` excerpts around decoder events
@@ -19,6 +20,113 @@ operator, the crab or — since #289 — a schedule:
 Files land in `~/Documents/HermitSDR Recordings` (the Dev build uses its
 own folder) and are named by UTC timestamp, dial and — for IQ — rate:
 `20261022-030000_9420kHz_192k.hiq`, `20261022-030000_9420kHz_audio.wav`.
+
+## Record only when open (gated recording, #430)
+
+**Radio → Gated Recordings…** has a switch, **Record only when open**. With it
+on, the next audio recording you start — header ♪ button, File → Start Audio
+Recording, the crab, or a Recording Schedule entry — writes audio only while
+the receiver's squelch is open. Eight hours on a net frequency, an HF aero
+channel or a repeater become the transmissions and nothing else, each
+stamped in UTC. It is **off by default**, and with it off the audio recorder
+is the continuous one, unchanged.
+
+Set the squelch first (the SQL control; in FM / NFM the CTCSS tone squelch
+counts too). With the squelch off the gate is always open, so everything is
+recorded as one long transmission.
+
+### What is kept
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| Pre-roll | 0.5 s | Audio from just before the squelch opened, so the first syllable is not lost. The recorder listens ahead of the squelch gate, so this is the real channel audio, not silence. |
+| Hang | 2 s | Recording continues this long after the squelch closes. A squelch that reopens inside the hang continues the **same** transmission. |
+| Minimum | 1 s | A transmission whose squelch was open for less than this (first opening to last closing) is dropped and leaves no file: key-ups, static crashes. 0 keeps everything. |
+
+### Two layouts
+
+- **One compacted file** — `20261115-031500Z_7150kHz_gated.wav`, the
+  transmissions back to back with the silence removed.
+- **One file per transmission** — a folder
+  `20261115-031500Z_7150kHz_gated/` with one WAV each, named by the UTC
+  second the squelch opened, the dial and the mode:
+  `20261115-031502Z_7150kHz_LSB.wav`.
+
+Either way a cue list is written beside it,
+`20261115-031500Z_7150kHz_gated.cues.json`, and rewritten after every
+transmission, so it is current while you record. One row per transmission:
+
+```json
+{
+  "index" : 1,
+  "startUTC" : "2026-11-15T03:15:02.250Z",
+  "durationSeconds" : 6.4,
+  "preRollSeconds" : 0.5,
+  "postRollSeconds" : 2,
+  "frequencyHz" : 7150000,
+  "mode" : "LSB",
+  "peakDbFS" : -7.5,
+  "offsetSeconds" : 0
+}
+```
+
+`startUTC` is when the squelch opened; the audio starts `preRollSeconds`
+earlier. `offsetSeconds` is the position in the compacted WAV (the
+per-transmission layout has `file` instead). `peakDbFS` is the peak of the
+recorded audio during the transmission (after AGC), not an S-meter reading.
+The header also records the settings used, how many short transmissions
+were dropped and how many the storage limit removed. Files are 16-bit mono
+at 12 kHz, like the continuous audio recording. A scheduled entry's name is
+appended (`…_gated_BBC-WS`). A recording that kept nothing leaves no files.
+
+### The window
+
+The left list shows every gated session in the recordings folder, newest
+first, with a red dot on the one being recorded. The table shows its
+transmissions: number, UTC start, length, frequency, mode, peak. Double-click
+(or **Play**) plays one on the Mac's default output; **Delete** removes the
+selection from disk (in a compacted file the WAV is rewritten without those
+parts and the remaining offsets are recomputed); **Export…** copies the
+selection into a folder as standalone WAVs; **Delete Session…** removes the
+whole recording. Play, delete and export are available once the recording
+has stopped.
+
+### Storage limit
+
+For the one-file-per-transmission layout you can tick **Keep at most N
+transmissions** and/or **N MB**. When the running session passes either
+limit its oldest transmissions are deleted first; the newest is always
+kept. Both are off by default, and neither applies to the compacted layout
+or to earlier sessions.
+
+### Good to know
+
+- Gated files hold the **main receiver's** audio as processed (filter, noise
+  reduction, AGC), taken ahead of the squelch gate. The sub-receiver mix,
+  CW sidetone, TX monitor and media decks are in a continuous recording but
+  not in a gated one.
+- Nothing is recorded while the transmitter is keyed. A gap in the audio of
+  more than half a second (a transmit over, a reconnect) ends the
+  transmission in progress.
+- The dial and mode in a row are the ones in force when the squelch opened,
+  read once a second.
+- UTC stamps come from the Mac's clock as the audio is received. During a
+  file replay or with the time machine rewound they are the time you
+  listened, not the time of the original signal.
+- The header record button's clock counts the audio kept, not elapsed time.
+- The option is read when a recording starts; changing it does not affect
+  one already running.
+- Not included yet: tagging transmissions with the bookmark the scanner
+  stopped on, Speaker Tracker names or decoder text per transmission, and a
+  storage limit across sessions.
+
+Tests: `GatedRecordingTests` (package) — five bursts in noise give five
+transmissions with starts within 100 ms and the first syllable intact, also
+end to end through `RXChain`'s squelch; a burst under the minimum leaves no
+file; the compacted WAV's length is the sum of the transmissions plus their
+rolls; the cue list round-trips; hang bridging, stream breaks, pruning,
+delete / export in both layouts; option off is byte-for-byte the continuous
+recorder.
 
 ## Recording Schedule (#289)
 
