@@ -9,6 +9,121 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.1116_001] — 2026-11-16
+
+Six receive-side additions from the competitor survey: a PSK signal browser,
+a time-signal decoder, the panadapter sent to N1MM Logger+, MQTT publishing,
+contest call-history files and stereo sidebands in synchronous AM. Also 1 Hz
+tuning steps that take effect and a Zero last three digits action. No
+transmit behaviour changed. Each new feature has so far been tested on
+generated signals or simulators only; each entry says what is still unchecked.
+
+### Added
+
+- **Contest → Call history.** Load an N1MM-format call-history file for a
+  contest and the logger fills the empty exchange fields with what that
+  station sent before — class and section in Field Day, the zone in CQ WW —
+  as soon as you enter the call. Pre-filled values are shown in italic amber
+  with a dashed border until you type over them or press Enter to confirm;
+  nothing you typed is ever replaced. If what you log differs from the file,
+  the contact is marked for review in the recent list. Only what you logged
+  goes into the log and the Cabrillo file. Files stay on your Mac and
+  nothing is downloaded; **Build from my log…** makes a history file from
+  your own earlier contacts. See `docs/Contest.md`.
+- **Time Signal** (Decode menu): decodes the standard time stations —
+  WWV / WWVH, CHU, DCF77, WWVB, MSF and JJY — into the UTC date and time
+  with DUT1 and the leap-second and daylight-time flags. Frequency buttons
+  tune each station and mark the one to try first. A noisy or faded minute
+  shows nothing rather than a wrong time, and a time counts as confirmed
+  only when two minutes in a row agree. The window also shows how this
+  Mac's clock compares with the decoded second ("Mac clock is +0.12 s
+  (±0.03)") after allowing for the receiver's delay and, with your grid
+  set, the distance to the transmitter. The offset is shown only: the Mac's
+  clock is never changed and nothing else in the app uses the figure.
+  Works on recordings through Decode a Recording. So far tested only on
+  generated signals, not on the air; see `docs/TimeSignal.md`.
+- **PSK signal browser** (Decode › Digital Modes, PSK / QPSK, the new
+  **Browser** switch): every PSK31 and PSK63 signal inside the receive
+  filter is decoded at once, one line each, with its audio offset, dial
+  frequency, mode, signal-to-noise ratio, quality, IMD, age, callsign and
+  newest text — callsigns coloured, CQ in green. Click a line to put the
+  single PSK decoder on that signal; the VFO does not move. Up to 24
+  signals at a time (about 2 % of one processor core at 24). A callsign
+  counts only when the station sent it after `DE` and repeated it.
+  Identified callsigns are labelled on the main waterfall (click a label to
+  decode there; the panel has a switch for the labels), appear in Needed DX
+  as "Heard here", are pinned on the Stations Heard map under a new **PSK**
+  layer when the station sent its locator, and — only if PSK Reporter
+  uploads are already switched on — are reported there with mode PSK31 or
+  PSK63, one report per callsign per upload as before. Receive only; off
+  until you switch it on. Tested on synthetic signals, not yet on the air:
+  see `docs/PSKBrowser.md`.
+- Right-click any of the last three frequency digits and choose **Zero last
+  three digits** to clear the Hz portion of the displayed VFO. The same action
+  is available in keyboard shortcuts and the tuning-device, MIDI, and Stream
+  Deck mapping pickers.
+- **MQTT publishing** (Settings › Station › MQTT publishing, off by default):
+  HermitSDR can send what it decodes and measures to your own MQTT broker as
+  small JSON messages, for Home Assistant, Node-RED, Grafana or a script.
+  Topics, each with its own switch: `status` (connected radio, dial, mode,
+  band and whether the transmitter is in use; retained, and replaced by
+  "offline" when HermitSDR goes away), `decode/<mode>` (FT8, FT4, JS8, WSPR,
+  JT65, JT9, Q65, DSC, NAVTEX, SELCAL, DTMF, SAME, APRS, ALE), `spot/needed`
+  (Needed DX alerts), `qso/logged` (each logged contact as its ADIF fields;
+  off until you ask for it), `telemetry` (S-meter, noise floor, PA
+  temperature and current, forward power, SWR), `spaceweather` and `alert`
+  (band openings, receive-watch detections). TLS, user name and password
+  (the password is kept in the Keychain), QoS 0 or 1, a rate cap, and
+  optional Home Assistant discovery for the telemetry sensors. It is
+  publish-only: HermitSDR never subscribes and ignores anything a broker
+  sends, so nothing on the broker can tune, arm or key the radio. If the
+  broker is slow or away, messages wait in a 512-message queue that drops
+  the oldest; the receiver never waits for it. Not yet published: CW
+  skimmer, RTTY and RDS decodes, and the radio's supply voltage. This first
+  version has been tested against a broker simulator only, not yet against
+  Mosquitto or Home Assistant — reports welcome. See `docs/MQTT.md`.
+- The website has a homepage **Knowledge Base** button and searchable Support
+  articles, starting with a guide to setting up and troubleshooting the
+  Ulanzi D100H.
+  The homepage lists up to four recent articles with their publication or
+  update date.
+- **Spectrum to logger** (Settings ▸ Station ▸ Logger broadcasts): HermitSDR
+  can send its panadapter to N1MM Logger+'s Spectrum Display window, so the
+  logger draws the band with its own spots and a click there tunes the radio
+  through the CAT server N1MM already uses. Choose the panadapter window,
+  the whole receiver span or a fixed band segment, 1 to 10 updates a second
+  and up to 2048 points; SUB can go out as a second source for N1MM's
+  Radio 2. Off by default, and nothing is sent until you switch it on. The
+  status line says when nothing is listening at the destination. The format
+  follows N1MM's manual and has **not yet been tried against N1MM Logger+
+  itself** — see `docs/LoggerBroadcasts.md` for the setup steps and for what
+  is still unverified. (#422)
+- **Stereo sidebands in SAM.** The SAM RF sideband control in the filter
+  popover has a fourth choice, **Stereo**: the lower sideband plays in the
+  left ear and the upper sideband in the right, so interference on one side
+  of the carrier sits in one ear. **Swap left and right** reverses them and
+  **Width** runs from 100 % (fully apart) down to 0 % (the same audio as
+  Both), which helps on speakers. An ordinary AM programme is exactly as loud
+  as on Both. It applies to the main receiver on this Mac's speakers and
+  headphones, on channels up to 11 kHz wide: recordings, streams, decoders,
+  the radio's own audio output and SUB keep the normal Both mix. It plays as
+  Both while noise reduction or an Audio Unit insert is on, on wider
+  channels, and whenever the carrier is lost. The AM stereo (C-QUAM) channel
+  choice is switched off while Stereo is selected. Tested on synthetic
+  signals only; nobody has listened to it on air yet
+  (`docs/SAMSideband.md`).
+
+### Fixed
+
+- **Streaming log no longer says the stream key is good** when a service
+  accepts the publish. A service can accept a publish for a key it does not
+  recognise and then show nothing on its dashboard, so the Go Live log and
+  the ingest test now say the ingest answered and tell you to compare the
+  last four characters of the key with the one selected on the service.
+- A 1 Hz tune step now moves the VFO from the panadapter wheel and arrow
+  keys, dial digits, step buttons, and hardware tuning controllers. Linked
+  VFOs use the same step precision while preserving their frequency relation.
+
 ## [2026.1115_001] — 2026-11-15
 
 Eight receive-side additions from the competitor survey: a band plan strip

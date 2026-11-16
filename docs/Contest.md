@@ -43,7 +43,8 @@ Pick the rule set (locked while a contest runs), fill **Your exchange** — the
 Field Day class and section with the power category, or your CQ zone — and
 press **Start**. The session (`contest.session.v1` in the defaults) remembers
 the rule set and its version, the start and end times, the sent exchange, the
-power category, the next serial and the imported MASTER.SCP. **End contest…**
+power category, the next serial, the imported MASTER.SCP and the name of
+each contest's call-history file. **End contest…**
 stamps the end time and opens the Cabrillo sheet; **Reopen** lifts the end
 time; **New session** forgets the session (never the contacts).
 
@@ -63,7 +64,8 @@ The call field has focus when the window opens. Fields follow the rules:
 Field Day shows **Class rcvd** and **Section rcvd**; CQ WW shows **RST sent**
 (prefilled 59 / 599 for the current mode), **RST rcvd** and **Zone rcvd**.
 Tab moves between fields; **Enter** in any field fills the next empty field,
-or logs the contact when every field is valid; **Esc** clears the row. The
+or logs the contact when every field is valid (a field pre-filled from a
+[call-history file](#call-history-optional) is confirmed first); **Esc** clears the row. The
 frequency, band and mode come from the current receiver.
 
 Validation: callsigns are letters, digits and portable slashes with at least
@@ -89,6 +91,112 @@ already worked in the dupe scope is drawn in the danger colour. Clicking a
 suggestion fills the call and moves to the first exchange field. Nothing is
 downloaded; obtain the file from the Super Check Partial project yourself.
 **Remove SCP** deletes the copy.
+
+### Call history (optional)
+
+A call-history file lists, per callsign, the exchange that station sent in
+earlier contests. With one loaded, entering a call fills the **empty**
+received fields with what the file expects, so you confirm by ear instead of
+typing. Available in the release after **2026.1115_001** (#423).
+
+**Loading.** Footer → **Call history → Load file for …** copies the file
+into Application Support (`contest/CallHistory/<rule set>.txt`). There is
+one file per rule set; **Replace file…** swaps it, **Remove** deletes the
+copy, and the choice is remembered across launches and sessions. Everything
+is local: HermitSDR never downloads a history file and sends nothing about
+it anywhere. Obtain files yourself, or build one from your own log (below).
+The file is read and parsed off the main thread; a 50,000-line file imports
+in about 0.1 s and a lookup takes a few microseconds.
+
+**Format.** The N1MM Logger+ text format that other contest loggers also
+read:
+
+```
+# comment lines start with #
+!!Order!!,Call,Name,Sect,Exch1,UserText
+K1ZZA,Pat,CT,3A,club station
+W6ZZB,Sam,SCV,1D
+```
+
+- `!!Order!!` names the columns of the rows that follow. Column names are
+  matched in any case: `Call`, `Name`, `Loc1`, `Loc2`, `Sect`, `State`, `CK`,
+  `BirthDate`, `Exch1`, `Misc`, `Power`, `CqZone`, `ITUZone`, `UserText`,
+  `LastUpdateNote`. Other names are ignored and listed in the status line.
+- A file with **no `!!Order!!` line** is read in the N1MM default order, the
+  list above. A first row that itself begins with `Call` is taken as the
+  header.
+- Rows are separated by commas, or by semicolons when the header (or the
+  first row) has no comma. Missing trailing fields are empty; extra fields
+  are ignored; blank lines and `#` lines are skipped; a field wrapped in
+  double quotes loses the quotes (a separator inside quotes is not
+  supported).
+- Line ends may be LF, CRLF or CR. Text may be UTF-8 (with or without a
+  byte-order mark), UTF-16 with a byte-order mark, or otherwise Latin-1.
+- A row without a plausible callsign is skipped and counted. When a call
+  appears more than once, **the last row wins** and replaces the earlier row
+  whole.
+- `!!MapStateToSect!!` makes an empty `Sect` read the `State` column.
+  `!!FourCharGridSq!!` and `!!ValidateArrlSection!!` are accepted and change
+  nothing (no shipped exchange uses a grid, and sections are always
+  validated).
+- An import is refused, with the reason in the status line, when the file
+  has no callsigns, has no column the current rule set can use, or is
+  larger than 32 MB.
+
+**What is pre-filled.** Each rule set maps history columns to its received
+fields:
+
+| Rule set | Received field | History column |
+| --- | --- | --- |
+| ARRL Field Day | Class | `Exch1` |
+| ARRL Field Day | Section | `Sect` (then `State` under `!!MapStateToSect!!`) |
+| CQ WW DX SSB / CW | Zone | `CqZone` |
+| *(model only)* state or province | State | `State`, then `Exch1` |
+
+Signal reports and serial numbers are never taken from history. A value
+that is not valid for the field (an unknown section, zone 41, a class such
+as `9Z`) is not offered at all. The state/province field exists in the
+model for a state QSO party and is tested with a synthetic rule set; no QSO
+party rule set ships yet. The file's `Name` and `UserText` are shown in the
+hint line under the entry row and go nowhere else.
+
+**Portable calls.** The lookup is a dictionary lookup on the call, trimmed
+and upper-cased:
+
+1. The call exactly as typed wins — a file may list `W1ABC/4` itself.
+2. Otherwise a call that only adds `/P`, `/M`, `/QRP` or `/QRPP` reads its
+   home call's row (`W1ABC/P` → `W1ABC`); the hint line says *home call*.
+3. Anything else finds nothing. A call-area digit (`W1ABC/4`), a country
+   prefix or suffix (`DL/W1ABC`, `W1ABC/VP9`), `/MM` and `/AM` put the
+   station somewhere else, where the home call's section, state, zone and
+   class no longer apply — so nothing is pre-filled.
+
+**Unconfirmed until you say so.** A pre-filled field is drawn in italic
+amber inside a dashed amber border, and a line under the row names the
+source. It becomes an ordinary field when you type in it or press **Enter**
+in it. Enter never logs a contact while another field still holds an
+unconfirmed pre-fill: it moves there first, so each pre-filled value takes
+one deliberate Enter. The **Log** button logs the row as shown. History
+never replaces anything you typed, including text typed before the call was
+complete; changing the call withdraws the untouched pre-fills of the
+previous call and leaves typed and confirmed fields alone.
+
+**What is logged.** Only what is in the fields when you log. Nothing about
+the history file is written into the contact, so the ADIF and Cabrillo
+exports contain what you logged and never what the history said.
+
+**Review marks.** History goes stale. When a contact's logged exchange
+differs from the file, the status line says so at once and the recent list
+shows `history: Section CT` in the **Review** column, with the count in the
+list's title. The mark is worked out from the log and the loaded file each
+time: it follows edits in the QSO Log, disappears when the file is removed,
+and cannot be dismissed by hand.
+
+**Build from my log…** writes a history file from your own earlier contacts
+in the same contest, any year — the contacts whose `CONTEST_ID` is the rule
+set's (CQ WW SSB and CW feed each other, since both exchange the zone). The
+latest contact with each station wins. The file is saved where you choose
+and is not loaded automatically.
 
 ## Score
 
@@ -143,10 +251,13 @@ the sponsor's template
 
 ESM / F-key message sending (CW or voice), Winter Field Day, a shipped
 serial-number contest (CQ WPX), assisted/unassisted controls beyond the
-Cabrillo header, call-history files, shared serial allocation, per-radio
-contest profiles and restoring pre-contest receiver settings on exit.
+Cabrillo header, shared serial allocation, per-radio contest profiles and
+restoring pre-contest receiver settings on exit. For call history: a shipped
+state QSO party rule set, automatic downloads of published files (by
+design), name, check, grid and ITU-zone exchanges, and a way to dismiss a
+review mark.
 
-Regression fixture: `ContestRulesTests`.
+Regression fixtures: `ContestRulesTests`, `CallHistoryTests`.
 
 ## Club Field Day scoreboard
 
