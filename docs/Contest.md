@@ -127,11 +127,16 @@ W6ZZB,Sam,SCV,1D
   header.
 - Rows are separated by commas, or by semicolons when the header (or the
   first row) has no comma. Missing trailing fields are empty; extra fields
-  are ignored; blank lines and `#` lines are skipped; a field wrapped in
-  double quotes loses the quotes (a separator inside quotes is not
-  supported).
+  are ignored; blank lines and `#` lines are skipped. A field wrapped in
+  double quotes loses the quotes and may contain the separator
+  (`"Smith, John"`); two double quotes inside it stand for one. A quote in
+  the middle of a field (`O"Brien`) is an ordinary character, and a line
+  whose quote is never closed is split as if it had no quotes.
 - Line ends may be LF, CRLF or CR. Text may be UTF-8 (with or without a
-  byte-order mark), UTF-16 with a byte-order mark, or otherwise Latin-1.
+  byte-order mark), UTF-16 with a byte-order mark, or otherwise
+  Windows-1252 — the Windows code page, which reads a Latin-1 file
+  identically and also gives `Š`, `ž`, `œ`, `€`, curly quotes and dashes
+  their proper characters.
 - A row without a plausible callsign is skipped and counted. When a call
   appears more than once, **the last row wins** and replaces the earlier row
   whole.
@@ -189,8 +194,17 @@ exports contain what you logged and never what the history said.
 differs from the file, the status line says so at once and the recent list
 shows `history: Section CT` in the **Review** column, with the count in the
 list's title. The mark is worked out from the log and the loaded file each
-time: it follows edits in the QSO Log, disappears when the file is removed,
-and cannot be dismissed by hand.
+time: it follows edits in the QSO Log and disappears when the file is
+removed.
+
+Once you have checked a marked contact, **right-click it in the recent list
+and choose Dismiss review mark**. The contact itself is not changed. A
+dismissal hides exactly the difference you looked at: if you later edit the
+contact, or replace the file, so that the note would read differently, the
+mark comes back. **Call history › Show dismissed review marks** brings all
+of them back; clearing the session forgets the dismissals. Dismissals are
+kept with the contest session on this Mac and are never written into a
+contact or an export.
 
 **Build from my log…** writes a history file from your own earlier contacts
 in the same contest, any year — the contacts whose `CONTEST_ID` is the rule
@@ -254,8 +268,7 @@ serial-number contest (CQ WPX), assisted/unassisted controls beyond the
 Cabrillo header, shared serial allocation, per-radio contest profiles and
 restoring pre-contest receiver settings on exit. For call history: a shipped
 state QSO party rule set, automatic downloads of published files (by
-design), name, check, grid and ITU-zone exchanges, and a way to dismiss a
-review mark.
+design), and name, check, grid and ITU-zone exchanges.
 
 Regression fixtures: `ContestRulesTests`, `CallHistoryTests`.
 

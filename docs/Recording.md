@@ -108,8 +108,12 @@ or to earlier sessions.
 - Nothing is recorded while the transmitter is keyed. A gap in the audio of
   more than half a second (a transmit over, a reconnect) ends the
   transmission in progress.
-- The dial and mode in a row are the ones in force when the squelch opened,
-  read once a second.
+- The dial and mode in a row are the ones in force at the moment the squelch
+  opened. HermitSDR tells the recorder whenever the dial or the mode
+  changes, and each block of audio (about 5 ms) is stamped with what was in
+  force when it arrived, so a retune a moment before a transmission starts
+  is in that transmission's row. A change during a transmission does not
+  rewrite its row.
 - UTC stamps come from the Mac's clock as the audio is received. During a
   file replay or with the time machine rewound they are the time you
   listened, not the time of the original signal.

@@ -94,9 +94,18 @@ tells you about the noise, not the transmitter.
 - **PSK31 and PSK63 only.** PSK125 and the QPSK modes are not browsed; use
   the single decoder for those.
 - **The receive filter is the search window.** Signals outside the filter,
-  or within 40 Hz of its edges, are not looked for. Changing the VFO, the
-  mode or the filter clears the list, because every line was an offset from
-  the old dial.
+  or within 40 Hz of its edges, are not looked for.
+- **Tuning with the browser on.** A small dial move — a 1 Hz or 10 Hz step,
+  a RIT change, anything smaller than the passband — keeps the list: every
+  line moves along the audio axis by the same amount, keeps its text and
+  callsign and goes on printing. A line is dropped only when the move takes
+  its signal out of the filter. A strong signal is back in lock within a
+  second or two of a move of a few tens of hertz; a move while a station is
+  sending can cost a character or two. New signals are looked for again
+  about half a second after the dial stops. Changing the mode, or moving the
+  dial by a passband or more (a band change, a click elsewhere on the
+  waterfall), clears the list, because the lines would then be different
+  stations.
 - **Signal strength.** A signal needs to be roughly 10 dB over the noise in
   its own bandwidth to be picked up promptly; weaker ones appear later or
   not at all. A PSK31 signal 100 Hz from one 30 dB stronger is still copied.
@@ -121,6 +130,11 @@ checked on the air or against a recording of real PSK activity.
 - Ten minutes of noise: no line, no demodulator started, no callsign.
 - Carriers, a keyed carrier and an FSK signal: looked at and rejected, no
   line.
+- A dial move in mid-over (30 Hz at once, and ten 1 Hz steps): the line
+  kept its number, text and callsign, moved to the new offset and carried on
+  printing clean text; a move that took one of two signals out of the filter
+  dropped that line only. The splice in these fixtures is a generated
+  frequency step, not a recording of a radio being tuned.
 - **Cost of 24 simultaneous signals: 1.07 to 1.16 s of processing for 60 s
   of audio — about 1.9 % of one processor core** (five runs, 1.78 to
   1.93 %), measured on a Mac mini (M4 Pro) in the unoptimised test build,

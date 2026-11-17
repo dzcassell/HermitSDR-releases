@@ -54,6 +54,14 @@ gets the normal Both mix, sample for sample what Both delivers:
 | SUB receiver | Both, as before |
 | Channels wider than 11 kHz (the 24 kHz audio path) | Both mix at full width: there is no 24 kHz stereo route to the speakers yet, and the popover says so |
 
+**From another program.** The Control API reads and sets the choice
+(revision 4): the state key `samSideband` is `both`, `upper`, `lower` or
+`stereo`, and `{"t":"setSAMSideband","sideband":"stereo"}` selects it — the
+same setter as the popover, with the same fallbacks. The client's own audio
+downlink stays the mono Both mix. See [ControlAPI.md](ControlAPI.md). There
+is no CAT or MCP command for it, and the width and swap controls are not in
+the API.
+
 **AM stereo (C-QUAM).** Both features want the two output channels, so they
 are mutually exclusive. While Stereo is selected the AM stereo channel selector
 in the DSP popover is disabled, with a line saying why, and the mono mix is the

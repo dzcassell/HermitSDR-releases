@@ -30,7 +30,17 @@ Two sliders belong to Voice:
 Voice squelch works in **USB, LSB, AM and SAM**. In CW, the data modes, DSB
 and FM the setting is kept but idle, and the popover says so; FM has its own
 carrier and tone (CTCSS) squelch. While it is in force a small **VSQ** badge
-shows beside the squelch control in the control bar and the console.
+shows beside the squelch control in the control bar and the console, with a
+dot that shows what the gate is doing now: **green and filled while it is
+open** (speech is being passed), **a dim ring while it is closed** (waiting
+for speech). The badge's tooltip and VoiceOver say the same in words. The
+dot follows the gate about ten times a second, so it stays lit through the
+tail after the last word.
+
+A Control API client can read the same two facts — the state keys
+`voiceSquelchEnabled` and `voiceSquelchOpen` (true, false, or null while the
+voice squelch is off or idle in the current mode); see
+[ControlAPI.md](ControlAPI.md). It cannot set them.
 
 The setting is one for the main receiver, saved with the receiver settings
 and receive profiles the same way the level squelch is. The SUB receiver has
@@ -96,5 +106,5 @@ Known limits, in the same family as other syllabic squelches:
 
 ## Not included yet
 
-Scanner "hold on voice", Control API / MIDI / Stream Deck actions for the
-squelch type, a squelch for the SUB receiver, and a spoken-status phrase.
+Scanner "hold on voice", Control API commands and MIDI / Stream Deck actions
+for the squelch type (the Control API reads the state only), a squelch for the SUB receiver, and a spoken-status phrase.

@@ -9,6 +9,231 @@ batch of improvements ships as a new version.
 
 ## [Unreleased]
 
+## [2026.1117_001] — 2026-11-17
+
+Five receive-side additions: an AM co-channel canceller, following an
+external transceiver over CAT (panadapter mode), Shortcuts / Siri actions
+and an AppleScript dictionary, a receive-only KISS TNC over TCP with 300 Bd
+HF packet, and broadcast-FM stereo to the speakers with 15 kHz audio. Also a
+batch of follow-ups to the last two releases and fixes from the November
+sweeps. No transmit behaviour changed. Every new feature is off until it is
+switched on, and has so far been tested on generated signals, simulators or
+loopback only; each entry says what is still unchecked.
+
+### Added
+
+- **Broadcast FM in stereo, and with the full 15 kHz.** In WFM the DSP
+  popover has a new **Speakers** row with two choices: **Mono / Stereo** and
+  **10 kHz / 15 kHz**. Stereo sends the decoded left and right channels to
+  this Mac's audio output; 15 kHz plays at a 48 kHz rate so the whole
+  programme bandwidth passes instead of about 10 kHz. Both are off until you
+  choose them, and with both off the audio is exactly what it was (the same
+  generated signal gives sample-for-sample the same output before and after
+  this change). Recording, streams, remote listeners, the radio's own audio
+  output and the sub-receiver stay mono, as before; the recorder is
+  single-channel. Checked on generated FM-stereo signals only: channel
+  separation 58 dB or better at 1 and 1.6 kHz and 52 dB at 10 and 15 kHz,
+  response flat within 0.02 dB from 100 Hz to 15 kHz, for both 75 µs and
+  50 µs. **Nobody has listened to it yet**, and the hand-over between
+  speaker routes when a choice changes has not been exercised on a real
+  audio device. [Guide](docs/BroadcastFM.md) (#397)
+- **Sub-receiver WFM de-emphasis.** A sub-receiver in WFM now uses the
+  75 µs / 50 µs choice from the DSP popover instead of always 75 µs. (#397)
+
+- **KISS TNC for packet programs (receive only).** Settings › Station › KISS
+  TNC lets APRS and packet software read the packets HermitSDR decodes, the
+  way it would from a sound-card TNC: over TCP, in KISS framing, on port
+  8001 for 1200 Bd packet and port 8002 for 300 Bd HF packet. Either speed
+  or both can run, each with its own demodulator, and the Digital Modes
+  window does not need to be open. Programs on this Mac connect to
+  127.0.0.1; a separate switch lets other machines on your network connect,
+  with no password, to read the same frames. A small monitor under each
+  switch lists the connected programs and how many frames were decoded and
+  sent. HermitSDR does not transmit packet: anything a program sends to
+  these ports is counted as "ignored: transmit not available" and thrown
+  away, so an APRS map fills in but beacons, messages and Winlink or BBS
+  connections do not go out. Off by default. Tested with generated packet
+  audio and test clients on this Mac only — not yet with YAAC, Xastir, Pat
+  or a signal off the air; the set-up steps for those three programs in
+  `docs/KISS.md` come from their documentation and have not been tried
+  (#417).
+
+- **Station Devices → External transceiver: HermitSDR as the panadapter for
+  a conventional rig.** Add your transceiver as a station device and its
+  dial and the SDR's dial stay together. Choose who leads: the rig (turn its
+  knob and the SDR follows), the SDR (click the waterfall or a spot and the
+  rig's VFO is set), or both. Four ways to connect: hamlib `rigctld` over
+  TCP (run it on a port other than 4532, which HermitSDR's own server
+  uses), Icom CI-V, Kenwood / Elecraft CAT and Yaesu CAT on a serial port.
+  While the rig reports transmit the SDR's audio is muted and comes back on
+  receive. If the link drops, the SDR stays where it was and a grey
+  **RIG STALE** badge appears on the frequency scale. For a rig with an IF
+  output there is an IF-tap arrangement: enter the IF frequency, an offset
+  per mode and whether the IF is inverted, and the panadapter scale is
+  relabelled in RF. HermitSDR never keys the rig — it can only read it and,
+  when the SDR leads, set its frequency and mode. Wiring for RX-out, a T/R
+  switch and an IF tap is in `docs/StationDevices.md`. Off until you add
+  and enable a rig. Not yet tried on a real rig or a real rigctld — tested
+  against scripted simulators only. Not in this version: with an IF tap the
+  main dial and the logbook still show the IF frequency; split is shown in
+  the device panel but not as a marker on the waterfall; the Yaesu driver
+  cannot tell when the rig transmits (#414).
+
+- **Shortcuts, Siri, Spotlight and AppleScript.** HermitSDR now offers
+  actions in the Shortcuts app and an AppleScript dictionary. You can tune,
+  set the mode and filter, mute, recall a bookmark or a receive preset, start
+  and stop audio and IQ recordings, switch a decoder on or off and save a
+  waterfall picture; and you can read the frequency, mode, S-meter, the last
+  decodes, the last logged contact, the next satellite pass and the space
+  weather for use in later steps. Ten common ones work from Spotlight and
+  Siri without building a shortcut ("What frequency is HermitSDR on"). In
+  AppleScript: `tell application "HermitSDR" to get frequency of receiver 1`.
+  Requests take the same route as the Control API, so the dial lock and the
+  limits of the radio or recording hold, and a refusal tells you why.
+  Automation cannot transmit — there is no PTT, TUNE, CW or CQ action.
+  Settings › Station › Automation can also run a script of yours named
+  `qso_logged` each time a contact is logged (off by default). Tested against
+  a stand-in radio only: no Shortcut, Siri phrase or `osascript` command has
+  been run against the app yet. See `docs/Automation.md` (#415).
+
+- **AM co-channel canceller.** When two AM broadcast stations share a
+  channel, **DSP → Co-channel canceller** (AM and SAM, main receiver) removes
+  one of them so you can hear the other. It locks to the strongest carrier
+  within 100 Hz of the dial, or to one you pick: set an offset, or click a
+  carrier in the list it shows. A LOCK lamp, a depth reading in dB and a line
+  of text say what it is doing; with no carrier to lock to it passes the
+  audio through untouched and says so. The result is brought back to the
+  original level, so switching it on and off compares clarity rather than
+  loudness. **Width** limits how much of the removed station's audio is
+  taken out. It works on live signals, the time machine and recording
+  playback. It starts off at every launch and changes nothing while off.
+  On generated signals at receive levels (two stations 3 Hz apart, one
+  20 dB stronger) the weaker station's audio came out 47 dB better against
+  the stronger one's, and a single station dropped by 53 dB. The weaker
+  station dips briefly twice per beat between the carriers, and a carrier
+  within 1 Hz of the removed one is not rebuilt. **Nobody has listened to
+  it on real stations yet**, and real sky-wave fading has not been tried.
+  The zoomed carrier strip from the request is not included; the carrier
+  list stands in for it. See `docs/AMCochannelCanceller.md`.
+
+### Changed
+
+- **Recording audio no longer writes to disk on the receive thread.** The
+  WAV recorder (Record audio, airchecks, voice-activated recording, window
+  recordings) now hands audio to a background writer. A slow or sleeping
+  disk can no longer stall receive audio. If the disk falls about 22 seconds
+  behind, the recording stops with the message "The disk could not keep up
+  with the recording." and the file keeps what was written. Files are
+  byte-for-byte the same as before.
+- **Callsign and grid in Settings ▸ Station, and the QTH grid in SignalFind,
+  take effect on Return or when you leave the field** — not on every
+  character. With APRS-IS or a spot feed on, typing a callsign used to log
+  in again for each letter.
+- **Reference downloads have a size limit.** The LoTW user list, shortwave
+  schedule, country file, Clublog most-wanted list, FCC AM station list,
+  park and summit spots, SignalFind feeds and the assistant's web lookups
+  now stop a download that grows far past the real file's size, instead of
+  holding all of it in memory.
+
+- **PSK signal browser keeps its list through small dial moves.** A 1 Hz
+  step, a RIT change or any dial move smaller than the passband used to
+  clear every line. The browser now moves each tracked signal along the
+  audio axis by the same amount and keeps its text, callsign and
+  demodulator; only a signal the move takes out of the receive filter is
+  dropped. A mode change, or a move as large as the passband, still clears
+  the list. Tested on generated signals only (#448).
+- **MQTT publishing: RTTY, CW skimmer and RDS are now published, and a
+  decode flood can no longer drop a logged QSO.** The three reserved topics
+  are fed: `decode/rtty` (one message per printed line), `decode/cw_skimmer`
+  (each skimmer row as its text changes, at most every ten seconds per row)
+  and `decode/rds` (a broadcast-FM station's name and text when they
+  change). Logged QSOs have a rate allowance of their own instead of sharing
+  the decodes' cap. MQTT publishing is listed in the Features window, and
+  while it is on Copy System Information includes one MQTT status line
+  (broker address, TLS or not, counters — never the user name or password).
+  Still tested against the built-in broker simulator only (#448).
+- **Contest call history: dismiss a review mark; quoted fields; Windows
+  characters.** Right-click a marked contact in the recent list and choose
+  Dismiss review mark once you have checked it (it returns if the
+  difference changes; Call history › Show dismissed review marks restores
+  them all). A field in double quotes may now contain the separator
+  (`"Smith, John"`). A file that is not UTF-8 is read as Windows-1252, so
+  names such as Šimon and curly quotes come through instead of control
+  codes (#448).
+- **Spectrum to logger says what "sending" means.** The status row now
+  reads "sending (no acknowledgement in this protocol) to host:port …": the
+  N1MM spectrum datagram is one-way UDP, so HermitSDR cannot know whether
+  the logger receives it, and a machine that is switched off looks the same
+  as success. No liveness check was invented; the row, its hover tip and
+  the documentation now say so (#448).
+- **Time Signal is in the Operator Manual.** The digital-modes chapter now
+  explains the Time Signal window: the stations and their frequencies,
+  which mode each needs, what "confirmed" means, and that the clock is
+  compared and never set (#448).
+- **Control API: the SAM sideband choice.** `setSAMSideband` selects Both,
+  Upper, Lower or Stereo and the new state key `samSideband` reports it
+  (`apiRevision` 4). The audio sent to the client stays mono (#448).
+- **Band plan strip in the View menu and the Control API.** View › Band
+  Plan Strip switches the strip on and off without opening the Display
+  popover; a Control API client can read it (`bandPlanStrip`) and set it
+  (`setBandPlanStrip`) (#444).
+- **Voice squelch shows whether it is open.** The VSQ badge in the control
+  bar and the console has a dot: green while the squelch is passing speech,
+  a dim ring while it is waiting. A Control API client can read the same
+  state (`voiceSquelchEnabled`, `voiceSquelchOpen`) (#444).
+- **Signal History: pointer readout.** Moving the pointer over the chart
+  shows a hairline and the time, level, S-units, noise floor, SNR and SUB
+  level under it (#444).
+- **Gated recording: the cue's dial and mode are exact.** A cue row now
+  carries the dial and mode in force when the squelch opened, even if you
+  retuned a moment before; they used to be read once a second (#444).
+
+### Fixed
+
+- **TCI: switching it off now closes its clients.** Turning TCI off (or
+  changing its port) could leave a connected program attached to a server
+  that no longer answered, because the server was released before its stop
+  ran. Found while building the KISS server; fixed with a test that failed
+  before the change.
+
+- **OBS: a wrong password is no longer retried forever.** The status reads
+  "OBS refused the password — not retrying" until you save the right one.
+- **Icecast and Twitch chat reconnect after a refused connection.** A server
+  that was restarting, or a name that did not resolve, left both waiting
+  until the feature was switched off and on. They now retry on their usual
+  schedule.
+- **Icecast-compatible servers that answer "ICY 200 OK"** instead of
+  "HTTP/1.x 200 OK" are recognised as accepting the stream.
+- **A custom streaming URL's query string is hidden in the stream log.** The
+  log shows the parameter names only; what is sent to the server is
+  unchanged.
+- **A failed clip render no longer leaves a broken MP4** in the clips folder.
+- **Geology:** a minute shown green in the shelf gutter now always replays,
+  including the first, partial minute of a DVR segment.
+- **Worked World:** the list no longer goes blank on a later page when
+  filters or expiring spots shorten it.
+- **Cabrillo export:** a slow preview no longer appears after you changed the
+  selection it was made for.
+- **Settings ▸ Control API:** a port outside 1024–65535 is replaced in the
+  field by the port actually in use.
+- **OBS window:** the password tip no longer says "Blank + Save clears it"
+  (Save is disabled when blank; Clear removes a saved password).
+- **NetSDR clock calibration:** a disconnect during the measurement puts the
+  dial back where it was instead of leaving it on the reference.
+- **Clublog most-wanted:** a damaged cache file no longer blocks the weekly
+  refresh for seven days.
+- **Waterfall:** decode sparks, the palette cross-fade and the degauss ring no
+  longer stall or replay for a few seconds when the Mac's clock is stepped
+  backwards.
+
+- **A sample-rate change no longer adds false sequence errors (ANAN,
+  Protocol 2).** Restarting the stream counted one sequence error for each
+  running receiver, because a late packet from before the restart was
+  compared with the first packet after it. Real loss is still counted. This
+  explains only a few counts per restart: the rises of about 1,800 at a
+  rate change and about 70 at an independent-receiver Stop / Start seen on
+  2026-11-15 are not explained and need the radio (#444).
+
 ## [2026.1116_001] — 2026-11-16
 
 Six receive-side additions from the competitor survey: a PSK signal browser,

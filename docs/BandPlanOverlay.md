@@ -39,7 +39,11 @@ decide that.
 Open the **Display** button (waveform with magnifying glass) in the control
 bar. The strip is **on** by default.
 
-- **Band plan strip** — the whole overlay on or off.
+- **Band plan strip** — the whole overlay on or off. The same switch is in
+  the menu bar as **View › Band Plan Strip**, and a Control API client can
+  read it (state key `bandPlanStrip`) and set it (`setBandPlanStrip`, see
+  [ControlAPI.md](ControlAPI.md)); the other options below are in the
+  popover only.
 - **Plan** — `Auto`, `US`, `R1`, `R2`, `R3`. Auto follows the region in
   Settings › TX operating policy: an IARU region selects that region's plan;
   Unspecified or Custom selects the US licence-class table.
@@ -125,4 +129,8 @@ conventions for the US plan).
   transverter the strip is not drawn.
 - The strip is laid out again only when you tune, zoom, resize or change a
   setting; it adds nothing to the per-frame drawing.
+- The US plan shows no maximum bandwidth. Its table is the licence-class
+  table Ask The Crab uses, which lists segments, modes and classes but no
+  bandwidth, so the readout has nothing to quote; the IARU plans carry the
+  figure from their published tables.
 - Nothing is downloaded and no service is contacted.

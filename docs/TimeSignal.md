@@ -206,3 +206,13 @@ the decoders were written for HermitSDR from them:
   reading while this was written, so the CHU layout (tones, 300 Bd, ten
   characters ending 500 ms into the second, the two frame kinds) was
   written from memory of that page and has not been re-read against it.
+  A second attempt on 2026-11-17 was refused the same way (HTTP 403 from
+  both `nrc.canada.ca` and `cnrc.canada.ca`), so the layout is unchanged
+  and still unchecked against NRC's text. A search engine's summary of the
+  page agrees with what is implemented as far as it goes — Bell 103 at
+  300 Bd in seconds 31–39, one start, eight data and two stop bits, five
+  data bytes then five redundancy bytes, digits nibble-reversed, and for
+  second 31 the fields |DUT1| in tenths, four-digit year, TAI−UTC and the
+  daylight-time pattern number in that order — but a summary is not the
+  page: the meaning of each bit of the leading digit and the 500 ms end of
+  the last stop bit remain from memory.

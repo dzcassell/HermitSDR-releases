@@ -258,6 +258,10 @@ State keys:
 | `xitEnabled` / `xitHz` | bool / int | Hz | Read-only in version 1. |
 | `split` | bool | | Split armed. |
 | `vfoBHz` | int | Hz | VFO B (RF). |
+| `samSideband` | string | `both` `upper` `lower` `stereo` | Revision 4. The SAM sideband choice of the filter popover: both sidebands as mono, one RF sideband, or one sideband to each ear ([SAMSideband.md](SAMSideband.md)). It is remembered in every mode and acts only while `mode` is `SAM`. The audio downlink is mono in every choice: in `stereo` it carries the Both mix. |
+| `bandPlanStrip` | bool | | Revision 4. The band-plan strip is shown above the frequency scale of the shack's own panadapter ([BandPlanOverlay.md](BandPlanOverlay.md)). It says nothing about the spectrum downlink, which carries no strip. |
+| `voiceSquelchEnabled` | bool | | Revision 4. Read-only: the shack's squelch is set to Voice ([VoiceSquelch.md](VoiceSquelch.md)). There is no command for it; `setSquelch` drives the level squelch only. |
+| `voiceSquelchOpen` | bool \| null | | Revision 4. Read-only: the voice squelch is passing audio (`true`) or muting it (`false`); `null` while it is off or idle in the current mode (it acts in USB, LSB, AM and SAM). Sampled ten times a second, so a change arrives as a state delta within about 0.1 s. |
 | `txArmed` | bool | | Read-only: the shack's ARM interlock. |
 | `txKeyed` | bool | | Read-only: the shack is transmitting (its own operator). |
 | `txInhibitReason` | string \| null | | Read-only: why the shack would refuse to key now. |
@@ -305,6 +309,8 @@ Commands need the `control` grant; without it they fail `forbidden`.
 | `setSplit` | `enabled` bool | | Arms split for the shack's transmitter. It keys nothing. |
 | `setVFOB` | `hz` number | `radio.tuneMinHz … tuneMaxHz` | Revision 1. VFO B as RF, rounded to 10 Hz. Refused (`refused`) while the shack is transmitting or its dial is locked: with split armed, VFO B is the transmit frequency. |
 | `setFilterPreset` | `index` integer | 0 … the mode's preset count − 1 | Revision 1. Sets the width to `radio.filters[mode].presetsHz[index]` for the current mode. The shift is untouched. |
+| `setBandPlanStrip` | `enabled` bool | | Revision 4. Shows or hides the band-plan strip in the shack's window — the same switch as **View › Band Plan Strip**. Display only; the plan, class emphasis and marker options are not in the API. |
+| `setSAMSideband` | `sideband` string | `both` `upper` `lower` `stereo` (any case) | Revision 4. Sets the SAM sideband choice; any other value is `out_of_range`. Accepted in any mode and heard in SAM. `stereo` plays one sideband in each ear on the shack's stereo output and falls back to Both by itself where the app's own control would (a channel wider than 11 kHz, a mono output). |
 
 **Coalescing.** Commands from one client are applied in order. The server
 gathers commands for about 8 ms (and for as long as the previous batch is
@@ -370,7 +376,8 @@ session is approved. After an operator decision the server sends
 `{"t":"txPermission","allowed":true,"leaseMs":450}` (or `allowed:false`).
 Until approved, all TX names and microphone frames return `tx_disabled` and
 produce no TX owner request. `arm` is always refused. Existing RX grants and
-clients remain compatible; `apiVersion` stays 1, `apiRevision` is 3.
+clients remain compatible; `apiVersion` stays 1 (this section arrived with
+`apiRevision` 3).
 
 | Request | Fields and bounds |
 | --- | --- |
@@ -526,6 +533,8 @@ the server stops, **1008** after `denied` / `kicked` / `revoked` / `flood` /
   | 0 | 2026.0921_001 | Everything not marked with a revision. `welcome` has no `apiRevision` field. |
   | 1 | 2026.0929_001 | `setVFOB`, `setFilterPreset`, `welcome.radio.filters`, state key `filterPreset`, `welcome.apiRevision`. The server waits for the client's close before it closes the socket (§ 3.5). |
   | 2 | unreleased | New `radio.modes` / `radio.filters` entries `DATA-U` and `DATA-L` (the data modes, #130), which `setMode` accepts and the `mode` state key reports. No new messages. |
+  | 3 | 2026.1018_001 | Session-approved transmit (§ 5.6): `txPermission`, the approved TX requests and binary type 0x10 microphone frames. |
+  | 4 | unreleased | `setSAMSideband` and state key `samSideband` (the SAM Both / Upper / Lower / Stereo choice, #448). `setBandPlanStrip` and state key `bandPlanStrip` (#444). Read-only state keys `voiceSquelchEnabled` and `voiceSquelchOpen` (#444). |
 * **Capabilities are per client.** `hello.features` asks; `welcome.granted`
   answers, after intersecting with what the operator allows that `clientId`.
   The operator can change a client's permissions while it is connected; the

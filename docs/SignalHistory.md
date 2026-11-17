@@ -34,6 +34,18 @@ Readings are taken 20 times a second. The receiver integrates the S-meter over
 The right-hand scale shows S-units (S9 = −73 dBm, 6 dB per S-unit) for the
 same grid lines. Times are UTC.
 
+**Pointer readout.** Move the pointer over the chart: a hairline follows it
+and one line above the chart gives the UTC time and the reading under it,
+for example `01:02:10Z  −87.4 dBm S7  (min −90.4, max −84.4 over 15 s)
+floor −112  SNR 25 dB  SUB −95.1 dBm`. The minimum and maximum appear when
+the column is a bucket rather than a single 20 Hz sample; `[TX]` or `[OVL]`
+marks a column that was left out of the statistics. Over a gap in the
+recording it says `no data here`. The readout reads the columns the chart
+has drawn (up to 900 across the window), so on a long span one column
+stands for several seconds or minutes — zoom the span in for single
+samples. It has not been checked on screen by a person yet: the wording and
+the choice of column are unit-tested, the drawing was compile-checked only.
+
 ### Spans and resolution
 
 | Span | Kept as | Held for |

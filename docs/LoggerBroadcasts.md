@@ -187,16 +187,23 @@ is read from that socket.
    virtual-COM-to-TCP bridge sits in between; that pairing has not been
    tried here either.
 
-The status row reads `sending to host:port — "HermitSDR" 14000–14055 kHz,
-475 points` when frames are going out. It also says when there is nothing
+The status row reads `sending (no acknowledgement in this protocol) to
+host:port — "HermitSDR" 14000–14055 kHz, 475 points` when frames are going
+out, with the number sent on the line below. It also says when there is nothing
 to send (`waiting for a receiver`, `no spectrum is arriving`), when the
 chosen segment is outside what the radio samples, and when the destination
 answers that nothing is listening: `nothing is listening at host:port —
 open the logger's Spectrum Display window and pick this source` (the
 system reports this for a machine that is up but has no program on the
-port). A machine that is switched off or filtered answers nothing at
-all, and UDP cannot tell that from success: the row keeps saying
-`sending`. To see the datagrams yourself, run `nc -ul 13064` in Terminal
+port).
+
+**"Sending" is not "received".** The spectrum datagram is one-way UDP: the
+logger never replies, and HermitSDR does not invent a reply to wait for. A
+machine that is switched off, on another network or behind a firewall
+answers nothing at all, which looks exactly like success — so the row says
+`no acknowledgement in this protocol` every time it says `sending`, and the
+sent count keeps rising either way. The only proof that frames arrive is
+the logger's own Spectrum Display window. To see the datagrams yourself, run `nc -ul 13064` in Terminal
 with *Send to* `127.0.0.1`.
 
 ### Settings

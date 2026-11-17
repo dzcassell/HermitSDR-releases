@@ -84,15 +84,42 @@ Modes that are published today:
 | `navtex` | Each completed NAVTEX / SITOR-B message. |
 | `aprs` | APRS packets heard on the air by the packet decoder. |
 | `ale` | Each 2G-ALE address word (TIS, TWAS, TO, …). |
+| `rtty` | The RTTY decoder's print, one message per line (see below). |
+| `cw_skimmer` | The CW skimmer's rows (SKIM), one message per row as its text changes (see below). |
+| `rds` | The broadcast-FM station's RDS name and text, when they change. |
 
 Only off-air decodes are published: a time-machine rewind or a file replay
 publishes nothing.
 
-**Not published yet** (the topics are reserved, nothing feeds them): the CW
-skimmer (`decode/cw_skimmer`), RTTY (`decode/rtty`), broadcast-FM RDS
-(`decode/rds`), Super Skimmer monitor decodes from other bands, the ALE
-whole-passband skimmer, and APRS packets that arrive from APRS-IS rather than
-from the air. The radio's supply voltage is also not in `telemetry` yet.
+Three of these do not produce "a decode" the way FT8 does, so each is cut
+into messages by a rule:
+
+- **`rtty`** — RTTY prints a stream of characters. A message is one line:
+  up to the next line break, or the first space after 72 characters (120 at
+  most), or whatever has been printed when the decoder has been quiet for
+  three seconds. `frequency_hz` is the mark tone on the air, `audio_hz` the
+  mark tone in the passband; `extra` has `baud`, `shift_hz` and `reverse`.
+  Retuning closes the line printed so far under the old frequency. Whatever
+  the RTTY window prints is published, garble on a weak signal included; the
+  rate cap bounds it.
+- **`cw_skimmer`** — the skimmer re-reads every signal several times a
+  second. A row is published when its text has changed and it was last
+  published ten or more seconds ago, and once more when the signal goes if
+  its last text was never sent; `text` is the row as the panel shows it, so
+  consecutive messages for one row overlap. `extra` has `wpm`, `confidence`
+  and `row` (the row's number, the same for every message about one signal).
+  Rows the skimmer classed as RTTY, or has not classed yet, are not
+  published.
+- **`rds`** — published when a station's name (PS) or RadioText first
+  arrives and when either changes, at most every five seconds for one
+  station; a different station is published at once. `text` is the
+  RadioText, or the name when no RadioText has arrived; `call` is the
+  callsign derived from a North American PI code; `extra` has `pi` (four hex
+  digits), `ps`, `pty`, `pty_name` and `tp`.
+
+**Not published yet:** Super Skimmer monitor decodes from other bands, the
+ALE whole-passband skimmer, and APRS packets that arrive from APRS-IS rather
+than from the air. The radio's supply voltage is also not in `telemetry` yet.
 
 ### What each topic contains — and whose data it is
 
@@ -114,7 +141,11 @@ name and password included, crosses your network unencrypted.
 
 The password is kept in the macOS Keychain only. It is never written to
 HermitSDR's settings or the `Settings.plist` mirror, never logged, and is not
-part of the support information or the diagnostics report.
+part of the support information or the diagnostics report. While MQTT
+publishing is on, **Copy System Information** (About window) includes one
+MQTT line: the connection status with the broker's address and port, TLS or
+plain TCP, whether a user name is set (not the name), the QoS and the
+published / dropped / rate-limited counts.
 
 ## Payloads
 
@@ -254,11 +285,13 @@ Nothing is published while no radio is connected.
 
 ## Rate cap and the send queue
 
-- **Rate cap** — decodes, spots, logged QSOs and alerts share a cap (default
-  20 a second, 1–200). It is an average over ten seconds, so a full FT8
-  period of 50 decodes still goes out at once; a flood beyond that is dropped
-  and counted ("over the rate cap" in the status line). `status`,
-  `telemetry` and `spaceweather` are paced by their own timers instead.
+- **Rate cap** — decodes, spots and alerts share a cap (default 20 a second,
+  1–200). It is an average over ten seconds, so a full FT8 period of 50
+  decodes still goes out at once; a flood beyond that is dropped and counted
+  ("over the rate cap" in the status line). **Logged QSOs have an allowance
+  of their own**, the same size, so a flood of decodes cannot cost a
+  `qso/logged` message. `status`, `telemetry` and `spaceweather` are paced by
+  their own timers instead.
 - **Send queue** — up to 512 messages wait when the broker is slow or away.
   When the queue is full the **oldest** message is dropped and counted
   ("dropped"). A dashboard wants the newest reading; a stale one is not worth
