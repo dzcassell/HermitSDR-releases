@@ -7,7 +7,51 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
-## [Unreleased]
+## [2026.1120_001] — 2026-11-20
+
+USB receivers, GPS and tagged multi-receiver RDF surveys. TH-D75 weather
+reception and SDS100 USB control have been exercised on hardware. GPS satellite
+fixes, road surveys, RF calibration and packet transmission remain operator
+acceptance checks. The iPhone companion requires separate developer installation;
+no App Store or TestFlight distribution is provided by this release.
+
+### Added
+- The connection panel now includes a visible Uniden SDS100 controls/RDF entry, with passive USB detection and a direct path to its independent scanner window.
+- Uniden SDS100 USB receive-control instrument: verified discovery/identity, live scanner status and RSSI/channel/digital metadata, tune/hold and speaker volume/squelch controls, plus an independent RDF snapshot provider alongside the primary receiver. Explicit own/co-located antenna positions, raw RSSI sentinel rejection and separately qualified units preserve map/export accuracy; scanner audio stays on its own speaker. No host USB IQ/audio or software DMR/P25 decoder is implied.
+- RDF survey plumbing: default on-demand “Sample here” capture for GPS or manual positions, reusable local speaker tags, per-observation signal references and future voice-analysis provenance fields. Batch snapshots accept up to eight receiver feeds with independent locations and preserve receiver/layer identities; extra physical-radio connection adapters remain future work. Native/offline sample-centered strength overlays, receiver/signal/tag/setup filters and portable GeoJSON export preserve units, quality and calibration boundaries.
+- TH-D75 native packet/APRS console: exclusive USB KISS session, AX.25 UI/APRS status composer, 1200/9600 bps radio setup guidance, operator session confirmation, coordinator-gated one-packet ARM/Send, readable received AX.25/APRS with uncompressed station positions, and explicit local JSON/CSV export of retained packets. No automatic retries or beacons; queued transmission and delivery remain unconfirmed. Separate from IF reception and the receive-only TCP KISS server. Hardware transmit validation is pending.
+
+- **Kenwood TH-D75 USB receiver.** Direct USB discovery, verified
+  serial tuning, 12 kHz IF capture and image-rejected I/Q for the ordinary
+  waterfall, FM/SSB/AM/CW demodulators and recording paths. 15 kHz RF window,
+  fixed 48 kHz clock, 20 Hz fine tuning, receive-only command boundary, input
+  loss diagnostics and session backlight/receiver-state restoration. USB IF
+  levels are labelled dBFS; antenna-power calibration remains unqualified.
+- **TH-D75 GPS in RDF.** Explicit per-session NMEA GPS opt-in on the shared USB
+  port, checksummed RMC/GGA parsing, invalid/stale fix rejection, local journal,
+  map and CSV integration. GPS output/mask restored on stop. Unknown NMEA
+  accuracy and IF gain are flagged; actual satellite fixes and road operation
+  still require field validation. See `docs/KenwoodD75.md`.
+
+
+- **RDF session recorder.** Radio → RDF Session records channel
+  power, noise estimates, receiver configuration and manual or iPhone positions
+  into a bounded local journal. Explicit manual capture, quality flags, setup
+  groups, crash-tail recovery, offline measurement map, optional Apple Maps
+  tiles, saved-session playback and CSV export. No transmitter identity,
+  localization or navigation is inferred. See `docs/RDFSession.md`.
+
+- **iPhone location link.** Radio → iPhone Location starts an
+  explicit, session-only TLS pairing listener. The new Hermit Location iOS
+  companion discovers the paired Mac locally and shares timestamped GPS fixes,
+  reported accuracy, speed and course, with background location during an active
+  session and bounded reconnect/send handling. The location link keeps fixes
+  in memory and uses no cloud service.
+  Invalid, cached, duplicate and stale fixes cannot appear as usable positions.
+  RDF Session now consumes these fixes when explicitly recording; navigation
+  is not implemented. Physical iPhone pairing, permissions and locked-screen
+  continuity still require device acceptance; see `docs/iPhoneLocation.md`.
+
 
 ## [2026.1117_001] — 2026-11-17
 

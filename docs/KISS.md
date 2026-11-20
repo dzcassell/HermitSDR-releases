@@ -7,14 +7,17 @@ framing — the interface APRS and packet software already uses with
 sound-card TNCs, on the conventional port 8001. Off by default. Source
 issue 417.
 
-**Transmit is not available.** Programs can connect and read frames. Frames
+**Transmit is not available through this TCP service.** Programs can connect and read frames. Frames
 they send (packets to transmit, TXDELAY and the other KISS settings) are
 read, counted and discarded; nothing is keyed, queued or modulated, and no
 code path leads from these ports to the transmitter. An APRS program will
 plot what the receiver hears but its beacons and messages go nowhere, and
 connected-mode software (Winlink packet, BBS, chat) cannot complete a
 session, because a connection needs replies sent on the air. Packet
-transmit is a later, separately reviewed step.
+transmit through these TCP ports remains unavailable. The development
+TH-D75 native packet console is a separate operator-armed USB TNC session;
+it does not forward these clients or change their receive-only boundary.
+See [TH-D75 USB data](KenwoodD75.md).
 
 ## Settings
 
