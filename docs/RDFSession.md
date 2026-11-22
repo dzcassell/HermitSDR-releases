@@ -12,8 +12,9 @@ Public operator guide: [How To RDF With HermitSDR](https://hermitsdr.com/support
 
 ## Start a session
 
-1. Set the radio, antenna, mode, filter and gain yourself. The recorder never
-   connects, tunes, changes gain, arms or keys a radio. Its receiver readout
+1. Set the radio, antenna, filter and gain yourself. **Tune target** explicitly
+   applies the selected receive frequency/mode through the existing RX controls;
+   capture alone never tunes, connects, arms or keys a radio. Its receiver readout
    shows the current reported level and whether a fresh live meter is present.
 2. Enter a name, target frequency in Hz and antenna/field notes. The target
    field initially follows the tuned frequency until filled. **Use current
@@ -89,14 +90,14 @@ this first recorder does not capture every receive-chain control.
 
 Transmit/tail, ADC overload, setup settling, receiver replay/time shift, missing
 or stale meter (>0.5 s), off-target frequency (>0.5 Hz), missing/stale phone
-position (>10 s), uncertainty >50 m and a backwards wall-clock step are flagged.
+position (older than the saved policy: 3 s for new sessions, 10 s for legacy journals), uncertainty >50 m and a backwards wall-clock step are flagged.
 SDRplay hardware AGC is excluded because it can change front-end gain; use
 manual hardware gain for this first version. Reported power can remain in an
 excluded row for diagnosis, but it cannot produce a colored usable map symbol.
 
 Every changed receiver context starts a new setup and a one-second settling
 period. Reconnect starts a fresh setup as well. The view follows the latest
-setup by default; explicitly choose **All setups** to inspect the combined
+setup independently for each receiver by default; explicitly choose **All setups** to inspect the combined
 history. Filter widths, antennas or calibration changes can make groups
 incomparable even when both report dBm.
 
@@ -272,3 +273,112 @@ Co-located antennas share position only after an explicit operator choice,
 recorded as `positionSharedWithReceiverID`; otherwise each feed needs its own
 position. CSV/GeoJSON retain all unit/provenance metadata. See
 [Uniden SDS100](UnidenSDS100.md). No classifier or emitter localization is added.
+
+
+## Field controls (next preview after 2026.1120_001)
+
+**Field view** pins target/mode, GPS readiness, reusable speaker tag, physical
+antenna/setup label and **Sample here** above the scrolling map/history.
+Command-Return saves one on-demand batch. **Target → TH-D75 · 27.385 MHz LSB
+setup** fills the configuration without tuning or enabling GPS. Connect the
+D75 as the primary receiver, explicitly choose **Tune target**, then start a
+new journal with **TH-D75 GPS (USB)** selected. Menu 981 must be USB. The D75
+IF screen can show AM while HermitSDR demodulates LSB.
+
+New sessions accept GPS positions up to three seconds old. Setup offers a
+10-second policy for slower sources; the chosen policy is saved in the header
+and each observation. Missing, clock-mismatched and stale fixes remain flagged
+gaps without coordinates. Satellite count and HDOP describe the receiver's
+recent report, not measured accuracy. Estimated/manual/simulated NMEA fixes
+are refused. Acquisition satellites alone cannot create a location.
+
+**Follow GPS** centers the map on the latest accepted primary-antenna position.
+A stale fix removes that live marker. Offline view supplies a local north-up
+coordinate plot; Apple Maps adds optional street tiles. Neither fabricates
+measurement points between captures.
+
+For D75 surveys, **IF contrast (estimated dB)** compares mean channel-bin
+power to the median background inside the same fresh usable IF window (a
+mean against a median, so a channel holding only noise reads about +1 to
++1.6 dB, not 0, and the figure is signal-plus-noise over noise), omitting
+the filter skirts and a guard around the channel. It avoids treating the
+48 kHz stream's rejected spectrum as a noise floor. A uniform digital level
+change cancels mathematically; RF AGC behavior and changing interference can
+still affect it. It is neither calibrated RF dBm nor physical SNR, and no D75
+S-meter strength command has been verified. Unknown gain/position uncertainty
+remain saved. Missing/stale/insufficient FFT data produces no contrast.
+
+Use **Lock scales** to retain a separate numeric color range for each receiver
+and unit; unlock to rescale. Antenna/setup labels and spectrum-averaging changes
+split comparison groups. **Strongest sample** selects the strongest eligible
+recorded antenna position in a single comparable layer, not an inferred
+transmitter coordinate. CSV/GeoJSON preserve contrast, FFT age/bin counts,
+GPS-age policy and quality flags. Existing journals remain readable.
+
+For tonight's rubber-duck test, first establish that the interfering signal is
+actually audible at 27.385 MHz LSB. Keep the antenna placement, radio settings
+and display averaging fixed. Prefer **Fast** for moving snapshots; **Peak**
+retains spectral history and can misrepresent the level at the current position.
+Sample the same recognizable transmission and
+reuse its manual tag. Field GPS acquisition, relative-level behavior and road
+operation remain operator checks. The software does not establish whether a
+particular transmission is jamming or identify its speaker.
+
+
+## Stationary SSB stop measurements — development
+
+For local ground-wave broadcasts, use an on-demand session, select LSB or USB,
+confirm the physical antenna/setup label and position, then enable **Field view**.
+Select **Fast** spectrum averaging on the D75: peak/slow display history can hold
+speech through pauses. Choose 10, 15 or 20 seconds and press **Measure SSB stop**.
+The receiver is not tuned or reconnected by this action. Keep the antenna still.
+
+**Target speaking** is your listening confirmation. Leave it checked while you
+hear the broadcaster and uncheck during silence or when unsure. A second energy
+gate opens at 6 dB and closes below 3 dB against available channel/background
+contrast. This is a speech-activity proxy, not speech recognition or transmitter
+identification. There is no competing-signal classifier. D75 gating uses the
+fresh in-band IF contrast; other supported primary IQ receivers use their
+pre-AGC channel/noise estimate. Unknown background is unqualified, not zero.
+
+The recorder attempts one snapshot every 200 ms (5 Hz). Each raw row includes
+its stop UUID, monotonic offset and operator Target speaking state, original location/fix age, configuration,
+quality flags, power and available background/contrast. One fsynced write is
+allowed in flight; slow disk/UI sampling appears as reduced coverage or gaps,
+never invented samples. This is host-timed sampling of published meters, not
+continuous sample-clock integration, IQ recording or precision RF metrology.
+
+A completed stop needs at least 80% qualified coverage and two seconds of active
+speech. Its active median, linear-power mean, P90 and P90–P10 spread exclude
+pauses. The median is used for strength overlays; contrast overlays use median
+active IF contrast. The background statistic retains the original estimator's
+units (D75 background is per-bin IF dB, not an RF noise-floor measurement).
+D75 levels remain exploratory IF dBFS because hardware gain is unqualified.
+Changing modulation, frequency, bandwidth, gain context or antenna/setup during
+a stop invalidates comparison. Sampling gaps over 0.6 seconds, reported speed
+over 1.5 m/s or position displacement over 20 meters also prevent a ready result.
+GPS jitter can therefore reject a stationary stop. Unknown D75 horizontal
+accuracy remains unknown; these checks do not certify positioning or fixed gain.
+
+Only the primary receiver participates in an SSB stop. The SDS100 AM RSSI
+remains available through ordinary **Sample here**, in its own units/layer; it
+is not substituted for sideband speech power. Calibrated reported dBm, relative
+IF dBFS and scanner RSSI are never numerically merged. Raw stop rows remain in
+the record list/export but do not crowd the map; only the qualified summary
+enters strength overlays. An insufficient, invalid or cancelled summary is
+excluded. Cancel preserves already-saved raw samples. Stopping the session first
+cancels/finishes the active stop and then writes the session end marker.
+
+**Save audio excerpt** is optional and off by default. It saves processed mono
+12 kHz receiver audio beside the journal as `SSB-stop-<UUID>.wav`, owner-only
+permissions, without replacing an existing file. It needs live primary receive,
+SUB off and TX disarmed at start. The audio follows receive processing/routing;
+it is listening evidence, not the source of RF-level measurements. Fixed-size
+storage bounds capture; an empty, invalid, dropped or failed excerpt is reported
+unavailable without inventing a file reference or invalidating saved power data.
+The summary retains the filename; CSV/GeoJSON keep the summary and its provenance.
+Keep the WAV beside its journal when copying the evidence. Nothing is uploaded.
+
+Repeat stops with an unchanged antenna/receiver setup to assess repeatability.
+This feature makes no source-location, transmitter-power or ground-wave coverage
+claim. Live road/GPS/SSB and receiver-gain acceptance remain operator work.

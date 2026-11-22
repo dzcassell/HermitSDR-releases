@@ -8,13 +8,17 @@ has an independent time reference.
 It only compares. Nothing in this feature sets, steps or steers the Mac's
 clock.
 
-**Not yet checked on the air.** Every station below was built from its
+**Not yet decoded on the air.** Every station below was built from its
 operating agency's published format and tested against signals generated
-from those formats. No real off-air recording of any of them has been
-decoded yet, and CHU is off the air at the development station, so CHU
-has only ever been tested on generated signals. Treat a first real decode
-as a test of the decoder, not of your clock, and please report what you
-see.
+from those formats. The first on-air trial (WWV, 15 MHz, 2026-11-22, a
+good signal with both the WWV and WWVH ticks present) decoded nothing in
+three minutes: about one second in eight read wrongly, and a WWV minute
+was then accepted only if all 60 seconds were right. The decoder now
+combines minutes (see *Combining minutes* below); that change has been
+tested on generated signals only and has not yet been tried on the air.
+CHU is off the air at the development station, so CHU has only ever been
+tested on generated signals. Treat a first real decode as a test of the
+decoder, not of your clock, and please report what you see.
 
 ## Where
 
@@ -24,6 +28,11 @@ see.
   frequency button tunes the radio and switches it on.
 - Its sessions appear in **Decoder Activity** as `TIME`, with a bookmark
   for each confirmed minute.
+- **Ask The Crab** can read the window back ("what time does WWV say",
+  "is my Mac clock right"): its `time_signal` tool reports the decoded
+  time, whether it is confirmed, how many minutes it was read from, the
+  signal figures and the clock comparison. It only reports; it cannot
+  start the decoder or tune.
 
 ## Stations
 
@@ -61,6 +70,8 @@ hint: if the suggested frequency is empty, try the next one down.
 
 - **Date and time** — the UTC minute the last frame was sent in, with
   **CONFIRMED** or **UNCONFIRMED** beside it and the station that sent it.
+  For WWV / WWVH and WWVB, "from 6 minutes" (or "from this minute alone")
+  says how much signal the time was read from.
   DCF77 and MSF broadcast local time for the *following* minute; the window
   converts both to UTC and to the minute the frame was sent in. JJY sends
   Japan Standard Time; it is shown as UTC too.
@@ -70,30 +81,114 @@ hint: if the suggested frequency is empty, try the next one down.
   **DST CHANGE** — the station's daylight / summer time flags.
 - **The strip of 60 cells** — the last minute, second by second, newest on
   the right: green 0, yellow 1, red marker, blue "no pulse", grey
-  unreadable. A clean minute has no grey.
+  unreadable. A clean minute has no grey. The legend under the strips
+  names the colours.
+- **The thin strip under it** (WWV / WWVH and WWVB) — the minute as the
+  held minutes decide it, second 0 on the left, in the same colours. Grey
+  there is a second the minutes do not yet agree on. Its caption says how
+  many minutes are held and how many seconds are still undecided; a time
+  is given when none is.
 - **depth / quality** — how deep the code's amplitude steps are, and how
   cleanly the last second or minute was read.
-- **decoded · refused** — minutes that passed every check, and minutes that
-  were lined up but failed one (with the reason: parity error, value out of
-  range, position markers out of place, …).
+- **decoded · refused** — minutes that gave a time, and minutes that ended
+  without one (with the reason: parity error, value out of range, position
+  markers out of place, "not enough agreeing minutes yet", …). While WWV
+  or WWVB minutes are still being collected every minute counts as
+  refused; that is expected for the first few minutes on a fading signal.
 
 ### Confirmed and unconfirmed
 
-A minute is shown only if every one of its 60 seconds was read with margin
-and the frame passed every check its format has: position markers in the
-right seconds, fixed bits, digit ranges, a real calendar date, parity where
-the station sends it (DCF77, MSF, JJY), the weekday agreeing with the date
-(DCF77, MSF, JJY), the leap-year bit agreeing with the year (WWVB).
+A minute decodes on its own only if every one of its 60 seconds was read
+with margin and the frame passed every check its format has: position
+markers in the right seconds, fixed bits, digit ranges, a real calendar
+date, parity where the station sends it (DCF77, MSF, JJY), the weekday
+agreeing with the date (DCF77, MSF, JJY), the leap-year bit agreeing with
+the year (WWVB).
 
-A minute becomes **confirmed** when the next minute decodes too and is
-exactly one minute later (up to ten minutes later if minutes in between
-were lost). For CHU, two bursts in the same minute must agree.
+A time becomes **confirmed** when an earlier minute gave the time exactly
+that many minutes earlier (the minute before, or up to ten minutes before
+if minutes in between gave nothing). For CHU, two bursts in the same
+minute must agree. A time is never confirmed the first time it appears.
 
-A noisy or faded minute therefore shows nothing new — the previous time
-stays, ageing. WWV / WWVH and WWVB carry no parity, so a single wrong bit
-in a single minute can only be caught by the next minute: such a minute can
-appear as **unconfirmed**, never as confirmed. Rely on confirmed times
-only. The clock comparison uses confirmed minutes only.
+Rely on confirmed times only. An unconfirmed time is shown for
+information: it is not compared with the Mac's clock and nothing else in
+the app uses it.
+
+DCF77, MSF and JJY are read one minute at a time, so for them a noisy or
+faded minute shows nothing new — the previous time stays, ageing.
+
+### Combining minutes (WWV / WWVH and WWVB)
+
+WWV / WWVH and WWVB send no parity or check bits, and on short wave a
+minute with all 60 seconds readable is rare: fading, the second station
+on the same frequency and the voice announcements each cost a few
+seconds. So for these two the decoder also keeps the last fifteen minutes
+of seconds and combines them:
+
+- It finds where the minute starts from the position markers, the missing
+  pulse at second 0 (WWV) and the reserved zeros of all the held minutes
+  together.
+- Successive minutes carry the same frame with one known change: the
+  minute counts up, and the hour, day and year roll over with it. Each
+  possible minute, hour, day and year is scored against what every held
+  minute would have carried if the newest minute had that value, and the
+  best must be clearly ahead.
+- Every second of the result is then decided by a vote of the minutes
+  that read it: the readings for the winning symbol must outnumber the
+  readings against it by two (a plain majority is enough for a reserved
+  zero). An unreadable second is an abstention, so it does not sink a
+  minute when the same second read cleanly in the minutes around it.
+- The combined minute must pass every check a single minute must pass,
+  and the newest minute must itself have been at least half readable and
+  agree with the result. A time is never carried forward through a
+  minute that was not heard.
+
+Such a time is **confirmed** only if, in addition, the minute before gave
+the time one minute earlier and every second of the time was decided by a
+margin of four. The window says how many minutes each time came from.
+
+A clean-looking minute that the held minutes outvote is not shown as it
+stands: the combined time is shown instead, or nothing. This catches the
+single wrong bit that the format itself cannot (it used to appear as an
+unconfirmed wrong time). The first minute after switching on has nothing
+to be compared with, so one wrong bit in it can still appear as an
+unconfirmed time; it cannot be confirmed.
+
+What to expect, from generated signals (`TimeSignalAccumulationTests`):
+
+| Seconds damaged | Minutes that give a confirmed time, once running | First time shown | First confirmed |
+| --- | --- | --- | --- |
+| none | all | 1 minute | 2 minutes |
+| 10 % | 98 % (WWV), 96 % (WWVB) | 4 to 5 minutes | 7 to 9 minutes |
+| 15 % | 93 % (WWV), 88 % (WWVB) | 6 minutes | 9 minutes |
+| 20 % | 84 % | 8 minutes | 11 to 12 minutes |
+
+"Damaged" means a mix of unreadable seconds, a 0 read as a 1 or the
+reverse, markers cut short, random symbols, and in a quarter of the
+minutes a burst over seconds 45 to 59 (where the voice announcements
+are). Times are medians over 80 half-hour runs of WWV and 20 of WWVB at
+random dates; "once running" is the last twenty minutes of each half
+hour. In those runs, and in runs across the top of the hour, midnight,
+the end of a 365-day and a 366-day year, no combined time was wrong.
+Eight days of randomly classified seconds, two days of bare seconds
+pulses and marker lattices, two days each of another station's code on
+the wrong decoder, and half an hour of noise as audio gave no time at
+all, confirmed or not. A test
+that feeds audio (WWV with WWVH on the same channel at half its strength,
+damaged seconds and noise, across an hour change) showed its first time
+after six minutes and confirmed from the eighth.
+
+Limits of the method:
+
+- The DUT1, daylight-time and leap-second bits are decided by the same
+  vote. After they change at 0000 UTC the new day's minutes decide as soon
+  as two agree; for a minute or two the time may be withheld.
+- A leap second moves the minute boundary by a second. The combiner then
+  needs a clean minute, or several minutes, to find the minute again.
+- If the audio stream loses samples the seconds lattice moves and the held
+  minutes are discarded.
+- The damage model in these tests is a guess at what short wave does. The
+  rates above are not a prediction for any real path.
 
 In minutes 15 and 45 JJY replaces the year and weekday with its Morse call
 sign; those minutes decode only after an earlier confirmed minute supplied
@@ -166,7 +261,8 @@ Mac itself, use System Settings › General › Date & Time.
 **Decode ▸ Decode a Recording…** lists **Time Signal** with a station
 picker. WWV / WWVH are demodulated in AM and CHU in USB with the dial on
 the carrier; for the LF stations set the dial 1 kHz below the carrier.
-Each decoded minute prints as one line. A recording's start stamp is not a
+Each decoded minute prints as one line, ending "(6 minutes combined)"
+when it was read from more than one. A recording's start stamp is not a
 clock, so no comparison is made.
 
 Replaying an IQ recording in the main window feeds the Time Signal window
@@ -176,7 +272,11 @@ like live audio, again without the clock comparison.
 
 - Not yet decoded from a real signal; CHU cannot be tried here at all.
 - Voice announcements and the 440 / 500 / 600 Hz tones on WWV / WWVH share
-  the audio with the 100 Hz code. Minutes with heavy speech may be refused.
+  the audio with the 100 Hz code. Seconds under heavy speech may be
+  unreadable; combining minutes is meant to cover that, but if the same
+  seconds are lost in every minute they cannot be recovered.
+- Combining applies to WWV / WWVH and WWVB only. DCF77, MSF and JJY still
+  need a whole clean minute.
 - How far WWV's 100 Hz sub-carrier drops between pulses is not stated in
   the NIST text that was read; the decoder accepts anything from absent to
   about 70 % of the pulse level.
@@ -215,4 +315,10 @@ the decoders were written for HermitSDR from them:
   second 31 the fields |DUT1| in tenths, four-digit year, TAI−UTC and the
   daylight-time pattern number in that order — but a summary is not the
   page: the meaning of each bit of the leading digit and the 500 ms end of
-  the last stop bit remain from memory.
+  the last stop bit remain from memory. A third attempt on 2026-11-22 got
+  HTTP 403 from both addresses again. A search summary that day gave the
+  leading digit's bits as 1 = DUT1 negative, 2 = a second will be added,
+  4 = a second will be subtracted, 8 = even parity of the digit, and the
+  FSK as present from 10 ms to 510 ms after the second — both as
+  implemented — but it took them from descriptions of other receivers,
+  not from NRC's page, so the note stands.

@@ -116,6 +116,31 @@ tells you about the noise, not the transmitter.
 - **One passband.** This first version looks at the audio passband of the
   main receiver only. Skimming a whole 48–192 kHz span for PSK is not built.
 
+## Asking, reading and replaying it
+
+- **Ask The Crab** — "who is on PSK", "what does the PSK browser see". Its
+  `psk_browser` tool reads the list back: how many signals, the eight
+  strongest with frequency, mode, callsign, S/N and the last of their
+  text, and the stations identified this session. It only reports; it
+  cannot switch the browser on, tune or transmit.
+- **Control API** — three read-only state keys from revision 5:
+  `pskBrowser` (the switch), `pskBrowserSignals` (lines listed now) and
+  `pskBrowserCalls` (the callsigns on them, strongest first, at most 12).
+  There is no message that switches the browser or tunes to a line.
+  See [ControlAPI.md](ControlAPI.md).
+- **Live captions** — with decoder captions on for a YouTube stream, each
+  station the browser identifies off the air adds one cue
+  (`14070.512 kHz K1ABC FN42 CQ +18 dB`), under the same rate limit and
+  30-second repeat filter as the other decoders. Replays add none.
+- **Decode a Recording** — **Decode ▸ Decode a Recording…** lists **PSK
+  Signal Browser**. It runs the browser over the file in USB (or LSB with
+  the sideband option), prints a line for each callsign as it is confirmed
+  (`08:00:21  14071.000 kHz  PSK31  K1ABC  CQ  S/N 37 dB`) and, at the end,
+  what each signal still listed last sent. Nothing from a recording goes
+  to the heard map or PSK Reporter.
+- **Operator Manual** — the *Decode and operate digital modes* chapter
+  describes the Browser switch.
+
 ## How it was tested
 
 All figures below are from synthetic signals run through the browser faster
@@ -135,6 +160,10 @@ checked on the air or against a recording of real PSK activity.
   printing clean text; a move that took one of two signals out of the filter
   dropped that line only. The splice in these fixtures is a generated
   frequency step, not a recording of a radio being tuned.
+- The report for the crab, the Control API keys, the caption text and the
+  Decode a Recording output are unit-tested on generated signals. The
+  caption hook into a live stream and the Control API keys in the running
+  app are compiled, not exercised.
 - **Cost of 24 simultaneous signals: 1.07 to 1.16 s of processing for 60 s
   of audio — about 1.9 % of one processor core** (five runs, 1.78 to
   1.93 %), measured on a Mac mini (M4 Pro) in the unoptimised test build,

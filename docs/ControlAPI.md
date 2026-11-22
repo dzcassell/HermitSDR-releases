@@ -262,6 +262,9 @@ State keys:
 | `bandPlanStrip` | bool | | Revision 4. The band-plan strip is shown above the frequency scale of the shack's own panadapter ([BandPlanOverlay.md](BandPlanOverlay.md)). It says nothing about the spectrum downlink, which carries no strip. |
 | `voiceSquelchEnabled` | bool | | Revision 4. Read-only: the shack's squelch is set to Voice ([VoiceSquelch.md](VoiceSquelch.md)). There is no command for it; `setSquelch` drives the level squelch only. |
 | `voiceSquelchOpen` | bool \| null | | Revision 4. Read-only: the voice squelch is passing audio (`true`) or muting it (`false`); `null` while it is off or idle in the current mode (it acts in USB, LSB, AM and SAM). Sampled ten times a second, so a change arrives as a state delta within about 0.1 s. |
+| `pskBrowser` | bool | | Revision 5. Read-only: the PSK signal browser is switched on ([PSKBrowser.md](PSKBrowser.md)). There is no command for it. |
+| `pskBrowserSignals` | integer | | Revision 5. Read-only: lines in the browser now — PSK31 / PSK63 signals in the receive passband that it is following or heard in the last two minutes; 0 while it is off. |
+| `pskBrowserCalls` | string | | Revision 5. Read-only: the callsigns on those signals, strongest first, separated by spaces, each once, at most 12; empty while none is identified or the browser is off. |
 | `txArmed` | bool | | Read-only: the shack's ARM interlock. |
 | `txKeyed` | bool | | Read-only: the shack is transmitting (its own operator). |
 | `txInhibitReason` | string \| null | | Read-only: why the shack would refuse to key now. |
@@ -534,7 +537,8 @@ the server stops, **1008** after `denied` / `kicked` / `revoked` / `flood` /
   | 1 | 2026.0929_001 | `setVFOB`, `setFilterPreset`, `welcome.radio.filters`, state key `filterPreset`, `welcome.apiRevision`. The server waits for the client's close before it closes the socket (§ 3.5). |
   | 2 | unreleased | New `radio.modes` / `radio.filters` entries `DATA-U` and `DATA-L` (the data modes, #130), which `setMode` accepts and the `mode` state key reports. No new messages. |
   | 3 | 2026.1018_001 | Session-approved transmit (§ 5.6): `txPermission`, the approved TX requests and binary type 0x10 microphone frames. |
-  | 4 | unreleased | `setSAMSideband` and state key `samSideband` (the SAM Both / Upper / Lower / Stereo choice, #448). `setBandPlanStrip` and state key `bandPlanStrip` (#444). Read-only state keys `voiceSquelchEnabled` and `voiceSquelchOpen` (#444). |
+  | 4 | 2026.1117_001 | `setSAMSideband` and state key `samSideband` (the SAM Both / Upper / Lower / Stereo choice, #448). `setBandPlanStrip` and state key `bandPlanStrip` (#444). Read-only state keys `voiceSquelchEnabled` and `voiceSquelchOpen` (#444). |
+  | 5 | unreleased | Read-only state keys `pskBrowser`, `pskBrowserSignals` and `pskBrowserCalls` (the PSK signal browser, #448). No new messages. |
 * **Capabilities are per client.** `hello.features` asks; `welcome.granted`
   answers, after intersecting with what the operator allows that `clientId`.
   The operator can change a client's permissions while it is connected; the

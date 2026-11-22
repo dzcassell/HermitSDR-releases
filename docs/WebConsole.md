@@ -95,6 +95,140 @@ clear this site's browser data. Device-level installation/uninstallation remains
 in the browser or operating system. Actual iOS/Android and hostile-route acceptance
 remains in #91; automated Chrome checks establish the software behavior only.
 
+## Tablets and phones: the touch layout (#468)
+
+On an iPad, an Android tablet or a phone the console arranges itself for
+fingers: a large frequency readout and S-meter, the panadapter and waterfall,
+a tuning ring, and pads for the step, band and mode. Nothing is installed on
+the tablet; it is the same page, the same pairing and the same receive-only
+command set as on a desktop.
+
+### Open it on an iPad
+
+1. On the Mac: **Settings ▸ Control API** on, **Settings ▸ Web console** on,
+   and **Allow LAN** on for the overlay server (see *Enable it* above). The
+   iPad must be on the same network as the Mac.
+2. On the Mac press *Copy link with pairing code* and send the link to the
+   iPad (AirDrop, Messages, Universal Clipboard), or type the LAN URL
+   (`http://192.168.x.y:4997/console`) into Safari and paste the pairing code.
+3. The first time, Safari refuses the shack's self-signed certificate. Tap
+   the *open the Control API port once* link the page shows, compare the
+   fingerprint, accept it, go back and tap **Connect**.
+4. Tap **Listen** for audio (a browser plays nothing until it is tapped).
+
+### Add it to the Home Screen
+
+In Safari: **Share ▸ Add to Home Screen**. The console then opens full screen
+with its own icon, without Safari's bars, inside the safe areas of the
+display, and without the rubber-band bounce at the edges. The pairing code is
+kept only if **remember the code on this device** is ticked; a Home Screen
+web app has its own storage, so tick it there once. The icon is a 180 px PNG
+served by the Mac at `/console/apple-touch-icon.png`; the manifest and its
+SVG icons are the ones the console already had.
+
+### Which layout
+
+The touch layout is chosen automatically when the device's main pointer is
+coarse (a finger: `pointer: coarse`), and the pointer layout otherwise. The
+**Auto** button in the header changes it by hand: Auto → Touch → Pointer →
+Auto, remembered on that device. `?layout=touch` or `?layout=pointer` on the
+URL forces one for that visit. The pointer layout is unchanged from earlier
+releases.
+
+The touch layout has four arrangements: a tablet in landscape (scope on the
+left, ring and pads on the right, all on the first screen), a tablet in
+portrait (scope above, ring beside the pads), a phone in portrait (one
+column) and a phone in landscape (ring beside the scope). The remaining
+controls (filter, AGC, audio, RF gain, DSP, squelch, RIT, split, connection)
+are below, a scroll away.
+
+### Fingers
+
+| Gesture | Where | What it does |
+| --- | --- | --- |
+| Spin | Tuning ring | Tunes: clockwise is up, 48 clicks a turn, each click one step. A flick keeps turning and slows down by itself; touching the ring stops it at once. At rest it never moves. |
+| Tap a pad | Step | 10 Hz, 100 Hz, 500 Hz, 1 kHz, 5 kHz, 10 kHz, or **shack** (the shack's own step, through `tuneStep`). |
+| Tap a pad | Band, Mode | The band and mode buttons, at finger size (`setBand`, `setMode`). |
+| Drag sideways | Panadapter or waterfall | The dial follows the finger by the frequency it crosses. Nothing jumps when the finger lands. |
+| Tap | Panadapter or waterfall | Tunes to the tapped frequency; if a signal stands at least 10 dB out within about a fingertip, lands on its peak. |
+| Pinch | Panadapter or waterfall | Zooms this device's view, up to ×16, about the fingers. A **×N** chip appears; tap it for the whole span again. |
+| Two fingers together | Panadapter or waterfall | Pans the zoomed view. |
+| Swipe up or down | Anywhere, the spectrum included | Scrolls the page. It never tunes. |
+
+Tuning from the ring and from a drag is sent at most 25 times a second and
+always carries the newest target, so a fast spin does not queue behind
+itself; the server's own coalescing does the rest.
+
+Zoom and pan are local. The Control API sends the span the shack operator is
+looking at, at up to 1024 bins; the tablet crops and stretches those rows.
+Pinching does not change the shack's display, does not reach outside the
+shack's span, and does not add resolution beyond those bins. At ×16 on a
+96 kHz span a bin is about 94 Hz. When the view is zoomed and the ring tunes
+the dial out of it, the view follows.
+
+While the shack is on the air the ring, the pads, drag and tap are held like
+every other tuning control, with the same reason shown.
+
+### Apple Pencil
+
+Safari reports a pencil as a pen pointer, and the console gives it the
+precise tools. Fingers keep the gestures above.
+
+| Pencil | Where | What it does |
+| --- | --- | --- |
+| Hover | Panadapter or waterfall | A cursor line with the frequency and level under the tip. Nothing is tuned. Needs an iPad and pencil that report hover; without hover the cursor shows while the tip is down. |
+| Tap | Panadapter or waterfall | Tunes to the 10 Hz under the tip, with no snapping to a signal. |
+| Drag a passband edge | Panadapter | Within 14 points of the shaded passband's edge the pencil takes that edge: the other edge stays, the width changes in the mode's own steps (`setFilter`, width and shift). The receiver follows while dragging. |
+| Drag elsewhere | Panadapter | Sweeps a new passband: on lifting, the width becomes the swept width (`setFilter`) and the dial moves so the passband lies on the sweep (`tune`), with the shift it had. |
+| Drag | Waterfall | The dial follows the tip in 10 Hz steps. |
+
+Pinch first for fine filter work: at the full span of a wide receiver one
+point is many tens of hertz. Edge drags and sweeps need the mode's announced
+filter limits (the same condition as the Width and Shift fields).
+
+**No notch drawing.** The Control API has no manual-notch command for any
+client (only the ANF toggle), so the pencil cannot draw one. It is a
+follow-up that needs a reviewed server change first.
+
+### Screen stays awake while listening
+
+While **Listen** is on and the console is paired, the page holds a screen
+wake lock where the browser provides one, and releases it when Listen goes
+off, the connection closes or the page is hidden. The side panel's **Screen**
+line says which. Browsers offer the wake lock only to secure pages (HTTPS, or
+the Mac's own loopback URL). The console is served to the LAN over plain
+HTTP, so **on an iPad opened at `http://192.168…` the wake lock is not
+available** and the page says so; set **Settings ▸ Display & Brightness ▸
+Auto-Lock ▸ Never** on the iPad while it is the radio's display. Behind the
+operator's own HTTPS front the lock works.
+
+### Limits
+
+* No memory or bookmark pads: the Control API carries no memories, so the
+  console has none to show. Band pads restore each band's last frequency.
+* No transmit control of any kind, as before.
+* Same access rules as before: pairing code, the certificate, the per-client
+  grants, the session cap and time limit. No command was added to the
+  Control API for this; every gesture ends in `tune`, `tuneStep`, `setBand`,
+  `setMode` or `setFilter`.
+* No third-party script, font or request: the page, its icon and its
+  manifest come from the Mac.
+* The offline shell and browser "Install" prompt keep their secure-origin
+  rule (above). **Add to Home Screen** on an iPad works over the plain LAN
+  URL because it needs neither.
+* A Home Screen web app keeps its own browser storage. If it refuses the
+  connection after Safari had accepted the shack's certificate, accept the
+  certificate again from inside it (the same link on the page), or open the
+  console in Safari instead.
+* Checked in headless Chrome with emulated touch and pen input against the
+  production servers. Safari on a real iPad, the Home Screen web app and an
+  Apple Pencil are the operator's check; see the list in #468.
+
+Sidecar is a different thing: it makes the iPad a second Mac display that
+shows the HermitSDR window itself (macOS **Displays ▸ Add Display**), with
+the Mac's pointer and the pencil acting as a mouse. It needs no Web Console
+and has none of these gestures.
+
 ## What the page does
 
 * **Panadapter + waterfall** from the Control API spectrum downlink: the span
@@ -124,7 +258,9 @@ remains in #91; automated Chrome checks establish the software behavior only.
   tooling); `?renderer=canvas2d` on the page URL forces the 2D canvas. The
   rows themselves are unchanged: ≤ 1024 bins at ≤ 10 rows/s from the API,
   so the renderer's headroom (up to 4096 bins) is for a later server slice.
-  No new gestures: click/tap to tune and the wheel work on both canvases.
+  A mouse has click to tune and the wheel on both canvases; touch and pencil
+  gestures are in the tablet section above. A pinched view crops the same
+  history in the shader (and in the 2D fallback).
 * **Dial, mode, filter, band, link, ON AIR** from the state stream;
   the receive footprint uses the native voice/data sideband offsets and RIT.
   **S-meter** from the 10 Hz meter messages (S-units and dBm, ADC overload).
@@ -185,7 +321,8 @@ remains in #91; automated Chrome checks establish the software behavior only.
   (`docs/ControlAPI.md` § 5.1). DSP, squelch, gain and shack audio stay
   live.
 * **Phone layout**: below 860 px the side panel drops under the controls,
-  buttons are ≥ 40 px tall, the page works as a home-screen web app.
+  buttons are ≥ 40 px tall, the page works as a home-screen web app. On a
+  touch screen the touch layout above takes over.
 
 Keyboard: `←` `→` step, `↑` `↓` step × 10, `M` mute (this browser), `N` /
 `B` / `A` toggle NR / NB / ANF, `S` squelch, `R` RIT.
@@ -286,6 +423,17 @@ without a radio. Before, only a live radio session bound the listener.
   way the renderer does (run in JavaScriptCore), that the page refuses what
   the server would refuse, and that the WebGL2 path, the 2D fallback, the
   context-loss handlers and `data-renderer` are present with no dynamic code.
+* `swift test --filter WebConsoleTouchTests` (#468) runs the page's touch
+  and pencil maths in JavaScriptCore: layout choice, pen / touch / mouse
+  routing, ring angle wrap-around and detents, step quantisation, inertia
+  decay, stop-on-touch and no drift, pinch limits and focus, two-finger pan,
+  drag versus scroll, tap-to-signal, and the pencil's filter geometry
+  against the native receiver in every mode; plus the Home Screen icon.
+  `tools/web-console-smoke.sh` then proves the pointer layout unchanged with
+  a real mouse click and wheel, switches on touch emulation, and drives the
+  ring, the spectrum gestures and the pencil tools with real touch and pen
+  events into the fixture radio at tablet and phone sizes in both
+  orientations.
 * `tools/web-console-smoke.sh` — the production overlay server and Control
   API server on loopback; HTTP routes; the Python reference client as a
   browser (cap, native client unaffected, time limit, slot reuse); then
@@ -314,8 +462,9 @@ without a radio. Before, only a live radio session bound the listener.
 ## Not in this slice (#91 remains open)
 
 Decoder panels (a separate later slice), sub-receiver audio, LAN discovery
-from the browser, a relay or hostile-network route, touch gestures beyond
-tap-to-tune, and any transmit. Each is a Control API client-side addition or
+from the browser, a relay or hostile-network route, and any transmit. (Touch
+gestures and pencil tools arrived with #468; drawing a notch and memory pads
+wait for Control API commands that do not exist yet.) Each is a Control API client-side addition or
 a separately reviewed server change. (RF gain, attenuation, DSP, squelch,
 shack audio, RIT, split and the shack step arrived with #201; the WebGL2
 waterfall with its 2D-canvas fallback with this slice of #91.)

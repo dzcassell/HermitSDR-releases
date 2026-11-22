@@ -3,8 +3,63 @@
 The app-control bridge is included in 2026.1020_001. Software checks do not
 establish hardware or on-air acceptance.
 
+## Choosing a backend
+
+The gear in the Ask The Crab window chooses which model answers. Every
+backend drives the app through the same tools, the same permission rules and
+the same action receipts; none can do something the others cannot, and none
+can arm or key the radio.
+
+| Backend | What it needs | What leaves the Mac |
+| --- | --- | --- |
+| On this Mac (private) | Apple Intelligence on a supported Mac | Nothing you ask. |
+| Claude | An Anthropic API key | Your question, the one-line "Radio now" status and tool results go to Anthropic (api.anthropic.com) over HTTPS. |
+| OpenAI | An OpenAI API key | The same text goes to OpenAI (api.openai.com) over HTTPS, or to the compatible server you enter. |
+| Ollama | Ollama running on this Mac or on your network, with a tool-capable model | On this Mac: nothing. On another machine: the same text goes to that machine unencrypted over the local network. |
+
+API keys are stored in the macOS Keychain. They are not written to the
+settings file, are not placed in a URL and are not shown again after you save
+them; the pane only says that a key is saved. **Test connection** sends one
+small request to the selected backend and shows either success or the
+server's own error. With **On this Mac** selected the app sends nothing to
+any of the others.
+
+**Claude.** Paste the key, press Save, and pick a model: Claude Opus 5.5 (the
+default), Claude Fable 5.2, Claude Sonnet 5.5 or Claude Haiku 5.5. The Model
+ID field accepts any other model ID your account offers.
+
+**OpenAI.** Paste the key, press Save. The Model field is free text because
+model names change. Leave Server at `https://api.openai.com`, or enter another
+server that speaks the same Chat Completions API. A custom server must use
+`https://` unless it is on this Mac or your local network. The saved key is
+sent to whichever server is entered.
+
+**Ollama.** No key. Server defaults to `http://127.0.0.1:11434`, which is
+Ollama on this Mac. To use another machine, enter its address, such as
+`http://192.168.1.20:11434` or `http://studio.local:11434`; on that machine
+Ollama has to listen on the network (`OLLAMA_HOST=0.0.0.0`). Only this Mac,
+private network ranges (10.x, 172.16–31.x, 192.168.x, 169.254.x) and `.local`
+names that resolve to them are accepted; a public internet address is refused
+with a message, and a redirect to another host is never followed. The Model
+menu lists what that server has installed; the arrow button asks again. If
+the server cannot be reached the pane says "Cannot reach Ollama at …" with
+the reason.
+
+The crab works through tools, and many local models cannot call tools. When
+the chosen model has no tool support the crab says so in plain words and
+names what to do, rather than answering from imagination. Install a model
+that supports tools, for example `ollama pull qwen3`, then pick it. Small
+local models also choose tools less reliably than the cloud models; the
+action receipts in the chat remain the record of what the radio actually did.
+
+When co-host mode answers viewer questions, those questions go to the selected
+backend too. Viewer chat keeps its reporting-only tools on every backend and
+never gets web search.
+
+## Application controls
+
 The operator's Crab session can discover controls rather than relying on a
-fixed list of receiver tools. Both the on-device and Claude backends expose:
+fixed list of receiver tools. Every backend exposes:
 
 - `app_capabilities(query)`: search registered settings, commands and the entire
   feature catalog. Empty query gives domains. Results contain exact IDs,

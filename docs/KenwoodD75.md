@@ -63,6 +63,11 @@ sentinel), and cannot silently become trusted locating evidence. The map can
 still plot the logged route. CSV leaves measured accuracy blank and preserves
 quality flags; the map omits an uncertainty circle for this source.
 
+The next field preview adds a pinned 27.385 MHz LSB target/capture workflow,
+three-second GPS freshness, per-receiver fixed color scales and an estimated
+within-IF channel/background contrast. See [field controls](RDFSession.md#field-controls-next-preview-after-20261120_001).
+This contrast is exploratory and does not qualify RF AGC or antenna power.
+
 ## Hardware evidence
 
 2026-11-20: macOS enumerated USB VID:PID `2166:9023`, serial
@@ -142,3 +147,20 @@ the D75 remain operator-assisted hardware tests, requiring session approval.
 Primary data references: [Kenwood KISS TNC manual](https://kasc.kenwood.com/files/prod/3692/5/THD75E_User_manuals_English.pdf),
 [APRS101](https://www.aprs.org/doc/APRS101.PDF), and
 [KISS specification](https://www.ka9q.net/papers/kiss.html).
+
+
+### Development connection recovery
+
+Receive settings now save per `d75:/dev/cu.usbmodem…` endpoint in the existing
+operating catalog. LSB/USB and filter choices survive reconnect/relaunch on that
+endpoint. This is a USB endpoint preference, not a verified radio serial: changing
+ports/endpoints may create a new first-use profile, and replacing a radio on the
+same endpoint can reuse it. New endpoints still start with the original FM default.
+
+The audio watchdog distinguishes nonzero receiver noise from exact-zero-only or
+missing capture. It attempts at most two same-device audio restarts, clearing the
+old inbox/converter, and disconnects with an explanation if input stays unusable.
+It does not choose another microphone, change gain, transmit or restart the app.
+The updater-launched all-zero failure observed on November 20 has no established
+OS/TCC root cause; this bounded recovery/detection needs operator acceptance on
+that launch path. A normal quit/reopen remains the advised fallback if needed.
