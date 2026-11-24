@@ -33,6 +33,13 @@ window is where it is opened, closed and configured.
 **Close Waterfall Display** at the top of the window closes the surface.
 **Forget This Display** closes it and clears the remembered display.
 
+## iPad Sidecar check
+
+Demo Mode filled the iPad in landscape. With the iPad upright, the test
+device showed the waterfall in the upper portion and a horizontal Pencil
+offset. macOS still reported a 2148 × 1578 Sidecar surface. Landscape is
+the verified orientation for that setup.
+
 ## What it shows
 
 - The main receiver's waterfall, filling the screen edge to edge, above that

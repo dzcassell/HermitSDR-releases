@@ -5,17 +5,23 @@ app executable. The client launches the helper over standard input and output.
 The helper has no network listener and reads only the data explicitly shared
 from the app.
 
-Open **HermitSDR → Settings → Local MCP** and choose **Copy Claude Desktop
-Config**. In Claude Desktop, open **Settings → Developer → Edit Config**.
+Open **HermitSDR → Settings → AI & APIs → Local MCP** and choose **Copy Claude
+Desktop Config**. In Claude Desktop, open **Settings → Developer → Edit Config**.
 Add the copied HermitSDR entry to the existing `mcpServers` object and restart
-the client. For other stdio-capable clients, use the executable and arguments
-in the copied config. A client that requires an HTTP server needs a separate
-transport configuration.
+the client. For Codex, install the Codex CLI, choose **Copy Codex Setup
+Command** and run the copied command in Terminal. For GitHub Copilot CLI,
+copy that same command and change its leading executable from `codex` to
+`copilot` before running it. See [GitHub’s local MCP setup](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers).
+For other stdio-capable clients, use the executable and arguments in the
+copied JSON config. A client that requires an HTTP server needs a separate
+transport configuration. Choosing OpenAI or Ollama as an Ask the Crab
+backend does not configure an MCP client. For Ollama, the local client has to
+support stdio MCP and use Ollama for inference.
 
 | Tool | Share from HermitSDR | Expiry |
 | --- | --- | --- |
-| `get_receive_profile` | **Settings → Local MCP → Share RX Snapshot** | 1 hour |
-| `get_transmit_profile` | **Settings → Local MCP → Share TX Snapshot** | 1 hour |
+| `get_receive_profile` | **Settings → AI & APIs → Local MCP → Share RX Snapshot** | 1 hour |
+| `get_transmit_profile` | **Settings → AI & APIs → Local MCP → Share TX Snapshot** | 1 hour |
 | `run_ssb_experiment` | **SSB Profile Lab → Share Take with Local MCP** | 20 minutes |
 | `get_waterfall_case` | **Station → Performance → Mark Glitch**, then **Share Mark with Local MCP** | 1 hour |
 | `get_receive_watch_summary` | **Radio → Receive Watch → Share Summary with Local MCP** after stopping | 1 hour |
@@ -45,7 +51,7 @@ receive watch summary carries detection counts and up to 20 peaks. It
 excludes IQ, recording names and file paths. Sharing a summary does not start
 or extend a watch.
 
-Each source window can revoke its own share. **Settings → Local MCP**
+Each source window can revoke its own share. **Settings → AI & APIs → Local MCP**
 shows active shares with their expiry times and offers **Stop All Sharing**. Revocation
 and expiry prevent further reads by the helper. A client may retain or send
 data it previously received according to its own settings.

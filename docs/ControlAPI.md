@@ -69,7 +69,7 @@ issued by any CA and its names are meaningless; a client MUST NOT validate it
 against a trust store. Instead:
 
 1. The operator reads the **certificate fingerprint** in HermitSDR
-   (Settings ▸ Control API): the SHA-256 of the certificate's DER encoding,
+   (Settings ▸ AI & APIs ▸ Control API): the SHA-256 of the certificate's DER encoding,
    shown as 32 upper-case hex bytes separated by colons.
 2. On first contact the client computes the same hash of the leaf certificate
    the server presented and either compares it with a fingerprint the user
@@ -368,7 +368,7 @@ Either side may send `{"t":"bye"}` before closing. The server's carries a
 
 TX remains off by default. Authenticate normally. The local operator must ARM
 in TX Controls and choose **Allow TX this session** beside this live connection
-in Settings → Control API. Approval is tied to the server's random session ID,
+in Settings → AI & APIs → Control API. Approval is tied to the server's random session ID,
 never the self-declared client ID or stored registry. Reconnection needs fresh
 local approval. Editing permissions, Kick/Revoke, rotation, server stop and
 disarm remove the grant or stop TX. A shared pairing code does not identify a
@@ -551,7 +551,7 @@ the server stops, **1008** after `denied` / `kicked` / `revoked` / `flood` /
 
 ## 9. Operator controls (what the person at the shack can do)
 
-Settings ▸ Control API: enable, port, pairing code (Copy / Rotate),
+Settings ▸ AI & APIs ▸ Control API: enable, port, pairing code (Copy / Rotate),
 certificate fingerprint, the list of connected and known clients with
 per-client **Control / Audio / Spectrum** permissions, **Kick** (close now),
 **Revoke** (deny that `clientId` from now on) and **Forget**.

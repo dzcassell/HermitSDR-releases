@@ -7,6 +7,37 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1123_001] — 2026-11-23
+
+A shorter console, a radio and station picker, new receive-side diagnostics and
+signal inspection, and conventional VHF AM ACARS. The ACARS decoder was
+verified on recorded off-air audio and synthetic IQ. The waterfall display
+worked on a real iPad in Sidecar landscape. Portrait showed unused space and
+a Pencil offset while macOS still reported landscape geometry.
+
+### Added
+
+- Receive conventional VHF AM ACARS in Digital Modes or decode a recording offline. HermitSDR lists checksum-validated text blocks with aircraft registration, label, mode and block ID.
+
+- Ask the Crab can diagnose silent or misrouted receive audio locally and show the relevant Mute, Volume, Squelch, DSP, Output, or Connect control.
+
+- Inspect Signal selects a time and frequency range directly on the waterfall, shows any overlapping RF Vision measurements, and can explain them with Apple Intelligence. Save notes and IQ to the local Signal Notebook, open an offline decoder, or audition two receive filters on the same clip.
+
+- Gemini and OpenRouter backends for Ask the Crab, with separate Keychain credentials, setup links, model selection, and session usage reporting.
+
+### Changed
+
+- Settings moves to the far left. The radio dropdown groups pinned and discovered radios, open receivers and available slots, and named stations that can be launched or brought forward.
+
+- Console clocks sit side by side at the right edge of the header next to TX status, with bright blue seven-segment dates beneath their respective times and fainter unlit segments.
+- The local clock setup gear sits below the seconds display. A glowing cyan Settings button opens the app settings.
+- The compact console gives the waterfall more height. Zoom, Auto range, Floor and Ref share a single row at the waterfall’s lower edge.
+- A configurable Meter Bay uses spare tuning-strip width for an analog S-meter and PA health by default. Meter choices are saved with Console Layout Presets.
+- Settings opens in a larger, two-column window with General, Station, Hardware, CAT, Remote, AI & APIs, Logging, and Automation tabs.
+- AI & APIs groups Ask the Crab providers, Control API and Local MCP. The Crab's gear links to the tab. Provider setup links and the public AI guide are available alongside a local, per-session model and token usage summary.
+
+- Updated the shared-program and header smoke fixtures to exercise station-window dependencies and radio-switch safety.
+
 ## [2026.1122_001] — 2026-11-22
 
 A command palette and text size, more ways to run Ask The Crab, a tablet
