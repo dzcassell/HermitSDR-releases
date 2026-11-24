@@ -7,6 +7,19 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1124_001] — 2026-11-24
+
+### Added
+
+- Native macOS `IOUSBHost` receive-only support for **Airspy HF+ / HF+ Discovery** (`0x03EB:0x800C`, HF and VHF up to 260 MHz, 48–768 kS/s; live-validated on firmware `R3.0.2-BB`) and **Airspy R2 / Mini** (`0x1D50:0x60A1`, 24 MHz – 1.7 GHz, 48–1536 kS/s, physical R2/Mini hardware validation pending) with no external helper or third-party driver libraries. Includes automatic USB discovery, per-radio settings persistence, HF AGC/preamp/attenuator/Zero-IF DSP shift, R2/Mini linearity/sensitivity/manual gain + confirmed bias-T controls, and clean-room `Fs/4` real-to-IQ conversion ([docs](docs/Airspy.md)).
+
+### Fixed
+
+- Nest `kUSBVendorID` inside `kIOPropertyMatchKey` in `USBRegistryProbe` so `IOServiceMatching("IOUSBHostDevice")` enumerates attached USB SDR devices on macOS rather than returning an empty iterator.
+
+- Airspy antenna power requires fresh confirmation each connection. Firmware tables are checked before use. Each USB completion resolves the DMA buffer and pipe from its own stream generation and cannot tear down a replacement session.
+- Manual Airspy R2 and Mini connections use the matching receive profile. Published setup instructions include the hardware validation limits and bundled Airspy source attribution.
+
 ## [2026.1123_001] — 2026-11-23
 
 A shorter console, a radio and station picker, new receive-side diagnostics and
