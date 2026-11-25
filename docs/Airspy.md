@@ -15,8 +15,8 @@ drive controls remain closed.
 | Model | USB VID:PID | Tuning Range | Chain Sample Rates | Hardware Validation |
 | --- | --- | --- | --- | --- |
 | Airspy HF+ / HF+ Discovery | `0x03EB:0x800C` | 9 kHz – 31 MHz and 64 – 260 MHz on HF+ Discovery | 48, 96, 192, 384, 768 kS/s | **Live-validated** (`hardwareValidated`) on Airspy HF+ Discovery (`R3.0.2-BB`, `SN:C8524E5D8B224A3B`) — see measured results below |
-| Airspy R2 | `0x1D50:0x60A1` | 24 MHz – 1.7 GHz | 48, 96, 192, 384, 768, 1536 kS/s | Unvalidated (`conservativeUnknown`) — implemented from BSD-3-Clause wire protocol + clean-room Fs/4 DSP |
-| Airspy Mini | `0x1D50:0x60A1` | 24 MHz – 1.7 GHz | 48, 96, 192, 384, 768, 1536 kS/s | Unvalidated (`conservativeUnknown`) — implemented from BSD-3-Clause wire protocol + clean-room Fs/4 DSP |
+| Airspy R2 | `0x1D50:0x60A1` | 24 MHz – 1.7 GHz | 48, 96, 192, 384, 768, 1536, 3072, 6144 kS/s | Unvalidated (`conservativeUnknown`) — implemented from BSD-3-Clause wire protocol + clean-room Fs/4 DSP |
+| Airspy Mini | `0x1D50:0x60A1` | 24 MHz – 1.7 GHz | 48, 96, 192, 384, 768, 1536, 3072 kS/s | Unvalidated (`conservativeUnknown`) — implemented from BSD-3-Clause wire protocol + clean-room Fs/4 DSP |
 
 ## Live Hardware Validation (Airspy HF+ Discovery, 2026-11-23)
 
@@ -69,6 +69,9 @@ The hardware measurements here were taken on the Discovery.
      (`384/625` on R2, `64/125` on Mini) into fixed 256-sample frames.
    - Supports 22-step **Linearity** and **Sensitivity** gain tables as well as
      **Manual** LNA / Mixer / VGA sliders and LNA/Mixer AGC toggles.
+     HermitSDR can estimate manual front-end gain for the S-meter display.
+     Firmware AGC leaves actual gain unknown. Level squelch and overload mute
+     retain their default calibration.
 
 ## Bias-T Safety
 

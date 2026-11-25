@@ -1,11 +1,22 @@
-# SDRplay RSPdx
+# SDRplay RSP Receivers
 
-HermitSDR drives the SDRplay RSPdx (and, untested, the RSPdx-R2) as a
-**receive-only** USB radio: 1 kHz – 2 GHz, 14-bit, up to 1.536 MHz of chain
-bandwidth, three antenna inputs, HDR mode below 2 MHz, bias-T, AM/FM and
-DAB notches. There is no transmitter in the hardware, so a connected RSPdx
-shows no TX banner, ARM, PTT, TUNE or drive control anywhere; the profile
-(`RadioProfile.sdrplayRSPdx`) is receive-only by construction.
+HermitSDR drives the SDRplay **RSPduo** (Single-Tuner and Dual-Tuner SUB / coherent
+Diversity; live-validated) as well as the **RSPdx / RSPdx-R2**, **RSP2**,
+**RSP1A / RSP1B**, and **RSP1** (conservative unvalidated profiles for models
+without physical hardware validation) as **receive-only** USB radios through
+SDRplay's API 3.15: 1 kHz – 2 GHz (10 kHz – 2 GHz on RSP1), 48 kHz – 6.144 MHz
+of chain bandwidth in Single-Tuner mode (capped at 1.536 MHz in RSPduo
+Dual-Tuner), model-specific §5 LNA tables, and model-appropriate front-end
+controls. There is no transmitter in any RSP hardware, so a connected SDRplay
+shows no TX banner, ARM, PTT, TUNE, or drive control anywhere; every SDRplay
+`RadioProfile` has `supportsTX == false`.
+
+Model notes:
+- **RSPduo (`hwVer=3`, `0x1DF7:0x3020`)**: Single-Tuner Zero-IF (`3.072 MHz` ADC; Tuner 1 50 Ω ↔ Hi-Z switches live via `rspDuoAmPortSelect`, while Tuner 1 ↔ Tuner 2 and Single ↔ Dual transitions cleanly re-select the device via `Uninit → ReleaseDevice → SelectDevice → Init` to avoid the macOS API 3.15.1 `SwapRspDuoActiveTuner` wedge observed on 2026-11-24) plus Dual-Tuner synchronous Low-IF (`6.0 MHz` ADC, `1620 kHz` IF, resampled `96/125` to `48–1536 kHz`) for independent **SUB (VFO B)** or coherent **Diversity RX (`A + w·B`, with Find-null)** (one Dual-Tuner mode at a time, matching `supportsConcurrentDiversitySubRX = false`). Supports Tuner 1 50 Ω / Hi-Z and Tuner 2 50 Ω inputs, broadcast notches (`rfNotchEnable`, `rfDabNotchEnable`, `tuner1AmNotchEnable`), `24 MHz` ref out, and session-only Bias-T on Tuner 2 (`50 Ω`).
+- **RSPdx (`hwVer=4`, `0x1DF7:0x3030`) & RSPdx-R2 (`hwVer=7`, `0x1DF7:0x3060`)**: Antenna A / B / C, HDR mode below 2 MHz, Bias-T on ANT B, AM/FM and DAB notches.
+- **RSP1A (`hwVer=255`, `0x1DF7:0x3000`) & RSP1B (`hwVer=6`, `0x1DF7:0x3050`)**: Single SMA port with Bias-T, AM/FM and DAB notches, model-specific LNA tables.
+- **RSP2 (`hwVer=2`, `0x1DF7:0x3010`)**: ANT A / ANT B (Bias-T) / Hi-Z (< 60 MHz), AM/FM notch, 24 MHz ref out, model-specific LNA table.
+- **RSP1 (`hwVer=1`, `0x1DF7:0x2500`)**: Legacy single SMA input (10 kHz – 2 GHz), model-specific LNA table, no notches or Bias-T.
 
 ## Installing the API (once)
 
@@ -80,19 +91,21 @@ HermitSDR.app (hardened runtime, library validation ON)
         │  (then /usr/local/lib; HERMITSDR_SDRPLAY_LIBRARY overrides)
         ├─ sdrplay_api_Open → ApiVersion (3.15 only) → GetDevices/SelectDevice
         │  → GetDeviceParams → layout self-check → Init / Update / Uninit
-        └─ stdin: requests · stdout: hello, device list, status, int16 I/Q
-             (little-endian frames, protocol v1, SDRplayHelperProtocol.swift)
+        └─ stdin: requests · stdout: hello, device list, status, int16 IQ / Dual-IQ
+             (little-endian frames, protocol v3, SDRplayHelperProtocol.swift)
 ```
 
+The helper restarts sampling when the rate plan changes. A generation number on each IQ frame lets HermitSDR discard samples already in transit from the previous plan. A failed live dual-tuner update stops both tuners and asks the operator to reconnect.
+
 - **Discovery** (`SDRplayDiscovery`) launches the helper when the connect
-  sheet is open and asks it for the device list every 3 s. Rows read
-  "SDRplay RSPdx" with the API's serial (the RSPdx reports its API serial —
-  `2005009343` on the owner's unit — which differs from the USB descriptor's
-  serial `F96051EF`; the API serial is the device identity, the USB serial
-  appears only in diagnostics). When the helper says the API is missing,
-  the wrong version, or its service is not answering, the plugged-in RSPdx
-  is still listed from the USB bus (vendor `0x1DF7`, product `0x3030`) with
-  the reason and an **Install API…** link; Connect stays disabled.
+  sheet is open and asks it for the device list every 3 s. Rows name the
+  detected model (`SDRplay RSPduo`, `SDRplay RSPdx`, `SDRplay RSP1A`, …) with
+  the API's serial (note that USB descriptor serials may differ from API
+  serials or be empty on hubs, in which case USB fallback uses `locationID`).
+  When the helper says the API is missing, the wrong version, or its service
+  is not answering, attached SDRplay USB devices (vendor `0x1DF7`, product
+  IDs `0x2500/0x3000/0x3010/0x3020/0x3030/0x3050/0x3060`) are still listed
+  with the reason and an **Install API…** link; Connect stays disabled.
 - **Connecting** (`SDRplayLink`) launches a helper for the session, opens
   the radio by serial and sends the complete configuration whenever
   anything changes; the helper diffs it and issues the matching
@@ -108,22 +121,32 @@ HermitSDR.app (hardened runtime, library validation ON)
   `setPoint_dBfs` −60, `hdrBw` 1.7 MHz …) through those offsets and refuses
   the device if any differ. `HERMITSDR_SDRPLAY_SKIP_LAYOUT_PROBE=1` bypasses
   the probe for a diagnostic session.
-- **Sample rates.** The ADC always runs at 3.072 MHz; every chain rate is a
-  decimation of it (96 k ÷32 … 1536 k ÷2), so a rate change is a live
-  `Update`, not a restart. 48 kHz takes the radio's 96 kS/s through one host
-  decimate-by-2. The IF filter follows the rate (200 k / 200 k / 300 k /
-  600 k / 1.536 M) unless pinned narrower in Settings.
+- **Sample rates & RSPduo Dual-Tuner.** In Single-Tuner mode on every RSP,
+  chain rates `48 kHz … 3.072 MHz` run on the `3.072 MHz` Zero-IF ADC
+  (`÷32 … ÷1`, with `48 kHz` adding one host decimate-by-2 `ComplexDecimator`),
+  while `6.144 MHz` switches the ADC to `6.144 MHz` Zero-IF (`dec = 1`,
+  `5000 kHz` IF BW). When the RSPduo runs **SUB (VFO B)**
+  or **Diversity RX**, the helper re-selects the device in Dual-Tuner Low-IF mode
+  (`fsHz = 6.0 MHz`, `ifType = 1620 kHz`, IF BW ≤ 1536 kHz, chain rate capped
+  at `1536 kHz`), delivering
+  `2.0 MHz / decimation` (`62.5 kS/s … 2.0 MS/s`) synchronously on `StreamACbFn`
+  and `StreamBCbFn` aligned by `firstSampleNum` into `.dualIQ` frames. `SDRplayLink`
+  applies matched `ComplexRationalResampler(up: 96, down: 125)` filters on both
+  tuners to reach `48–1536 kHz`, delivering RX2 before RX1 for SUB or computing
+  `A + w·B` (with the `setOnDiversityPairIQ` tap for Find-null) for Diversity.
 - **HDR mode** (below 2 MHz) parks the tuner on one of the ten fixed HDR
   centres (135, 175, 220, 250, 340, 475, 516, 875, 1125, 1900 kHz) and the
   link rotates the I/Q by the difference so the display still shows the
   dial. The HDR path delivers a sixteenth of the normal rate (measured; see
   below), so HDR is offered at chain rates up to 192 kHz and the link asks
   for decimation ÷16.
-- **Gain.** The RF gain slider is the LNA gain reduction (0 … −84 dB); the
+- **Gain & S-meter calibration.** The RF gain slider is the LNA gain reduction (0 … −84 dB); the
   link lands it on the band's nearest `LNAstate` using the specification's
   table (Settings shows the state and its dB for the current band). IF gain
   reduction (20–59 dB) and the API's AGC (off / 5 / 50 / 100 Hz) are in the
-  SDRplay section; with the AGC on, the readback shows what it chose.
+  SDRplay section; with the AGC on, the readback shows what it chose, and
+  HermitSDR uses `SDRplayStatus.currentGainDb` to keep the S-meter and Level
+  squelch calibrated in antenna-referenced dBm even while wideband hardware AGC moves.
 - **Overload.** `sdrplay_api_PowerOverloadChange` events light and clear the
   header's ADC OVF lamp (the helper acknowledges each one as the API
   requires).
@@ -132,29 +155,27 @@ HermitSDR.app (hardened runtime, library validation ON)
   check shows a mirrored spectrum (none did on the first run's noise floor;
   a known on-air signal is the test).
 
-## Settings ▸ SDRplay RSPdx
+## Settings ▸ SDRplay Front End
 
-| Control | API field | Notes |
+Controls adapt to the connected model (`SDRplayModel`):
+
+| Control | API field | Models & notes |
 | --- | --- | --- |
-| Antenna A / B / C | `rspDxParams.antennaSel` | A and B are the SMA inputs (1 kHz – 2 GHz); C is the BNC for below 200 MHz. |
-| LNA state | `gain.LNAstate` | Per-band table from the specification (0–12 MHz has 19 states, 60–250 MHz 27, …). Shared with the RF gain slider. |
+| Input / Antenna | `rspDxParams.antennaSel`, `rspDuoTunerParams.tuner1AmPortSel` / active tuner swap, `rsp2TunerParams` | RSPduo: Tuner 1 50 Ω / Tuner 1 Hi-Z (< 60 MHz) / Tuner 2 50 Ω (Single-Tuner only); RSPdx/dx-R2: ANT A / B / C; RSP2: ANT A / B / Hi-Z; RSP1/1A/1B: ANT A only. |
+| LNA state | `gain.LNAstate` | Model-specific per-band §5 tables (including Hi-Z rows on RSP2/RSPduo and HDR row on RSPdx/dx-R2). Shared with the RF gain slider. |
 | IF gain reduction | `gain.gRdB` | 20–59 dB; greyed while the AGC is on. |
 | AGC | `agc.enable`, `setPoint_dBfs` | Off / 5 / 50 / 100 Hz loop; set-point −30 dBFS. |
-| HDR mode + bandwidth | `rspDxParams.hdrEnable`, `rspDxTunerParams.hdrBw` | Below 2 MHz, chain rate ≤ 192 kHz; 200 k / 500 k / 1.2 M / 1.7 M. |
-| Bias-T on ANT B | `rspDxParams.biasTEnable` | Off by default, confirmation before on, forced off when the antenna is not B. |
-| AM/FM notch, DAB notch | `rfNotchEnable`, `rfDabNotchEnable` | The RSPdx's switchable broadcast notches. |
-| IF bandwidth | `tunerParams.bwType` | Auto (widest inside the rate) or a narrower pin. |
+| HDR mode + bandwidth | `rspDxParams.hdrEnable`, `rspDxTunerParams.hdrBw` | RSPdx / RSPdx-R2 only; below 2 MHz, chain rate ≤ 192 kHz; 200 k / 500 k / 1.2 M / 1.7 M. |
+| Bias-T | `biasTEnable` | Session-only, off at launch, restore, disconnect and helper restart. Requires confirmation for the current helper open and port: ANT B on RSPdx/dx-R2/RSP2, Tuner 2 (50 Ω) on RSPduo (live in Dual-Tuner; stripped if returning to Single-Tuner on Tuner 1), single port on RSP1A/1B, absent on RSP1. |
+| Notches | `rfNotchEnable`, `rfDabNotchEnable`, `tuner1AmNotchEnable` | AM/FM notch (all except RSP1); DAB notch (all except RSP1/RSP2); Tuner 1 Hi-Z MW AM notch (RSPduo). |
+| 24 MHz reference out | `rspDuoParams.extRefOutputEn`, `rsp2Params.extRefOutputEn` | RSPduo and RSP2 external 24 MHz clock reference output on the MCX connector. |
+| IF bandwidth | `tunerParams.bwType` | Auto (widest inside the rate, capped at 1.536 MHz in RSPduo Dual-Tuner) or a narrower pin. |
 
-Every choice is saved per device serial (the operating catalog's
-`sdrplayFrontEnd`), like the NetSDR's front-end fields. The diagnostics line
-shows API version, stream state, the IF and LNA gain reduction the API
-reports, ADC overload, delivered rate, samples the helper dropped and helper
-restarts.
-
-Not exposed: the RSPdx has no API field for a reference output
-(`sdrplay_api_RspDxParamsT` carries none; only the RSP2/RSPduo have
-`extRefOutputEn`), so there is no "reference out" toggle. The RSPdx-R2 uses
-the same structures and should work unchanged but has not been seen.
+Every non-Bias-T choice is saved per device serial in the operating catalog's
+`sdrplayFrontEnd`; Bias-T is stripped from persistent storage and cleared on
+disconnect. The diagnostics line shows API version, RSPduo tuner mode, stream
+state, IF and LNA gain reduction readback, ADC overload, delivered rate,
+helper dropped samples, and helper restarts.
 
 ## First hardware run — 2026-11-02
 
@@ -211,11 +232,56 @@ antenna (waterfall + audio at every rate, the I/Q sense against a known
 signal, an overload event), the HDR 96 kS/s rate over a longer window, and
 the RSPdx-R2.
 
+## RSPduo hardware run — 2026-11-24
+
+Owner's Mac (Apple silicon), SDRplay API **3.15.1** (`com.sdrplay.service`),
+RSPduo USB `0x1DF7:0x3020` (empty USB `iSerialNumber`, API serial `1806041B32`,
+`hwVer=3`, `tunerMask=3`, `rspDuoMode=7`), 50 Ω antenna on **Tuner 1** only,
+receive only with Bias-T off:
+
+- **Direct API 3.15.1 probe (`libsdrplay_api.so.3.15`):**
+  - Single-Tuner `3.072 MHz` Zero-IF (`192 kS/s`) + WBZ 1030 kHz sideband sense
+    (`+10 kHz` peak at `1.020 MHz`, `-10 kHz` peak at `1.040 MHz`; no I/Q swap).
+  - Dual-Tuner synchronous `6.0 MHz` Low-IF `1620 kHz` across `dec = 32, 16, 8, 4, 2, 1`
+    (`~62.5 kS/s … 2.0 MS/s`) with matching `firstSampleNum` on Tuner A and Tuner B,
+    live independent Tuner B retune, Tuner 1 Hi-Z switch, broadcast notches / ref-out
+    updates, and WBZ 1030 kHz LIF sideband sense (`+10 kHz` at `1.020 MHz`,
+    `-10 kHz` at `1.040 MHz`).
+- **Built helper (`HermitSDR SDRplay Helper`, protocol v2, Debug build):**
+  - `hello` v2 (API 3.15), `GetDevices` (`1806041B32`, `hwVer=3`, `tunerMask=3`,
+    `valid=true`), `SelectDevice` + `GetDeviceParams` + layout probe (0 mismatches).
+  - Single-Tuner `3.072 MHz` streaming across all five rate steps (`dec = 32, 16, 8, 4, 2`
+    → `~96 k / 192 k / 384 k / 768 k / 1.536 MS/s`) with 0 sequence gaps and 0 dropped
+    samples; WBZ 1030 kHz ZIF sideband sense (`1.020 MHz`: `+10 kHz = -22.1 dBFS` vs
+    `-10 kHz = -61.2 dBFS`; `1.040 MHz`: `-10 kHz = -36.1 dBFS` vs `+10 kHz = -99.6 dBFS`);
+    LNA gain readback (`0 / 18 / 61 dB` at states `0 / 3 / 6` on `7.074 MHz`); live broadcast
+    notches + 24 MHz ref-out updates; live Tuner 1 `50 Ω → Hi-Z` (`rspDuoAmPortSelect`);
+    clean Single-Tuner `reselectRspDuo` `A → B → A` (0 gaps, 0 dropped).
+  - Dual-Tuner `6.0 MHz / 1620 kHz` LIF `.dualIQ` streaming across all six decimation steps
+    (`dec = 32, 16, 8, 4, 2, 1` → `62,496 / 125,055 / 249,984 / 500,220 / 1,008,504 /
+    2,003,968 S/s` pairs over 1 s windows) with 0 gaps, 0 dropped, and aligned pairs;
+    WBZ 1030 kHz LIF sideband sense (`250 kS/s`, Tuner B at `14.074 MHz`: `1.020 MHz` →
+    `A(+10k) = -33.5` vs `-87.3 dBFS`, `B(+10k) = -78.2 dBFS`; `1.040 MHz` →
+    `A(-10k) = -33.4` vs `-95.4 dBFS`, `B(+10k) = -79.0 dBFS`); live independent Tuner B
+    retune (`14.074 → 7.074 MHz`, 0 gaps/drops); simultaneous A+B retune (`7.074 / 7.074 MHz`,
+    0 gaps/drops); live Dual Tuner 1 `Hi-Z` switch (0 gaps/drops); clean Dual → Single return
+    (`192 kS/s`, `dual=False`, 0 gaps/drops); clean `Close` + `Bye` (`exit 0`, 0 errors).
+  - Bugs/quirks caught and fixed:
+    1. Calling `sdrplay_api_SwapRspDuoActiveTuner` out of Tuner 1 Hi-Z wedged `com.sdrplay.service`
+       in `libusb` transfer timeouts; `SDRplayHelperRuntime` uses `reselectRspDuo` on Tuner 1 ↔
+       Tuner 2 and Single ↔ Dual-Tuner transitions while keeping Tuner 1 `50 Ω ↔ Hi-Z` a live
+       `Update`.
+    2. An independent post-`dec=1` sample-counter reset on one tuner during Dual-Tuner retuning
+       triggered a mutual clear loop between `ring` and `ringB` in `appendDualSamples` while
+       `Update(A)` / `Update(B)` fired back-to-back without settling. Fixed with tracked
+       `dualSampleOffset` re-anchoring and sequenced per-tuner writes/updates in
+       `SDRplayHelperRuntime`.
+
 ## Limits
 
-- API 3.15 only; macOS only; one tuner (no sub-receiver hardware slice;
-  SUB stays off).
-- HDR mode above 192 kHz chain rate is not offered.
+- API 3.15 only; macOS only.
+- RSPduo runs Single-Tuner OR Dual-Tuner (SUB or coherent Diversity, not both simultaneously).
+- Two-antenna coherent Diversity null depth (requires a second antenna on Tuner 2), Bias-T under DC load, and physical hardware validation of RSP1 / RSP1A / RSP1B / RSP2 / RSPdx-R2 remain unvalidated here.
+- HDR mode is RSPdx / RSPdx-R2 only and is not offered above a 192 kHz chain rate.
 - The helper process is relaunched at most six times in a row per session.
-- No reference-output control (not in the API for the RSPdx).
 - Nothing here transmits, and nothing here can.

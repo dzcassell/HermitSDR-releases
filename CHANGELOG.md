@@ -7,6 +7,44 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1125_001] — 2026-11-25
+
+### Added
+
+- Drag the grip below the frequency ruler to resize the main spectrum and waterfall. Double-click the grip to reset the split (#494).
+- Drag the dB scale to shift the reference or Option-drag to resize the range. The wheel also adjusts range over the dB scale. Drag the frequency ruler to zoom about the grabbed frequency (#494).
+- Choose split, spectrum-only or waterfall-only on the main plot. The spectrum pointer reads frequency and bin level, filter handles show both cutoffs and width, and off-screen VFO chips pan the sampled display (#494).
+- Fit the display range once or set squelch from measured receive noise. Require Option for scroll tuning under View › Spectrum and press `?` for the current key bindings (#494).
+- Open `.hiq` recordings from Finder with confirmation before replacing a live connection. The recording readout shows free disk space, estimated recording time and low-space warnings (#494).
+- Show hardware-driven receive audio and DSP changes when their controls are hidden, show the allocation at VFO A, and optionally publish receive audio and mute controls to macOS Now Playing (#494).
+- Receive-only support for the **SDRplay RSPduo** (`hwVer=3`, `0x1DF7:0x3020`): Single-Tuner Zero-IF (`3.072 MHz` ADC) with Tuner 1 `50 Ω` / `Hi-Z` (< 60 MHz) & Tuner 2 `50 Ω` selection (live `rspDuoAmPortSelect` on Tuner 1, clean re-select between Tuner 1 and Tuner 2), broadcast notches (`rfNotch`, `dabNotch`, `tuner1AmNotch`), `24 MHz` external reference output, Tuner 2 Bias-T, and **Dual-Tuner** (`6.0 MHz` Low-IF `1.62 MHz` with matched `96/125` rational resampling via helper protocol v3 `.dualIQ` frames) driving independent VFO B **SUB** or coherent **Diversity RX (`A + w·B` and Find-null)** ([docs](docs/SDRplay.md)).
+- Receive-only API 3.15 support and §5 per-band LNA tables for **SDRplay RSP1**, **RSP1A**, **RSP1B**, **RSP2**, and **RSPdx-R2** (physical hardware validation pending; RSPdx support unchanged).
+- Wide **3072 kHz** and **6144 kHz** sample rates across `HPSDRSampleRate`, `SpectrumAnalyzer` (strided FFT feeding above 1.536 MHz), IQ recording/import/bookmarks/receive-watch ceilings, **SDRplay Single-Tuner** (`6.144 MHz` Zero-IF ADC mode; RSPduo Dual-Tuner automatically caps back at `1536 kHz` with toast notification), **Airspy R2** (`3072` / `6144 kHz`), and **Airspy Mini** (`3072 kHz`).
+- First-class **2 m (`144–148 MHz`, default `146.520 MHz FM`)** and **70 cm (`420–450 MHz`, default `446.000 MHz FM`)** band support across console band chips (with compact two-row wrapping when crowded and centimetre-safe labels), toolbar and app Band menus, band memory & 4-register `BandStackSeeds`, Band Plan overlay strip & US/IARU R1–R3 tables (`FT8`, `WSPR`, `APRS`, SSB/FM calling spot ticks), DX cluster band classification & mode guessing, Spoken Status, Viewer Chat (`!band 2m`, `!band 70cm`), Stream Deck band keys, OC outputs, Needed DX, Receive Path conventions, Control API / Web Console, and the AI assistant.
+- **FM discriminator noise-quieting squelch** (`SquelchKind.fmNoise` "Noise", `0–100` threshold on `> 5.5 kHz` normalized discriminator hiss) as the default FM/NFM primary `SQL` control, integrated with CTCSS TSQL, `RXAudioGuide`, and `ReceivePathDiagnosis`.
+- Use SDRplay's reported receiver gain for the S-meter and level squelch. Airspy manual gain estimates inform the S-meter display.
+
+### Changed
+
+- Model-aware `Settings ▸ SDRplay` controls, USB empty-serial fallback (`locationID`), and unit test coverage across protocol v3 framing, all seven RSP §5 LNA tables, Dual-Tuner SUB/Diversity resampling, and profile resolution.
+- Route GitHub Actions PR, release and extended macOS checks to the M5 Studio by default. Waimea remains available through the repository runner override.
+
+- Refresh the Thanksgiving riverbank with a warmer sky, layered foothills, and pointer-driven water ripples and parallax.
+- Style the console needle meter with a dark Phosphor Rail face, colored LED afterglow, and separate estimated noise-floor and SNR dials.
+
+### Fixed
+
+- Keep the segmented S-meter below VFO A visible alongside the console Meter Bay.
+- Open Inspect Signal and Signal Notebook in a shared movable, resizable utility window.
+- Discard SDRplay IQ from the previous stream during rate changes. Stop both RSPduo tuners and report a reconnect message if a live paired update fails.
+- Suspend the ALE Skimmer at unsupported sample rates so a 6.144 MHz stream cannot reach the previous decoder clock.
+- Extend smoke coverage for the shared filter update, one-shot display fit, MIDI receive volume, and Bias-T consent routing.
+- Run FM/NFM receive audio at unity gain with soft peak limiting (preserving explicit test fixed gain) instead of the `+80 dB` HF AGC so pauses and repeater tails no longer pump residual sub-audio CTCSS tones or hiss, upgrade `FMSubaudioFilter` to a `Double`-precision 6th-order Butterworth high-pass + pre-armed TSQL notch, and gate `CTCSSDetector` against in-band voice power via a 4th-order `275 Hz` LPF.
+
+### Security
+
+- Enforce session-only SDRplay Bias-T semantics: stripped when persisting/restoring `UserDefaults` and `RadioOperatingCatalog`, cleared automatically on disconnect, helper reopen, and when leaving RSPduo Dual-Tuner mode back to Tuner 1.
+
 ## [2026.1124_001] — 2026-11-24
 
 ### Added

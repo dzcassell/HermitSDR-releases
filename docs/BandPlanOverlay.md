@@ -90,15 +90,15 @@ it with any text editor:
 
 | Plan | Source | Bands |
 | --- | --- | --- |
-| US | FCC Part 97 licence-class segments (the same table Ask The Crab uses) | 160 m – 6 m |
-| R1 | IARU Region 1 HF Band Plan, effective 16 October 2020 | 160 m – 10 m, including 60 m |
-| R2 | IARU Region 2 Band Plan, September 2020 | 160 m – 10 m, including 60 m |
-| R3 | IARU Region 3 Band Plan, R3-004 rev. 2, November 2024 | 160 m – 10 m, including 60 m |
+| US | FCC Part 97 licence-class segments (the same table Ask The Crab uses) | 160 m – 70 cm |
+| R1 | IARU Region 1 HF Band Plan, effective 16 October 2020 (plus 2 m and 70 cm) | 160 m – 10 m, 2 m, 70 cm, including 60 m |
+| R2 | IARU Region 2 Band Plan, September 2020 (plus 2 m and 70 cm) | 160 m – 10 m, 2 m, 70 cm, including 60 m |
+| R3 | IARU Region 3 Band Plan, R3-004 rev. 2, November 2024 (plus 2 m and 70 cm) | 160 m – 10 m, 2 m, 70 cm, including 60 m |
 | Broadcast | ITU broadcasting allocations for the plan's region | Long wave (Region 1), medium wave, 120 m – 11 m |
 
 The IARU plans are voluntary and national rules differ; check your own licence
-conditions. Not bundled: the 2200 m and 630 m bands, 6 m and above for the IARU
-plans, and national plans other than the US.
+conditions. Not bundled: the 2200 m and 630 m bands, 6 m for the IARU plans,
+bands above 70 cm, and national plans other than the US.
 
 Three places where the published Region 3 tables contradict themselves are
 drawn as follows:
