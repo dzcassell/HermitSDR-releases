@@ -5,7 +5,7 @@ is receive-side only: it fetches public NOAA data, draws it, and can wake a
 crab watch. Nothing in it can key, arm or tune the radio, and nothing about
 the station is ever sent.
 
-Open **Log → Space Weather**. The header's **Kp** and **SFI** chips stay as
+Open **Log → Propagation → Space Weather**. The header's **Kp** and **SFI** chips stay as
 they were (`planetary_k_index_1m.json`, 1-minute Kp; `f107_cm_flux.json`,
 observed noon F10.7, 48-hour freshness). The window adds the rest of the
 SWPC picture.

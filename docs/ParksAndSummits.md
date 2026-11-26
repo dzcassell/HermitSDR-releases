@@ -1,6 +1,6 @@
 # Parks & Summits — POTA / SOTA hunting
 
-Open **Log → Parks & Summits**. The window lists Parks on the Air and Summits
+Open **Log → DX & Activations → Parks & Summits**. The window lists Parks on the Air and Summits
 on the Air activators who are on the air right now, as reported by the two
 programs' public spot feeds, and turns a click into a tuned dial plus a
 correctly referenced logbook entry. Receive only: nothing here keys, arms or

@@ -1,6 +1,6 @@
 # Contest Calendar
 
-Open **Log → Contests** to see which contests are on the air now and which
+Open **Log → Contest Tools → Contest Calendar** to see which contests are on the air now and which
 start in the next four weeks, in UTC: name, each operating period, modes,
 bands, the exchange and a link to the rules, as far as your calendar file
 provides them. It is information only. Nothing is tuned, keyed or uploaded,
@@ -41,7 +41,7 @@ iCalendar or JSON feed whose publisher allows applications to read it. It is
 off until you switch it on. When on:
 
 - HermitSDR makes one request to the host shown in the window each time you
-  choose **Refresh**, and at most one a week when the Contests window opens.
+  choose **Refresh**, and at most one a week when the Contest Calendar window opens.
 - Nothing about your station is sent: no callsign, grid, log or cookies.
   Redirects are not followed and the reply is limited to 2 MiB.
 - A failed or unreadable reply keeps the previous list.
@@ -98,7 +98,7 @@ A contest with one period may use `"start"` and `"end"` directly in place of
   listed under the next four weeks with its next period.
 - **Open in Contest Logger** appears for contests the native logger has
   rules for (ARRL Field Day, CQ WW DX SSB, CQ WW DX CW). It selects that rule
-  set and opens **Log → Contest**; enter your exchange and press **Start**
+  set and opens **Log → Contest Tools → Contest Logger**; enter your exchange and press **Start**
   there. It will not switch rule sets while another contest session is
   running. Other contests show "No native rule set"; log those in the QSO
   Log.
@@ -108,7 +108,7 @@ A contest with one period may use `"start"` and `"end"` directly in place of
   reopening.
 - **"On now" chip.** Switch on **"On now" chip in the header** to show a chip
   in the main window header while a listed contest is running. Hover for the
-  names and the list's age; click to open the Contests window. Off by default.
+  names and the list's age; click to open the Contest Calendar window. Off by default.
 - **Ask The Crab.** "What contests are on this weekend?" or "Why is 20 m so
   busy?" is answered from the imported list, with its source and age. With no
   list, or an old one, the crab says so.

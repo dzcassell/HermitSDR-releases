@@ -1,6 +1,6 @@
 # HF Path Outlook
 
-**Log → HF Path Outlook** shows a locally computed or otherwise supplied
+**Log → Propagation → HF Path Outlook** shows a locally computed or otherwise supplied
 model result by frequency and UTC hour. It keeps the model name and version,
 transmitting and receiving endpoints, model month, power, antenna, noise
 and solar assumptions visible. Missing cells show a dash. An old modeled

@@ -2,7 +2,7 @@
 
 Available in the release after **2026.1101_001** (#316, first slice).
 
-Open **Log → Contest**. The window is a log-only contest logger: it chooses a
+Open **Log → Contest Tools → Contest Logger**. The window is a log-only contest logger: it chooses a
 rule set, validates the exchange, flags dupes while you type, scores the
 contest live and hands the contacts to the existing
 [Cabrillo 3.0 exporter](Logbook.md#cabrillo-export). Nothing in it keys,
@@ -274,7 +274,7 @@ Regression fixtures: `ContestRulesTests`, `CallHistoryTests`.
 
 ## Club Field Day scoreboard
 
-Use **Log → Club Field Day Scoreboard** with the same shared session key,
+Use **Log → Contest Tools → Club Field Day Scoreboard** with the same shared session key,
 rule edition and power category at each position. Give each position a
 different label. Start the local Field Day session before exporting its
 journal. A later export from the same position records edits and

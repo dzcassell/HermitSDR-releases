@@ -1,12 +1,19 @@
 # Console and runtime tools
 
-## UTC waterfall time lines
+## Waterfall time lines
 
-View → Waterfall → UTC time markers (2D) offers Off (default), 15 or 30 seconds,
-and 1, 5, 10 or 15 minutes. Lines and HH:mm:ssZ labels attach to stored FFT rows,
-follow fractional scrolling and history compression, and remain in PNG, Postcard
-and stream captures of that Metal scene. They are omitted in 3D. Labels are
-thinned for spacing, with a hard 24-line budget per frame.
+View → Waterfall → Time markers (2D) offers Off (default), 15 or 30 seconds,
+and 1, 5, 10 or 15 minutes. Time reference offers UTC (default, with a Z
+suffix), system local time (L), and elapsed time before the newest timestamped
+row. Local labels use the system time zone's offset at each recorded instant,
+including daylight-saving changes. UTC and local time share marker positions.
+Elapsed markers count back in multiples of the selected interval, for example
+`-00:00:30` for data 30 seconds older than the newest row.
+
+Lines and labels attach to stored FFT rows, follow fractional scrolling and
+history compression, and remain in PNG, Postcard and stream captures of that
+Metal scene. They are omitted in 3D. Labels are thinned for spacing, with a hard
+24-line budget per frame.
 
 Live rows use acquisition time minus time-machine age. File replay uses the
 recording header start plus its playhead (block resolution). No boundary is

@@ -77,4 +77,4 @@ last row of the table is the normal state there.
   between you and a sounder.
 - An ionosonde can report sporadic-E or a disturbed layer; the soundings
   are shown as received above the confidence limit.
-- For a specific path and hour use **Log → HF Path Outlook**.
+- For a specific path and hour use **Log → Propagation → HF Path Outlook**.

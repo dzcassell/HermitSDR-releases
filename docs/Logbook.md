@@ -4,7 +4,7 @@ Available in **2026.0904_002**.
 
 Open **Log → QSO Log**. The workspace supports adding and editing contacts,
 ADIF import with a preview, selected-contact bulk changes/deletion, saved filters,
-and full/filtered/selected ADIF export plus [Cabrillo 3.0 contest export](#cabrillo-export). **Log → Contest** is the log-only
+and full/filtered/selected ADIF export plus [Cabrillo 3.0 contest export](#cabrillo-export). **Log → Contest Tools → Contest Logger** is the log-only
 [contest logger](Contest.md) that scores the logbook's `CONTEST_ID` contacts. **Awards…** uses a snapshot of the current
 filtered results; see [Awards.md](Awards.md). **World & radar…** opens the live
 [worked-world view](WorkedWorld.md) with its own filters. **Statistics…** opens
@@ -25,7 +25,7 @@ in [QSOUploads.md](QSOUploads.md). LoTW behavior is unchanged.
 
 ## Park and summit references
 
-**Log → Parks & Summits** lists POTA and SOTA activators from the programs'
+**Log → DX & Activations → Parks & Summits** lists POTA and SOTA activators from the programs'
 public spot feeds and stages a one-contact hunt on click; the next contact
 with that activator carries `POTA_REF` / `SOTA_REF`, and your own activation
 reference from Settings → Station rides as `MY_POTA_REF` / `MY_SOTA_REF`. All

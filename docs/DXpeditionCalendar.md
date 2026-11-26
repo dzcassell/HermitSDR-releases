@@ -1,6 +1,6 @@
 # DXpedition Calendar
 
-Open **Log → DXpedition Calendar** to enter expedition plans in UTC. Each
+Open **Log → DX & Activations → DXpedition Calendar** to enter expedition plans in UTC. Each
 plan has a callsign, entity, start and end, and optional bands, modes, source
 link, notes, a Maidenhead grid and a recorded DXCC code. Use **Edit Plan** to extend, reschedule
 or cancel it. Enable **Show ended and cancelled** to find older entries.

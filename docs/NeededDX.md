@@ -1,6 +1,6 @@
 # Needed DX
 
-Open **Log → Needed DX**. The board ranks the stations your feeds can see right
+Open **Log → DX & Activations → Needed DX**. The board ranks the stations your feeds can see right
 now against what your logbook still needs, and says why each one counts. It is
 a local estimate built from your own contacts and the installed country file —
 not a confirmed contact, not an award adjudication, and never a transmitter
@@ -9,7 +9,7 @@ row does; nothing keys.
 
 ## What feeds it
 
-- **DX cluster spots** from every node enabled in Log → DX Cluster. Human
+- **DX cluster spots** from every node enabled in Log → DX & Activations → DX Cluster. Human
   spots and skimmer (RBN, spotter ending in `-#`) spots are told apart.
 - **This receiver's FT8 / FT4 decodes** from the last 30 minutes (live only;
   time-machine and file replays are excluded). A decode proves the station is

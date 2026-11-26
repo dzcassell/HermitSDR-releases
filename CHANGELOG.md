@@ -7,6 +7,38 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1126_001] — 2026-11-26
+
+### Added
+
+- Native macOS USB support for the **Icom IC-7410** (`IC7410Protocol`, `IC7410Discovery`, `IC7410Serial`, `IC7410AudioCapture`, `IC7410AudioOutput`, `IC7410Link`, and [docs](docs/IC7410.md)): passive internal USB hub pairing between the CP2102 CI-V serial port (`0x80` at `19200` baud, `DTR`/`RTS` cleared on open, bounded open timeout and per-path in-flight guard against `AppleUSBSLCOM` stalls) and the Burr-Brown PCM2901 48 kHz USB Audio CODEC, single-open connect adoption of live frequency/mode/antenna, 255-tap Hilbert audio passband conversion with `RXChain` baseband passthrough, bidirectional CAT sync (`USB`, `DATA-U`, `LSB`, `DATA-L`, `CW`, `AM`, `FM`, `ANT1`/`ANT2`, CI-V S-meter), and USB-audio TX (voice/digital SSB/AM/FM, TUNE, Two-Tone, CI-V PTT `1C 00`, RF power drive `14 0A` with unkey restore, Po/SWR metering `15 11`/`15 12`, `FlexSWRGuard`, and a 180 s continuous TX cap; hardware CW keying pending).
+- Yaesu FTDX10 radios appear in Connect after USB discovery verifies their CAT identity. HermitSDR detects the working CAT rate and uses the USB receive audio for a waterfall that follows the active dial, mode, and CW pitch.
+- Added a Yaesu FTDX10 USB CAT driver in Station Devices. It finds the Enhanced CAT port, follows the active VFO and mode, and shows both VFOs, split status, and the radio's S-meter reading.
+- Added the HermitSDR crab behind DJ decks to the right side of the Input Mixer header.
+- **Duwalami signed messaging (`Decode › Text & Messaging › Duwalami`)**: receive and locally verify Ed25519-signed amateur digital messages over **MODEM73** (OFDM, ROBUST, and MFSK via vendored MODEM73 v2.5.0 PHY headers, Unlicense / 0BSD) and **Olivia** (`Digital Modes`). Includes chat-bubble conversation view with verification badges, SNR, UTC timestamps, expandable frame/signature details, multipart `{P:id.i.n}` reassembly, `{M:}`/`{K:}`/`{PK:}` handling, and a Key Manager supporting isolated named keyrings, multiple ham or authorized non-ham station IDs per keyring, Keychain-backed private keys, and Duwalami `keystore.json` / `<ID>.key` import and export. Strictly receive-only (no compose/transmit path; encrypted payloads are never opened).
+- Measure frequency spacing and relative FFT bin level with two RF-anchored markers on the main panadapter (#474).
+- Clear the panadapter's peak-hold trace without clearing waterfall history or moving the dial (#500).
+- Show visible span and FFT bin spacing next to the panadapter display controls (#501).
+- Choose UTC, system local time, or elapsed age for the 2D waterfall time markers (#502).
+- Right-click a VFO A digit to zero all the digits to its right (#504).
+
+### Changed
+
+- Renamed YouTube Streaming to Live Streaming in the Station menu, window and feature catalog to reflect its YouTube, Twitch, Kick, Facebook Live and custom RTMP(S) destinations.
+- Find radios in separate Network and USB / Serial sections with independent Rescan controls. The chooser lists detected radios and scans attached devices on startup.
+- Group Decode and Log commands in native submenus. Decoder tool windows can be moved independently, and Contest Logger and Contest Calendar have distinct names.
+- Skip Core Audio input enumeration on USB scans with no Kenwood TH-D75 serial interface.
+
+### Fixed
+
+- Recheck assembled Duwalami messages against the current keyring and prevent accidental replacement of existing station private keys.
+- Keep the current Mac audio output when connecting to a radio for the first time, avoiding a previously selected aggregate output stored in the profile migration seed (#512).
+- Wait for the final simulated RSPduo dual-tuner IQ packet and its callbacks before checking the resampled frames (#499).
+- Check adaptive noise-reducer reset output with a tight Float tolerance to avoid spurious exact-equality failures (#503).
+- Keep the simulated SDRplay Bias-T restart check scoped to the new helper session.
+- Keep SwiftPM build-lock waits outside the timed Release benchmark smoke and use unique temporary reports (#508).
+- Keep FTDX10 receiver tuning covered by the linked-VFO smoke test.
+
 ## [2026.1125_001] — 2026-11-25
 
 ### Added

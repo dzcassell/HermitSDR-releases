@@ -17,7 +17,7 @@ and label show the published slot plan.
 
 ## Where
 
-- **Log ▸ NCDXF Beacons** opens the panel (Feature catalog `ncdxf-beacons`,
+- **Log ▸ Propagation ▸ NCDXF Beacons** opens the panel (Feature catalog `ncdxf-beacons`,
   Log category). The schedule table lists the five frequencies with the beacon
   transmitting now (callsign, place, grid), the seconds left in its slot with
   a progress bar, the beacon up next and a **Listen** button that tunes VFO A
