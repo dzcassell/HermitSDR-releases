@@ -186,9 +186,10 @@ Pinch first for fine filter work: at the full span of a wide receiver one
 point is many tens of hertz. Edge drags and sweeps need the mode's announced
 filter limits (the same condition as the Width and Shift fields).
 
-**No notch drawing.** The Control API has no manual-notch command for any
-client (only the ANF toggle), so the pencil cannot draw one. It is a
-follow-up that needs a reviewed server change first.
+**No notch drawing.** The page draws no notch with the pencil. Control API
+revision 6 added RF notch commands (`addRFNotch`, `removeRFNotch`,
+`clearRFNotches`, `setRFNotches`, see [ControlAPI.md](ControlAPI.md)), so
+drawing one can now be built; it has not been.
 
 ### Screen stays awake while listening
 

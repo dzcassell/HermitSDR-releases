@@ -47,7 +47,9 @@ fusion must account for that offset and position uncertainty.
 ## Build and install the companion
 
 The companion is a separate native SwiftUI iOS/iPadOS 17+ target, with no
-third-party dependencies:
+third-party dependencies. On an iPad the same app also opens a receive
+console ([iPadCompanion.md](iPadCompanion.md)); on an iPhone it is the
+location sender described here:
 
 ```sh
 open Companion/HermitLocation.xcodeproj

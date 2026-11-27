@@ -7,6 +7,52 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1127_002] — 2026-11-27
+
+Receive-side features from the issue list, a first iPad companion, and fixes
+from a review of the week's new radio and decoder code. Everything here was
+tested on generated signals, simulators or loopback. None of the new features
+has been used on the air or with the real device at the far end; where a
+screen was checked, it was an isolated Dev copy in Demo Mode. Nothing in this
+release changes what is transmitted.
+
+### Added
+
+- **Search Scan** (Radio › Search Scan…, #473, [docs](docs/SearchScan.md)): step the sampled span through one or more frequency ranges and judge every channel in it from the spectrum at once. 118–137 MHz at 25 kHz on a 1536 kHz span is 16 looks, under ten seconds. It stops on activity above the local noise floor with hysteresis, hang and maximum dwell, or logs without stopping. Presets for airband (25 and 8.33 kHz), marine VHF, 11 m, 10 m and 6 m FM, 2 m, 70 cm, PMR446 and FRS/GMRS are offered where the radio tunes. Skip, temporary and permanent lock-outs with an editor. The hit log has UTC, level, duration and count, CSV export, save as bookmark, add to a Bookmark Scanner list, and markers on the waterfall. Each hit can be recorded through Gated Recordings. It refuses to start while the transmitter is armed, and manual tuning stops it. Not available with a transverter or on the TH-D75, FTDX10 and IC-7410.
+- **Seek** in the tuning-step menu (#495): with it on, ◀ ▶ jump to the next signal above or below the receive filter instead of moving one step. Off by default.
+- **Net Scheduler** (Log › Net Scheduler, #481, [docs](docs/NetScheduler.md)): keep a list of recurring nets: once, daily, weekly on chosen days, or monthly on the first to fourth or last weekday, every 1–52 days, weeks or months. Enter the start in UTC or a named time zone; a net in a named zone keeps its wall-clock time across daylight-saving changes. The list shows when each net meets next and the editor previews the next five meetings. A silent reminder offers Tune Now, Snooze and Dismiss; a macOS notification is optional and off by default. While a net is meeting its frequency is labelled on the panadapter. A net can ask Recording Schedule to record each meeting. Lists import and export as JSON; a file with a mistake changes nothing. Tuning to a net sets the receive frequency, mode, filter and optional receive preset only. Command palette, Shortcuts, AppleScript and Control API entries are included.
+- **Panadapter measurements** (#474, [docs](docs/PanadapterMeasurements.md)): Measure now places up to eight markers, A to H: Normal, Delta against any other marker, Peak track, and Noise in dBm/Hz. A measurement panel gives channel power, adjacent-channel power in dBc, occupied bandwidth (99 % by default), −3, −6 or −26 dB bandwidth, signal-to-noise against the measured floor, and a peak table. Measurements use their own trace built from the power of every FFT frame: Live, Average of 2 to 100, Max hold or Min hold. The panel states the detector, the averaging and whether levels are calibrated dBm or uncalibrated dBFS. Store up to four reference traces, show them over the spectrum and export them as CSV. Independent receiver windows have the same tool in dBFS; the Bandscope has markers only.
+- **rtl_tcp network receiver** (#472, first part, [docs](docs/RtlTcp.md)): receive from an rtl_tcp-compatible server on the network by typing `rtl_tcp://host:port` in Connect › Direct IP connection. Receive only. 48–1536 kHz sample rates, tuner gain (automatic or by step), RTL2832 AGC, frequency correction, direct sampling for HF, swap I/Q, DC removal and a reduced network rate, under Settings › Hardware and remembered per server. If the Mac cannot keep up, samples are dropped in whole blocks and counted. The bias tee is off at every connection, asks for confirmation each time, is never saved and is switched off on disconnect. Tested against a loopback server only: not yet tried with a real rtl_tcp server or dongle.
+- **iPad companion, first slice** (#469, [docs](docs/iPadCompanion.md)): the Hermit Location companion app is now universal. On an iPad it opens a receive console that finds HermitSDR on the local network (or takes a typed address), pairs with the Control API's certificate fingerprint and pairing code, and shows frequency, mode, band, S-meter, a panadapter and a waterfall. Drag or tap the spectrum to tune; step, band, mode, filter, shack volume and mute are on screen. It reconnects after the Mac sleeps or the network drops. It has no transmit controls and no audio yet. It is installed from Xcode on your own device and has not yet been run on an iPad. On an iPhone the app is the location sender as before.
+- Type a filter after the frequency: `7074/2.7k` tunes and sets the width, `/7k` sets the width, `/300,2.7k` sets both edges and `/` restores the mode default ([docs](docs/TuningShorthand.md), #495). A bare number above 3000 is read as kHz.
+- Shift-click the panadapter to land on the nearest broadcast channel: 9 or 10 kHz on medium wave, 9 kHz on long wave, 5 kHz in the shortwave broadcast bands, 1 kHz elsewhere (#495).
+- Show the catalogued shortwave or medium-wave station at the VFO line, with arrows to the previous and next station. Off by default, in the tune-step menu (#495).
+- DX cluster waterfall labels mark calls worked on this band (✓) or only on another band (◦), and can be coloured by spot age (#495).
+- Optionally turn the frequency readout red while the ADC overloads (#495).
+- RF notches can be controlled remotely: Control API `setRFNotches`, `addRFNotch`, `removeRFNotch`, `clearRFNotches` and state keys `rfNotchesEnabled`, `rfNotchCount`, `rfNotchesInPassband`, `rfNotchList`; a Stream Deck / MIDI on-off key and "Clear session RF notches" (#444).
+- Voice squelch can be set through the Control API (`setVoiceSquelch`; state keys `voiceSquelchThreshold`, `voiceSquelchTailSeconds`) and toggled from a Stream Deck key or MIDI pad (#444). Speak full status says whether it is open or closed.
+- Band plan strip: Stream Deck / MIDI toggle (#444).
+- PSK signal browser: PSK125 signals are browsed as well as PSK31 and PSK63 (#448).
+- Control API revision 6: the notch and voice squelch messages above, `tuneToNet` with read-only state `nextNet`, `nextNetStart`, `nextNetHz`, `nextNetMode`, `netOnAir`, and a Bonjour TXT record (protocol version range, revision, instance name) on the existing `_hermitsdr-ctl._tcp` advertisement.
+
+### Changed
+
+- TX Audio Chain: click anywhere in a stage tile to open its editor (User EQ, Gate, Compressor, De-esser, FX, Limiter), not only the small sliders icon. The latch on each tile now reads BYPASS and keeps its own click.
+- Drag a receive filter edge in AM, SAM, DSB, FM or NFM to move both edges about the centre. Option-drag moves one edge, as a plain drag did before, and Shift-drag slides the passband in any mode (#495).
+- Reference-data downloads each have a size cap applied while downloading and a total time limit, including the NOAA Kp and solar-flux fetches, the KC2G MUF list, the space-weather products, PSK Reporter retrieval and the LoTW confirmation report (#401).
+
+### Fixed
+
+- HFDL: live decoding no longer runs on the receive audio thread, which stalled audio and spiked the CPU; noise and start-up transients no longer report `SPDU CRC fail` (#410, contributed by rezolytics).
+- HFDL: Offline Decode could lose a burst at the very start of a file. When the live decoder falls behind and audio is dropped, it restarts cleanly at the gap and Decoder Activity notes how much audio was lost. A damaged recording (NaN, infinite or absurdly loud samples) can no longer crash the decoder.
+- SDRplay RSPduo: turning on SUB or Diversity while listening on one tuner could crash the app.
+- SDRplay RSPduo: listening on the Tuner 2 port in Single-Tuner mode follows the main VFO instead of VFO B (not yet checked on the hardware).
+- SDRplay: the helper's sample buffer no longer bogs down once it has filled at high sample rates.
+- Duwalami: a multipart message may announce at most 64 parts; previews and timeouts are bounded, and a message dropped for space no longer leaves its card on screen. A part that announces a different total from the first one seen is shown on its own, never joined into another message.
+- Duwalami: importing a keystore that marks a key revoked revokes a copy you already hold. Broadcast keys are stored only under a valid station ID, up to 256 unverified keys per keyring.
+- Duwalami: a signature that lost its last characters in reception no longer flips from valid to "Signature damaged". A station key backup can be restored when its Keychain item is missing, provided it is the same key. A long run of blank lines from a text decoder can no longer crash the envelope scanner.
+- Docs: restored the exact Unlicense wording in the MODEM73 licence notice.
+
 ## [2026.1127_001] — 2026-11-27
 
 ### Added

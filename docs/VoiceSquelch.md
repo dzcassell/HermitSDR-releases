@@ -39,8 +39,21 @@ tail after the last word.
 
 A Control API client can read the same two facts — the state keys
 `voiceSquelchEnabled` and `voiceSquelchOpen` (true, false, or null while the
-voice squelch is off or idle in the current mode); see
-[ControlAPI.md](ControlAPI.md). It cannot set them.
+voice squelch is off or idle in the current mode) — and, from API revision 6,
+the threshold and tail (`voiceSquelchThreshold`, `voiceSquelchTailSeconds`).
+`setVoiceSquelch` switches it on or off and sets the two figures; see
+[ControlAPI.md](ControlAPI.md). Switching it on that way is the Voice choice
+of the popover: the level and noise squelch are switched off.
+
+The spoken full status (**Speak full status**, and the Stream Deck / MIDI
+key of that name) says "voice squelch closed" or "voice squelch open" while
+the voice squelch is acting, so a silent speaker is explained; it says
+nothing about it while the squelch is off or idle in the current mode.
+
+A Stream Deck key or MIDI pad can carry **Voice squelch** (Toggles group):
+it switches the Voice choice on and off, lights while it is on, and a Stream
+Deck face reads OPEN, CLOSED or IDLE. See [StreamDeck.md](StreamDeck.md) and
+[MIDIController.md](MIDIController.md).
 
 The setting is one for the main receiver, saved with the receiver settings
 and receive profiles the same way the level squelch is. The SUB receiver has
@@ -106,5 +119,5 @@ Known limits, in the same family as other syllabic squelches:
 
 ## Not included yet
 
-Scanner "hold on voice", Control API commands and MIDI / Stream Deck actions
-for the squelch type (the Control API reads the state only), a squelch for the SUB receiver, and a spoken-status phrase.
+Scanner "hold on voice", a squelch for the SUB receiver, and CAT control
+(ZZSO / ZZSQ drive the level squelch only).

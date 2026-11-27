@@ -42,7 +42,12 @@ big-endian — this one is not).
   `txCapable` is false: the chain demodulates and tuning works within the
   recorded span). When the session ends the listener closes and every
   client receives `bye` (`server_stopping`).
-* Bonjour: the server advertises `_hermitsdr-ctl._tcp` with the radio's name.
+* Bonjour: the server advertises `_hermitsdr-ctl._tcp` with the radio's name,
+  only while the listener is up. Since #469 the advertisement carries a TXT
+  record of public facts: `app` (`HermitSDR`), `v` and `minv` (the
+  `apiVersion` range), `rev` (`apiRevision`) and `name` (the instance name).
+  It never carries the pairing code, an address, a frequency or a client
+  list. A client MUST treat it as a hint and still pin and pair (§ 1.1, 1.2).
 * **Text frames** carry one JSON object each (control and state).
   **Binary frames** carry audio and spectrum (§ 6). Fragmented messages are
   allowed by WebSocket; the server sends every message unfragmented.
@@ -260,11 +265,22 @@ State keys:
 | `vfoBHz` | int | Hz | VFO B (RF). |
 | `samSideband` | string | `both` `upper` `lower` `stereo` | Revision 4. The SAM sideband choice of the filter popover: both sidebands as mono, one RF sideband, or one sideband to each ear ([SAMSideband.md](SAMSideband.md)). It is remembered in every mode and acts only while `mode` is `SAM`. The audio downlink is mono in every choice: in `stereo` it carries the Both mix. |
 | `bandPlanStrip` | bool | | Revision 4. The band-plan strip is shown above the frequency scale of the shack's own panadapter ([BandPlanOverlay.md](BandPlanOverlay.md)). It says nothing about the spectrum downlink, which carries no strip. |
-| `voiceSquelchEnabled` | bool | | Revision 4. Read-only: the shack's squelch is set to Voice ([VoiceSquelch.md](VoiceSquelch.md)). There is no command for it; `setSquelch` drives the level squelch only. |
+| `voiceSquelchEnabled` | bool | | Revision 4. The shack's squelch is set to Voice ([VoiceSquelch.md](VoiceSquelch.md)). Read-only until revision 6, which added `setVoiceSquelch`; `setSquelch` drives the level squelch only. |
 | `voiceSquelchOpen` | bool \| null | | Revision 4. Read-only: the voice squelch is passing audio (`true`) or muting it (`false`); `null` while it is off or idle in the current mode (it acts in USB, LSB, AM and SAM). Sampled ten times a second, so a change arrives as a state delta within about 0.1 s. |
+| `voiceSquelchThreshold` | number | 0…100 | Revision 6. The voice squelch threshold: higher wants a larger pitch swing before it opens. |
+| `voiceSquelchTailSeconds` | number | 0.2…5 s | Revision 6. How long the voice squelch stays open after the last sign of speech. |
 | `pskBrowser` | bool | | Revision 5. Read-only: the PSK signal browser is switched on ([PSKBrowser.md](PSKBrowser.md)). There is no command for it. |
-| `pskBrowserSignals` | integer | | Revision 5. Read-only: lines in the browser now — PSK31 / PSK63 signals in the receive passband that it is following or heard in the last two minutes; 0 while it is off. |
+| `pskBrowserSignals` | integer | | Revision 5. Read-only: lines in the browser now — PSK31 / PSK63 / PSK125 signals in the receive passband that it is following or heard in the last two minutes; 0 while it is off. |
 | `pskBrowserCalls` | string | | Revision 5. Read-only: the callsigns on those signals, strongest first, separated by spaces, each once, at most 12; empty while none is identified or the browser is off. |
+| `rfNotchesEnabled` | bool | | Revision 6. The RF notch master switch ([RFNotches.md](RFNotches.md)). Off keeps the list and applies none of it. |
+| `rfNotchCount` | integer | | Revision 6. Read-only: RF notches in the list, session and remembered together (at most 256). |
+| `rfNotchesInPassband` | integer | | Revision 6. Read-only: how many of them are applied in the receive passband now (at most 32; 0 while the switch is off, and in FM / NFM / WFM). |
+| `rfNotchList` | string | Hz | Revision 6. Read-only: the notch centres as RF in whole hertz, ascending, separated by spaces; empty when there are none. When the list holds more than 32, the 32 nearest the dial. Widths and depths are not reported. |
+| `nextNet` | string | | Revision 6. Read-only: the Net Scheduler's net to listen to next ([NetScheduler.md](NetScheduler.md)) — one that is meeting now, otherwise the soonest; empty when no switched-on net has a meeting ahead. |
+| `nextNetStart` | integer \| null | Unix seconds | Revision 6. Read-only: when that meeting starts (in the past while it is meeting); `null` when there is none. |
+| `nextNetHz` | integer | Hz | Revision 6. Read-only: that net's receive frequency as RF; 0 when there is none. |
+| `nextNetMode` | string | | Revision 6. Read-only: that net's mode; empty when there is none. |
+| `netOnAir` | bool | | Revision 6. Read-only: that net is meeting now. These five keys are refreshed about every 20 seconds. |
 | `txArmed` | bool | | Read-only: the shack's ARM interlock. |
 | `txKeyed` | bool | | Read-only: the shack is transmitting (its own operator). |
 | `txInhibitReason` | string \| null | | Read-only: why the shack would refuse to key now. |
@@ -313,6 +329,12 @@ Commands need the `control` grant; without it they fail `forbidden`.
 | `setVFOB` | `hz` number | `radio.tuneMinHz … tuneMaxHz` | Revision 1. VFO B as RF, rounded to 10 Hz. Refused (`refused`) while the shack is transmitting or its dial is locked: with split armed, VFO B is the transmit frequency. |
 | `setFilterPreset` | `index` integer | 0 … the mode's preset count − 1 | Revision 1. Sets the width to `radio.filters[mode].presetsHz[index]` for the current mode. The shift is untouched. |
 | `setBandPlanStrip` | `enabled` bool | | Revision 4. Shows or hides the band-plan strip in the shack's window — the same switch as **View › Band Plan Strip**. Display only; the plan, class emphasis and marker options are not in the API. |
+| `setRFNotches` | `enabled` bool | | Revision 6. The RF notch master switch — the same one as **RF Notches On** in a notch's menu. The list is kept either way. |
+| `addRFNotch` | `hz` number; optional `widthHz` number, `depth` string | `radio.tuneMinHz … tuneMaxHz`; 10…6000; `normal` `deep` `veryDeep` (any case) | Revision 6. Adds a session RF notch centred on `hz` (RF, rounded to 1 Hz), as a right-click on the panadapter does. Defaults: 100 Hz wide, `normal` depth. A notch already centred there is left as it is and the request is acknowledged. Refused (`refused`) when the list is full (256) or the receive passband already carries 32; `out_of_range` when the radio or the selected transverter cannot tune `hz`. Session notches are not saved with the radio; this API cannot mark one as remembered or edit one in place. |
+| `removeRFNotch` | `hz` number | `radio.tuneMinHz … tuneMaxHz` | Revision 6. Deletes the RF notch whose bar covers `hz` (or whose centre is within 5 Hz of it), the nearest centre when several do — session or remembered. `out_of_range` when there is none there. |
+| `clearRFNotches` | — | | Revision 6. Deletes the session RF notches. Remembered ones stay. |
+| `setVoiceSquelch` | any of `enabled` bool, `threshold` number, `tailSeconds` number | 0…100 / 0.2…5 | Revision 6. `enabled` true selects the Voice squelch exactly as the DSP popover does: the level and FM noise squelch are switched off. `enabled` false switches the voice squelch off and switches nothing else on. `threshold` and `tailSeconds` are kept whether it is on or not; a value outside its range is `out_of_range`. It acts in USB, LSB, AM and SAM and is idle in other modes (`voiceSquelchOpen` is then `null`). Coalesced like `setSquelch`. |
+| `tuneToNet` | `name` string, optional | at most 120 characters | Revision 6. Receive tune to a net in the shack's Net Scheduler: its frequency, then its mode, then its filter and receive preset if it has them. `name` may be the start or any part of a net's name when only one matches; omitted or empty, it means the net meeting now, otherwise the next one. Refused (`refused`) with the reason in words when no net matches or several do, when the radio does not offer the net's mode, and wherever `tune` would be refused (the radio's range, a busy transmitter). It keys nothing and changes no transmit setting. There is no message that edits the net list or answers a reminder. |
 | `setSAMSideband` | `sideband` string | `both` `upper` `lower` `stereo` (any case) | Revision 4. Sets the SAM sideband choice; any other value is `out_of_range`. Accepted in any mode and heard in SAM. `stereo` plays one sideband in each ear on the shack's stereo output and falls back to Both by itself where the app's own control would (a channel wider than 11 kHz, a mono output). |
 
 **Coalescing.** Commands from one client are applied in order. The server
@@ -538,7 +560,8 @@ the server stops, **1008** after `denied` / `kicked` / `revoked` / `flood` /
   | 2 | unreleased | New `radio.modes` / `radio.filters` entries `DATA-U` and `DATA-L` (the data modes, #130), which `setMode` accepts and the `mode` state key reports. No new messages. |
   | 3 | 2026.1018_001 | Session-approved transmit (§ 5.6): `txPermission`, the approved TX requests and binary type 0x10 microphone frames. |
   | 4 | 2026.1117_001 | `setSAMSideband` and state key `samSideband` (the SAM Both / Upper / Lower / Stereo choice, #448). `setBandPlanStrip` and state key `bandPlanStrip` (#444). Read-only state keys `voiceSquelchEnabled` and `voiceSquelchOpen` (#444). |
-  | 5 | unreleased | Read-only state keys `pskBrowser`, `pskBrowserSignals` and `pskBrowserCalls` (the PSK signal browser, #448). No new messages. |
+  | 5 | 2026.1122_001 | Read-only state keys `pskBrowser`, `pskBrowserSignals` and `pskBrowserCalls` (the PSK signal browser, #448). No new messages. |
+  | 6 | 2026.1127_002 | The RF notch list (#444): `setRFNotches`, `addRFNotch`, `removeRFNotch`, `clearRFNotches` and state keys `rfNotchesEnabled`, `rfNotchCount`, `rfNotchesInPassband`, `rfNotchList`. The voice squelch setter (#444): `setVoiceSquelch` and state keys `voiceSquelchThreshold`, `voiceSquelchTailSeconds`. `tuneToNet` and read-only state keys `nextNet`, `nextNetStart`, `nextNetHz`, `nextNetMode` and `netOnAir` (the Net Scheduler, #481). |
 * **Capabilities are per client.** `hello.features` asks; `welcome.granted`
   answers, after intersecting with what the operator allows that `clientId`.
   The operator can change a client's permissions while it is connected; the

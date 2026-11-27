@@ -1,8 +1,8 @@
-# PSK signal browser: every PSK31 / PSK63 signal at once
+# PSK signal browser: every PSK31 / PSK63 / PSK125 signal at once
 
 The PSK decoder in the Digital Modes window copies one signal — the one at
-its audio centre. The **PSK signal browser** copies all of them: every PSK31
-and PSK63 signal inside the receive filter gets its own line of text, with
+its audio centre. The **PSK signal browser** copies all of them: every PSK31,
+PSK63 and PSK125 signal inside the receive filter gets its own line of text, with
 its frequency, strength and callsign, and you click the one you want.
 
 It only listens. Nothing here transmits, keys the radio or moves the VFO.
@@ -25,7 +25,7 @@ switch: the single decoder above and the browser below run independently.
 | dot | green while the signal is being copied, grey once it has stopped |
 | audio Hz | where the signal sits in the passband |
 | kHz | its frequency on the dial (through a transverter if one is set) |
-| mode | PSK31 or PSK63, worked out from the signal itself |
+| mode | PSK31, PSK63 or PSK125, worked out from the signal itself |
 | dB | the signal over the noise, measured in the signal's own bandwidth |
 | Q | decision quality, the same figure the single decoder shows |
 | IMD | the station's intermodulation, when it can be read (see below) |
@@ -38,7 +38,7 @@ stops, so you can still read what was sent; if the station comes back on the
 same frequency it carries on in the same line.
 
 **Click a line** to put the single PSK decoder on that signal: the mode is
-set to PSK31 or PSK63, the audio centre moves there and Decode turns on.
+set to PSK31, PSK63 or PSK125, the audio centre moves there and Decode turns on.
 The VFO stays where it is.
 
 The summary above the lines shows how many signals are listed, how many of
@@ -91,8 +91,11 @@ tells you about the noise, not the transmitter.
 - **Up to 24 signals at a time.** When more are present, the strongest that
   arrived first keep their demodulators and the rest are counted in the
   summary as "over the limit" until one frees up.
-- **PSK31 and PSK63 only.** PSK125 and the QPSK modes are not browsed; use
-  the single decoder for those.
+- **PSK31, PSK63 and PSK125.** The QPSK modes are not browsed; use the
+  single decoder for those. (The browser finds a carrier by squaring the
+  signal, which removes two-phase modulation and not four-phase.) A PSK125
+  signal is 250 Hz wide: a PSK31 or PSK63 signal within 150 Hz of its
+  carrier overlaps it and is not listed separately.
 - **The receive filter is the search window.** Signals outside the filter,
   or within 40 Hz of its edges, are not looked for.
 - **Tuning with the browser on.** A small dial move — a 1 Hz or 10 Hz step,
@@ -152,7 +155,15 @@ checked on the air or against a recording of real PSK activity.
   receive level (−70 to −100 dBFS) and again near full scale: eight lines,
   each with the right text and callsign. A ninth signal switched on mid-test
   had its line 0.9 s later.
+- PSK125: a strong and a weak PSK125 station beside a PSK31 and a PSK63 one
+  gave four lines, each with its own rate, carrier (within 3 Hz) and
+  callsign, and no extra line on the wide signals; an idling PSK125 station
+  gave one line on its carrier; a PSK125 signal about 10 dB over the noise
+  in 125 Hz was found and identified.
 - Ten minutes of noise: no line, no demodulator started, no callsign.
+- Five minutes of noise bands 60, 130 and 260 Hz wide, 12 dB over the floor
+  (which the detector does look at, about 1,100 times): every look rejected,
+  no line.
 - Carriers, a keyed carrier and an FSK signal: looked at and rejected, no
   line.
 - A dial move in mid-over (30 Hz at once, and ten 1 Hz steps): the line

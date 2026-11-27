@@ -61,6 +61,8 @@ Open Shortcuts, add an action and search for HermitSDR.
 | Get Last Logged QSO | none | Text: call, band, mode, frequency, UTC time |
 | Get Next Satellite Pass | none | Text, from the Satellite Pass Planner's saved plan |
 | Get Space Weather | Summary, Planetary Kp or Solar Flux | Text |
+| Tune to Net | Net name from the Net Scheduler; empty = the net on now, otherwise the next one | Text |
+| Get Next Net | none | Text: the net on now or next, its start time, frequency and mode |
 
 Notes:
 
@@ -120,8 +122,13 @@ Objects:
 Commands: `tune to`, `recall bookmark`, `recall receive preset`, `start audio
 recording`, `stop audio recording`, `start IQ recording`, `stop IQ recording`,
 `start decoder`, `stop decoder`, `save waterfall snapshot`, `mute`, `unmute`,
-`recent decodes`. Each returns a sentence saying what happened (`save
-waterfall snapshot` returns the file's path, `recent decodes` a list).
+`recent decodes`, `tune to net`, `next net`. Each returns a sentence saying
+what happened (`save waterfall snapshot` returns the file's path, `recent
+decodes` a list). `tune to net "Club Net"` is a receive tune to a net in the
+Net Scheduler ([NetScheduler.md](NetScheduler.md)); without a name it means
+the net on now, otherwise the next one. `next net` returns a list: the
+net's name, its start and end as ISO 8601 UTC, its frequency in hertz and
+its mode, or an empty list when no net is ahead.
 
 ```applescript
 tell application "HermitSDR"

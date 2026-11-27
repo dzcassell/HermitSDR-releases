@@ -53,7 +53,7 @@ source selection to limit which devices can send shared controls.
 | Endless encoder | any deck action | Each detent, either direction, is one press (down then up). |
 | Knob / fader / pitch wheel | **AF volume** | **Pickup:** the knob does nothing until it passes within 4 % of the current volume, then follows the knob exactly. Pickup restarts when the document is edited, the controller is unplugged or the feature is switched off. |
 | Knob / fader | any deck action | A switch: crossing 50 % upward presses, crossing back releases. |
-| Button (note, or CC ≥ 64 / < 64) | any deck action | Down on note-on / CC ≥ 64, up on note-off / CC < 64. The same `DeckAction` model and the same executor as a Stream Deck key: bands, modes, tune steps, NB/NR/ANF/split/sub/mute/record/skimmer/FT8/arcade/dial lock, band memories, palette, spoken status, RX/TX antennas, Media Deck pads, URLs. |
+| Button (note, or CC ≥ 64 / < 64) | any deck action | Down on note-on / CC ≥ 64, up on note-off / CC < 64. The same `DeckAction` model and the same executor as a Stream Deck key: bands, modes, tune steps, NB/NR/ANF/RF notches/voice squelch/split/sub/mute/record/skimmer/FT8/arcade/dial lock/band plan strip, clear session RF notches, band memories, palette, spoken status, RX/TX antennas, Media Deck pads, URLs. |
 | Button | **PTT (hold)**, **TUNE**, **MOX** | Exactly a Stream Deck key: momentary `setPTT(_, source: .hardware)` / `toggleTune(source: .hardware)` through `performDeckAction`; a vanished controller unkeys (TUNE and MOX get an explicit off). Behind ARM and every interlock. |
 | Button | **Paddle — dot / dash** | `handleHardwarePaddle` → `CWKeyInputMapper` → `setCWPaddles`, the keyboard paddles' path. **CW mode only** — in any other mode the receipt reads `Paddle — dot — CW paddles are available only in CW mode.` and nothing reaches the engine. |
 
@@ -173,8 +173,8 @@ switch and a velocity. With it on, the controller's matching output
 receives the row's control as a **note-on at that velocity when the state
 is active and a note-off (status 0x80) when it is not** — a CC button gets
 the CC at the velocity / at 0. Which rows: bands, modes, every toggle
-(NB, NR, ANF, split, sub RX, arcade, FT8, skimmer, record, mute, dial
-lock), tuning step, bookmarks, RX/TX antenna selections, Stop media, and
+(NB, NR, ANF, RF notches, voice squelch, split, sub RX, arcade, FT8,
+skimmer, record, mute, dial lock, band plan strip), tuning step, bookmarks, RX/TX antenna selections, Stop media, and
 Media Deck pads (a pad lights while its clip or URL is playing). The
 active rule is the Stream Deck's key-face rule, so a MIDI pad and a deck
 key for the same band always agree. Velocity is what LED controllers read

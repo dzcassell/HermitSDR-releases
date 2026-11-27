@@ -42,8 +42,9 @@ bar. The strip is **on** by default.
 - **Band plan strip** — the whole overlay on or off. The same switch is in
   the menu bar as **View › Band Plan Strip**, and a Control API client can
   read it (state key `bandPlanStrip`) and set it (`setBandPlanStrip`, see
-  [ControlAPI.md](ControlAPI.md)); the other options below are in the
-  popover only.
+  [ControlAPI.md](ControlAPI.md)). A Stream Deck key or MIDI pad can carry
+  it too (**Band plan strip**, Display group; the key lights while the strip
+  is shown). The other options below are in the popover only.
 - **Plan** — `Auto`, `US`, `R1`, `R2`, `R3`. Auto follows the region in
   Settings › TX operating policy: an IARU region selects that region's plan;
   Unspecified or Custom selects the US licence-class table.

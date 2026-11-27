@@ -74,7 +74,26 @@ rather than the RF frequency, cleared by a mode change or a reconnect.
 Right-clicking one of those (purple marker) on the panadapter removes it, as
 before. The automatic notch (DSP popover, "Auto-notch") is unchanged.
 
+## Remote control
+
+- **Control API** (revision 6, [ControlAPI.md](ControlAPI.md)): `setRFNotches`
+  is the master switch; `addRFNotch` adds a session notch at an RF frequency
+  (optionally with a width and depth); `removeRFNotch` deletes the notch at a
+  frequency; `clearRFNotches` deletes the session notches. The state keys
+  `rfNotchesEnabled`, `rfNotchCount`, `rfNotchesInPassband` and `rfNotchList`
+  report the switch, the counts and the centres.
+- **Stream Deck and MIDI** ([StreamDeck.md](StreamDeck.md),
+  [MIDIController.md](MIDIController.md)): **RF notches** is a toggle for the
+  master switch (the key lights while it is on and shows the number of
+  notches); **Clear session RF notches** deletes the session notches and
+  leaves the remembered ones. A key cannot add or remove a single notch: it
+  has no frequency to point at. Do that on the panadapter or through the
+  Control API.
+
 ## Not included yet
 
 - SUB (VFO B) and the independent receiver windows do not apply RF notches.
-- No Control API, MIDI or Stream Deck actions for them.
+- A Stream Deck key or MIDI pad that adds or removes one notch (it would need
+  a rule for which frequency it means).
+- Width, depth and "remember" of an existing notch cannot be changed through
+  the Control API.
