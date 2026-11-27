@@ -7,6 +7,22 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1127_001] — 2026-11-27
+
+### Added
+
+- **HFDL (High Frequency Data Link) receive decoder (#410)** (`Decode ▸ Text & Messaging ▸ HFDL (Aircraft)`, [docs](docs/HFDL.md)): clean-room ICAO AMCP/5-WP/72 Appendix C & D physical, link, and subnetwork decoder across all eight waveforms (`300 / 600 / 1200 / 1800` bps × `1.8 s / 4.2 s`), dual `A`/`M1` differential sync (`±250 Hz` CFO tolerant), `T/2` adaptive NLMS equalizer with probe tracking, 120-symbol descrambler, soft `K=7` Viterbi FEC, ITU-T X.25 FCS-16, SPDUs (active-frequency masks with bit-0-highest mapping & UTC TDMA frame), UL/DL MPDUs, multi-BDU segment reassembly, live System Table (`FF D0`), aircraft positions/performance (`FF D1`/`D2`/`D5`), and enveloped ACARS (`FF FF`). Includes the multi-channel `HFDLSkimmerCore` / `HFDLSkimmerEngine` IQ passband skimmer (`Sendable`, zero new `@unchecked Sendable`), Stations Heard map layers (active/idle ground stations and 2-hour aircraft tracks), and `Decode a Recording` support for both single-channel (`.hfdl`) and whole-span IQ (`.hfdlSkim`). Verified against 14 real off-air SigIDWiki bursts (300/600/1200 bps) and published ICAO hex dumps; receive-only.
+- Reset voice processing to recommended settings and remember separate SSB, DSB, AM, and FM/NFM settings in Follow mode. Shared processing retains existing setups.
+- Open User EQ, Gate, Compressor, De-esser, FX, or Limiter controls from TX Audio Chain. The editor shows the stage input spectrum, overlays the EQ response, and offers speech presets for adjustable stages.
+
+### Changed
+
+- Pool PR and `main` CI (`ci.yml`) across available self-hosted Apple-silicon macOS runners (`damon-m5-studio` and Waimea) unless pinned with `HERMITSDR_MACOS_RUNNER`, while keeping release and extended workflows Studio-first by default.
+
+### Fixed
+
+- Make the browser-audio test wait for the new host session after reconnect, and verify that restoring a radio profile refreshes voice processing for the restored mode.
+
 ## [2026.1126_001] — 2026-11-26
 
 ### Added
