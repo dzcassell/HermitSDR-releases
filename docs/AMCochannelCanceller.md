@@ -107,6 +107,9 @@ one block also carries the carrier analysis and takes 0.8–0.9 ms. See
   stronger station's low audio beside it.
 - The kept carrier must be within 100 Hz of the removed one, and both within
   100 Hz of the dial.
+- While the switch is on, **CCC** shows beside the squelch badges in the
+  control bar and the console: bright in AM and SAM, dim in any other mode
+  (where the stage is idle). Its tooltip says what it is doing.
 - Main receiver only. SUB is not processed.
 - The switch is not saved between launches, in per-radio profiles or in
   receive DSP presets. The carrier choice, offset and width are saved.
@@ -115,7 +118,6 @@ one block also carries the carrier analysis and takes 0.8–0.9 ms. See
 
 - The zoomed ±50 Hz carrier strip with click-to-select. The carrier list
   with click-to-select stands in for it.
-- A marker outside the DSP popover showing that the canceller is on.
 - Carrier Sleuth's single-tone estimator (`CarrierToneEstimator`) is not
   used: it measures one tone in real audio, and this stage needs every
   carrier in the complex channel, so it has its own analysis.

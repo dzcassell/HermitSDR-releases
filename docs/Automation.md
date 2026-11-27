@@ -72,6 +72,9 @@ Notes:
 - Starting a recording that is already running, or stopping one that is not,
   succeeds and says so.
 - IQ recording is refused while a recording is being replayed.
+- While a recording is being replayed (Demo Mode included) `tune to` lands on
+  the nearest frequency inside the recording. The answer gives where the
+  dial landed and says the recording is the reason.
 - Save Waterfall Snapshot needs the main window to be drawing. If it is
   closed, minimised or fully covered the action fails after about three
   seconds and says why.

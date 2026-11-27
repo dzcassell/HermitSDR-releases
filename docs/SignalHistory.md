@@ -13,11 +13,13 @@ Receive only: nothing here can arm or key, and nothing leaves your Mac.
 category).
 
 - Recording starts when the window first opens and keeps running after you
-  close the window, until you press **Stop** or quit. It is in memory only.
+  close the window, until you press **Stop** or quit. It is in memory only
+  unless you ask for it to be kept (below).
 - **Log to CSV** is off until you switch it on. Each time you switch it on a
   new file is started.
 - The window remembers the span and the log interval. The history itself is
-  not kept across launches; the CSV log is the permanent record.
+  kept across launches only with **Keep between launches** on; the CSV log
+  is the permanent record.
 
 ## What is charted
 
@@ -75,6 +77,21 @@ on a span that is mostly occupied by signals (a crowded broadcast band at a
 narrow sample rate). The floor needs about two seconds after a retune of the
 sampled span before it reappears. WFM uses the same arithmetic as FM and has
 not been checked separately.
+
+## Keeping the history between launches
+
+**Keep between launches** (beside Log to CSV) is off by default. With it on,
+HermitSDR writes the whole history — the 15 minutes at full rate, the 4-hour
+and 48-hour tiers, the markers and the settings changes — to one local file
+when it quits (about 1.5 MB, in Application Support) and reads it back when
+the Signal History window first opens in the next session. The chart then
+carries on, with a gap where the app was closed. Readings older than each
+tier keeps are dropped on the way in, so a history saved three days ago
+comes back empty. A file that does not read back exactly, or one written
+while the Mac's clock was ahead of where it is now, is ignored whole.
+Switching the option off deletes the file; so does **Clear**. The file is
+written at a normal quit only: after a crash the previous session's file is
+what comes back. For a record that survives anything, use the CSV log.
 
 ## Markers
 
@@ -152,6 +169,11 @@ Columns:
 A marker row carries the time the change happened, so it can sit up to a
 second or so before the rows around it.
 
+A [Recording Schedule](Recording.md) entry of the kind **Signal strength log
+(CSV)** switches this log on at a UTC time and off again at the end of the
+entry, with an optional dial and mode preset — for example a greyline hour
+on one frequency every day. It uses the interval chosen in this window.
+
 ## Export
 
 - **Export CSV…** saves interval A, or the visible span when nothing is
@@ -169,6 +191,4 @@ about 14 microseconds in a Debug build.
 ## Not in this version
 
 - Independent receiver windows as extra traces (main and SUB only).
-- "Log signal strength" as a Recording Schedule capture type.
 - The chart in the local MCP snapshot.
-- Keeping the in-memory history across launches.

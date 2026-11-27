@@ -119,5 +119,8 @@ Known limits, in the same family as other syllabic squelches:
 
 ## Not included yet
 
-Scanner "hold on voice", a squelch for the SUB receiver, and CAT control
-(ZZSO / ZZSQ drive the level squelch only).
+A squelch for the SUB receiver, and CAT control (ZZSO / ZZSQ drive the level
+squelch only).
+
+The Bookmark Scanner can hold on voice only: see
+[BookmarkScanner.md](BookmarkScanner.md).

@@ -26,6 +26,13 @@ decide that.
   gives, the US licence classes (US plan), the plan's note, and any local
   segment there. If TX policy enforcement is Warn or Inhibit, the line ends
   with the policy's verdict for that frequency.
+- **Contest note.** When the [Contest Calendar](ContestCalendar.md) lists a contest
+  running now that matches the band and the kind of segment under the
+  pointer — a CW contest over a CW segment, phone over phone, RTTY or other
+  digital over a data segment — the readout adds "Contest now: name (until
+  hh:mm UTC)". A contest that names no bands is taken to mean 160, 80, 40,
+  20, 15 and 10 m. Nothing is shown from a calendar older than 35 days, and
+  the calendar is whatever you imported: nothing is fetched for this.
 - **Spot frequencies.** Small ticks mark FT8, FT4, WSPR, JS8, SSTV and QRP
   frequencies. Click a label to tune there in its usual mode (USB for the
   digital modes, LSB or USB for SSTV and QRP SSB, CW for QRP CW). When labels

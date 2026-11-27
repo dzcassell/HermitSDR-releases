@@ -120,9 +120,14 @@ or to earlier sessions.
 - The header record button's clock counts the audio kept, not elapsed time.
 - The option is read when a recording starts; changing it does not affect
   one already running.
-- Not included yet: tagging transmissions with the bookmark the scanner
-  stopped on, Speaker Tracker names or decoder text per transmission, and a
-  storage limit across sessions.
+- While the [Bookmark Scanner](BookmarkScanner.md) is scanning, each
+  transmission's row also carries the name of the memory the receiver was
+  on when the squelch opened (the **Channel** column, `tag` in the sidecar).
+  Outside a scan the column is empty. Not yet tried with a radio.
+- A Recording Schedule entry of the kind Audio is gated when this option is
+  on; there is no schedule kind that forces gating for one entry only.
+- Not included yet: Speaker Tracker names or decoder text per transmission,
+  and a storage limit across sessions.
 
 Tests: `GatedRecordingTests` (package) — five bursts in noise give five
 transmissions with starts within 100 ms and the first syllable intact, also
@@ -148,7 +153,7 @@ the scheduler's log.
 | Name | Shown in the table, the header chip and the log; also written into the file name (`…_192k_BBC-WS.hiq`, `…_audio_BBC-WS.wav`, ASCII letters, digits and dashes, at most 24 characters). |
 | Start (UTC) + duration | Hour and minute in UTC; 1–1440 minutes. A window may cross UTC midnight (`23:45–00:15`). |
 | Days | **Daily**, a set of **weekdays**, or one **date** (a UTC calendar day; the entry shows *expired* afterwards). |
-| Record | **Audio (WAV)**, **IQ (.hiq)** or **both** — the same recorders as the header buttons. |
+| Record | **Audio (WAV)**, **IQ (.hiq)** or **both** — the same recorders as the header buttons — or **Signal strength log (CSV)**: no audio or IQ file, only [Signal History](SignalHistory.md)'s CSV log for the scheduled time (one row per log interval, in `Documents/HermitSDR Recordings/Signal History`). A signal log is refused while you already have a log running, is never split, and ends early if you stop the log yourself. |
 | Preset | Optional dial RF and demodulator mode applied when the capture starts, through the same path as a bookmark or broadcast tune (a transverter profile maps and range-checks the RF). **Restore afterwards** puts the dial and mode back when the capture ends. |
 | Split files at | Optional size roll-over, 16–65536 MB: when the current file reaches the limit the recorder is closed and reopened on a numbered part (`…_BBC-WS-p2.hiq`), with no gap longer than a stats tick. The larger of the IQ and audio files decides. |
 | Enabled | Off keeps the entry without firing it (*off* in the next-run column). |

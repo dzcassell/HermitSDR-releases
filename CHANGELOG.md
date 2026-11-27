@@ -7,6 +7,62 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1127_003] — 2026-11-27
+
+A second batch the same day: two aircraft and ship decoders, the iPad
+companion's audio and Pencil support, more of the interface survey, and fixes
+from a sweep of code that had never been reviewed. As before, everything was
+tested on generated signals, simulators or loopback; none of it has been used
+on the air, on an iPad, or seen on screen. Nothing changes what is
+transmitted.
+
+### Added
+
+- **Aircraft Messages** (Decode ▸ Text & Messaging, #476, [docs](docs/ACARS.md)): one log for ACARS heard on VHF and ACARS carried by HFDL, each row tagged with its link. Search, filters by registration, flight, label and link, per-channel counts, an aircraft list with first and last heard, and CSV / JSON export. It keeps the newest 2,000 messages and 500 aircraft.
+- **VHF ACARS on every channel at once** (#476): decode every listed channel inside the sampled span without retuning, at any sample rate from 24 kHz to 12.5 MHz. The channel list is editable and has regional presets; the default is 131.550, 130.025, 129.125, 131.725 and 131.825 MHz. Messages show the flight, message number, acknowledgement and a plain name for the label. A message sent in several blocks is put together and shown once; repeats are dropped; a message with a block missing is marked partial. Decode a Recording gains "ACARS, all channels" for IQ recordings, and MQTT publishes each message on `decode/acars` and `decode/hfdl_acars`. ACARS (VHF) is offered only while the connected radio tunes 129–137 MHz. Multi-channel ACARS has decoded synthetic signals only.
+- **AIS ship tracking** (Decode › AIS Vessels, #475, [docs](docs/AIS.md)): on a radio that tunes 162 MHz, decode AIS 1 (161.975 MHz) and AIS 2 (162.025 MHz) at once from the sampled span, wherever the dial sits. Sortable tables of vessels, base stations, aids to navigation and SAR aircraft show MMSI, name, call sign, type, flag, position, course, speed, destination, time since last heard, message count, and distance and bearing from the station grid, with search and CSV export. "Not available" values are shown blank and never plotted. Stations Heard gains an AIS layer with a short track behind each moving vessel. NMEA Output sends each message as `!AIVDM` sentences to a chart program over UDP or from a TCP server, on this Mac only unless Allow LAN is on, and then only to a private network address; off by default. Decode a Recording offers "AIS (both channels)", and MQTT publishes on `decode/ais`. Receive only; nothing is uploaded. Tested on generated signals only: 91 % of messages at 13 dB Eb/N0.
+- **iPad companion: receive audio** (#469, [docs](docs/iPadCompanion.md)). Listen plays the receiver on the iPad with its own volume and mute and keeps playing with the screen locked or another app in front. The lock screen shows the dial and mode; play and pause work, and next / previous tune one step.
+- **iPad companion: its own view** (#469). The iPad pans and zooms its own spectrum (pinch, two-finger drag, magnifier buttons) without moving the Mac's panadapter. The waterfall is drawn with Metal. Apple Pencil: hover shows the frequency under the tip, a tap tunes there, a drag tunes (a tenth of the rate in fine mode), a double tap on the barrel switches fine tuning, a squeeze opens a small receive palette. Hardware keyboard shortcuts for tuning, listening and zoom. Not yet run on an iPad.
+- Control API revision 7: a client may ask for its own spectrum window (`centerHz`, `spanHz` in `subscribe.spectrum`); read-only state keys `sampledCenterHz` and `sampledSpanHz` (#469).
+- **Bookmark schedules** (#495, [docs](docs/BookmarksAndBands.md)): a bookmark can carry days of the week and a UTC start and stop. A scheduled memory is drawn faded with a dashed border while it is off the air, and Bookmark Scanner can skip memories that are off the air (per list, off by default).
+- Bookmark names on the panadapter are stacked in up to four rows so they never overlap, coloured by Bookmark Scanner list; Bookmarks → Panadapter labels chooses which lists are shown (#495).
+- **Frequency ranges** (#495): named, coloured ranges drawn as thin bars along the top of the spectrum; click a bar to shade the range. Bookmarks → Ranges… adds, edits, imports and exports them as CSV, and Go to tunes to a range.
+- **Band grid** (#495): the button beside the Bookmarks star shows the band keys in groups (Ham Bands, Ham Bands VHF/UHF, Broadcast Bands), each with its default mode in small type.
+- **Copy Link** (#495): Bookmarks → Copy Link copies a `hermitsdr://tune?…` link with the frequency, mode, filter and zoom. Opening one tunes a receiver that is already running. It never connects, opens a file or transmits, and it is refused while the transmitter is armed or active.
+- **Schedule timeline** (#495): Bookmarks → Timeline… shows the next 24 hours for the shortwave stations on the dial, scheduled bookmarks and nets.
+- **Density spectrum** (View › Spectrum, #495, [docs](docs/DisplayOptions.md)): a colour cloud of where the trace has been, with the average trace on top, so a signal that is only there some of the time shows as a faint smudge. Density Memory sets how long the cloud remembers (2 to 60 seconds). Off by default.
+- Waterfall **Time Span** (last 30 seconds, 2 minutes or 10 minutes), **Peak Hold Decay**, **Trace Width**, **Scale Text Size** and **View › Reset Display to Defaults** (#495).
+- Waterfall **Impulse Blanking** (#495): wide noise bursts no longer paint stripes across the waterfall. Display only.
+- **FM Tuning Meter** (#495): in FM and NFM, a −5…+5 kHz meter on the panadapter shows how far the carrier is from the dial. **Health Warnings on the Panadapter**: ADC overload, sequence errors in the last five seconds and high SWR as short text, shown only while something is wrong.
+- **Tuning Conventions** (View menu, #495, all off by default): Wide Modifier Steps (Shift ×0.1, Option ×10, Shift-Option ×100, Control-Option ×1000); Command-drag tuning by pointer height; Flick to Coast. A **Zoom Anchor Marker** on the frequency ruler, and a **Markers Through the Waterfall** toggle.
+- RF notches now also work in the SUB receiver and in every running independent receiver window (#444).
+- RF notches narrower than 100 Hz (10, 25 and 50 Hz in the Width menu) get a filter stage of their own instead of being widened to about 130 Hz. A 10 Hz notch is 17 Hz wide at −3 dB. A narrow notch needs about 0.2 s (0.5 s at Very deep) to take a carrier out after you tune (#444). The passband mini-waterfall marks the RF notches in force.
+- Bookmark Scanner: "Hold on voice only" for a scan list: with the Voice squelch selected, the scanner stops for speech and passes carriers, noise and data. Off by default (#444). Gated Recordings tag each transmission with the memory it was heard on.
+- Recording Schedule: new capture type "Signal strength log (CSV)". Signal History: "Keep between launches", off by default (#444).
+- Band plan strip: the pointer readout adds "Contest now: …" when the imported Contest Calendar lists a running contest for that band and kind of segment (#444).
+- AM co-channel canceller: "CCC" shows in the control bar and console while it is switched on (#453). Shortcuts / AppleScript: `tune to` says where the dial landed when a recording being played limited it.
+- WFM display range: entering WFM from an HF range sets Ref / Floor to −10 / −85 dB so a strong broadcaster does not white out the waterfall, and leaving WFM restores the earlier range; Auto floor may rise to −20 dBFS in WFM. The FM DX Catalog shows and exports levels in dBm as well as dBFS where the receiver reports its gain (#396, contributed by rezolytics). Not yet checked on an RSPdx or RSPduo at VHF.
+
+### Changed
+
+- Web Console: muting the shack speaker does not silence remote listeners, and never did; the page and its guide said the opposite and are corrected. The Control API guide is corrected the same way.
+- FM DX Catalog CSV export: two new columns, `best_level_dbm` and `last_level_dbm`, after `tag`.
+- The app registers the `hermitsdr://` link scheme (receive tune links only).
+
+### Fixed
+
+- Ask The Crab: a tool call with an absurd or non-finite number no longer crashes the app (this was reachable from viewer co-host chat). Pressing Stop during a later round of a turn keeps the record of the tools that had already run.
+- TCI and Kenwood CAT: a client sending combining characters without a terminator can no longer grow the input buffer without limit or stall the interface. TCI: changing the port or the LAN setting restarts a listener that had failed to start. Kenwood CAT: connections waiting to close after a refused pairing code are bounded.
+- QSO upload: when the receipt store is full, a service reply is filed on the contact that was sent, not on another one.
+- Contest calendar: a contest with back-to-back sessions is announced once per session instead of every 30 seconds.
+- Offline decode: JT65 and Q65 no longer crash on a recording dated before 1970; JT9 and WSPR no longer read past the end of a very short capture.
+- JS8 Conversations: messages are no longer split as "stale" while the time machine is rewound.
+- Meshtastic: a reading or last-heard time dated in the future no longer freezes a node's battery, weather and stale state.
+- Needed DX: a non-finite signal report no longer crashes the ranking.
+- SDRplay: a helper that crashes right after starting is given up on after six tries instead of being relaunched for ever; an invalid API version no longer crashes discovery; Cancel during the API download stays cancelled.
+- Station devices: an absurd amplifier temperature reading inhibits transmit with a readable reason instead of crashing.
+- Logbook: a call-history file full of unknown directives finishes importing; a callsign lookup no longer stalls after the clock is set back. Satellite planner: TLE files that start with a byte-order mark import. Signal Notebook: an oversized entry file is skipped instead of being read when the window opens.
+- Leaving WFM after a relaunch returns the display to the HF range instead of keeping the WFM one.
 ## [2026.1127_002] — 2026-11-27
 
 Receive-side features from the issue list, a first iPad companion, and fixes

@@ -255,8 +255,8 @@ State keys:
 | `rfGainDb` | number | dB, 0.1 | LNA gain / attenuation. |
 | `rfGainMinDb`, `rfGainMaxDb` | number | dB | Current hardware range. |
 | `attDb` | int | 0 10 20 30 | Digital step attenuator (positive = attenuation). |
-| `volume` | number | 0…1, 0.01 | **Shack** speaker volume. It also scales the audio downlink, which is the final receiver mix. |
-| `muted` | bool | | Shack mute (silences the downlink too). |
+| `volume` | number | 0…1, 0.01 | **Shack** speaker volume. It does not scale the audio downlink (§ 6.1). |
+| `muted` | bool | | Shack speaker mute. The audio downlink carries on (§ 6.1). |
 | `squelchEnabled` | bool | | |
 | `squelchDbm` | number | dBm | |
 | `ritEnabled` / `ritHz` | bool / int | Hz, ±9999 | Receive incremental tuning. |
@@ -281,6 +281,8 @@ State keys:
 | `nextNetHz` | integer | Hz | Revision 6. Read-only: that net's receive frequency as RF; 0 when there is none. |
 | `nextNetMode` | string | | Revision 6. Read-only: that net's mode; empty when there is none. |
 | `netOnAir` | bool | | Revision 6. Read-only: that net is meeting now. These five keys are refreshed about every 20 seconds. |
+| `sampledCenterHz` | integer \| null | Hz | Revision 7. Read-only: the centre, as RF, of the span the radio is sampling — the whole analyzer row the spectrum downlink is cut from. `null` while no analyzer runs. |
+| `sampledSpanHz` | integer \| null | Hz | Revision 7. Read-only: the width of that span. With `sampledCenterHz` it bounds a client's own spectrum window (§ 5.2). Both change when the radio's centre or sample rate does. |
 | `txArmed` | bool | | Read-only: the shack's ARM interlock. |
 | `txKeyed` | bool | | Read-only: the shack is transmitting (its own operator). |
 | `txInhibitReason` | string \| null | | Read-only: why the shack would refuse to key now. |
@@ -371,6 +373,49 @@ audio **off**, spectrum **off**. `bins` 16…1024 (default 512), `rowsPerSec`
 1…10 (default 5). Needs the `audio` / `spectrum` grant, else `forbidden`.
 Reply: `{"t":"subscribed","id":3,"audio":true,"meters":true,"spectrum":{"enabled":true,"bins":512,"rowsPerSec":5}}`.
 
+**A spectrum window of the client's own — revision 7.** By default the
+spectrum rows show the span the shack operator is looking at. A client may
+ask for its own instead, anywhere inside the span the radio is sampling,
+by adding two numbers to the `spectrum` object:
+
+```json
+{"t":"subscribe","id":4,
+ "spectrum":{"enabled":true,"bins":512,"rowsPerSec":10,"centerHz":7074000,"spanHz":24000}}
+```
+
+| Field | Type | Range | Meaning |
+| --- | --- | --- | --- |
+| `centerHz` | number | 0 … 10^12 | Centre of the window as operator-facing RF (the same scale as `rfHz`). |
+| `spanHz` | number | 100 … 10^9 | Width of the window. |
+
+* Both or neither: one without the other is `bad_message`; a value outside
+  its range is `out_of_range`. Leaving both out (or sending `null` for
+  both) returns the client to the operator's span. Each `subscribe` that
+  carries a `spectrum` object replaces the whole request, as before.
+* The window is **clamped, not refused**: the span to `sampledSpanHz` at
+  most, and the window slid back inside
+  `sampledCenterHz ± sampledSpanHz / 2` when it reaches past an edge. The
+  clamp is applied again to every row, so a window the dial has left
+  behind (another band) lands at the nearest edge of what is now sampled
+  until the client moves it. Read the true centre and span of each row
+  from its header (§ 6.2), which also rounds outward to whole analyzer bins.
+* The reply echoes the window as stored (before clamping):
+  `"spectrum":{"bins":512,"centerHz":7074000,"enabled":true,"rowsPerSec":10,"spanHz":24000}`.
+  A client without a window gets the reply of earlier revisions, unchanged.
+* It is display only and per client. It does not move the dial, the shack's
+  own panadapter or any other client's rows, needs only the `spectrum`
+  grant, and changes nothing the radio samples: a window wider than the
+  sampled span cannot be had.
+* Cost on the shack: one pass over the analyzer bins inside the window,
+  per client with a window, per row sent — at most four clients and ten
+  rows a second each. Clients that follow the operator still share one pass.
+* Sent to a server before revision 7, the two fields are ignored (unknown
+  fields always are) and the rows keep following the operator. Check
+  `welcome.apiRevision` ≥ 7, or the presence of `sampledSpanHz` in the state.
+* Sending a new window for every frame of a pinch is allowed by the rate
+  limit (50 commands a second) but wasteful: rows arrive at most ten times
+  a second, so ten requests a second is plenty.
+
 ### 5.3 `getState`
 
 `{"t":"getState","id":4}` → a `state` message with `full: true` and the `id`.
@@ -450,8 +495,20 @@ frame types and header `format`/`codec` values they do not know.
 
 ### 6.1 RX audio — type `0x01`
 
-The **final receiver mix** the shack operator hears (after AGC, squelch,
-volume and mute), 12 kHz mono, in 20 ms frames (50 per second, 496 bytes).
+The **receiver mix** as the shack's speakers are given it — after the
+demodulator, AGC, noise controls and squelch, with the sub receiver, CW
+sidetone and media-deck audio mixed in — taken **ahead of the shack's
+speaker volume and mute**. 12 kHz mono, in 20 ms frames (50 per second,
+496 bytes). A client therefore hears the receiver at full level whatever
+the `volume` and `muted` state keys say, and sets its own level locally.
+
+> Correction, 2026-11-27. Earlier editions of this section, the `volume`
+> and `muted` rows in § 4.1 and § 12 said the downlink followed the shack's
+> volume and mute. No released server ever behaved that way: both controls
+> act on the output mixer of the Mac's own audio engine, after the point
+> this stream is taken from (the same tap the Discord and YouTube feeds
+> use). `HermitLinkAudioTests` pins the three places in the source that
+> make it so. Nothing changed on the wire.
 
 | Offset | Size | Type | Field |
 | ---: | ---: | --- | --- |
@@ -464,15 +521,23 @@ volume and mute), 12 kHz mono, in 20 ms frames (50 per second, 496 bytes).
 | 14 | 2 | u16 | sample count N (`240`) |
 | 16 | 2·N | i16[N] | samples |
 
-Play them through a small jitter buffer (60–100 ms). On a `seq` gap insert
-silence or simply continue. While the shack transmits, receiver audio is
+Play them through a small jitter buffer (60–100 ms on a wired network; on
+Wi-Fi start at 100 ms and let it grow after an underrun). The frames ride
+one TLS stream, so the network does not reorder or lose them: a stall
+delivers nothing and then a burst, and a jump in `seq` means the server
+dropped frames for this client (§ 6.3). On a gap play silence of the
+gap's own length so the delay does not change. After a burst, skip to
+recent audio rather than keeping the extra delay. The two audio clocks
+drift; correct by a fraction of a percent of speed, not by letting the
+buffer fill or empty. While the shack transmits, receiver audio is
 muted by the radio and the frames carry silence (or the operator's TX
 monitor, if they enabled it).
 
 ### 6.2 Spectrum row — type `0x02`
 
 One row of the panadapter for the **span the shack operator is looking at**
-(their zoom and pan), peak-decimated to the bin count the client asked for.
+(their zoom and pan) — or, since revision 7, for the window this client
+asked for (§ 5.2) — peak-decimated to the bin count the client asked for.
 
 | Offset | Size | Type | Field |
 | ---: | ---: | --- | --- |
@@ -482,7 +547,7 @@ One row of the panadapter for the **span the shack operator is looking at**
 | 4 | 4 | u32 | `seq` |
 | 8 | 8 | f64 | `centerHz` — RF frequency of the centre of the row |
 | 16 | 8 | f64 | `spanHz` — width of the row |
-| 24 | 2 | u16 | bins N (may be **less** than requested when the visible span has fewer analyzer bins) |
+| 24 | 2 | u16 | bins N (may be **less** than requested when the span shown has fewer analyzer bins: a narrow window of the client's own often does) |
 | 26 | 2 | u16 | reserved, `0` |
 | 28 | 4 | f32 | `minDb` |
 | 32 | 4 | f32 | `stepDb` |
@@ -562,6 +627,7 @@ the server stops, **1008** after `denied` / `kicked` / `revoked` / `flood` /
   | 4 | 2026.1117_001 | `setSAMSideband` and state key `samSideband` (the SAM Both / Upper / Lower / Stereo choice, #448). `setBandPlanStrip` and state key `bandPlanStrip` (#444). Read-only state keys `voiceSquelchEnabled` and `voiceSquelchOpen` (#444). |
   | 5 | 2026.1122_001 | Read-only state keys `pskBrowser`, `pskBrowserSignals` and `pskBrowserCalls` (the PSK signal browser, #448). No new messages. |
   | 6 | 2026.1127_002 | The RF notch list (#444): `setRFNotches`, `addRFNotch`, `removeRFNotch`, `clearRFNotches` and state keys `rfNotchesEnabled`, `rfNotchCount`, `rfNotchesInPassband`, `rfNotchList`. The voice squelch setter (#444): `setVoiceSquelch` and state keys `voiceSquelchThreshold`, `voiceSquelchTailSeconds`. `tuneToNet` and read-only state keys `nextNet`, `nextNetStart`, `nextNetHz`, `nextNetMode` and `netOnAir` (the Net Scheduler, #481). |
+  | 7 | 2026.1127_003 | A client's own spectrum window (#469): optional `centerHz` / `spanHz` in `subscribe.spectrum`, echoed in `subscribed`, and read-only state keys `sampledCenterHz` and `sampledSpanHz`. No new message types. The description of the audio downlink was corrected (§ 6.1); the stream itself is unchanged. |
 * **Capabilities are per client.** `hello.features` asks; `welcome.granted`
   answers, after intersecting with what the operator allows that `clientId`.
   The operator can change a client's permissions while it is connected; the
@@ -706,7 +772,12 @@ wide, `seq` 9:
 * VFO B can be set, swapped with A and armed for split, but the API tunes
   and hears VFO A only: there is no sub-receiver audio or control yet.
 * PCM audio only (192 kbit/s). Opus is reserved in `audio.codecs`.
-* The audio downlink is the shack's final speaker mix, so shack volume and
-  mute affect it; a separate remote audio bus is future work.
+* The audio downlink is the shack's receiver mix ahead of its speaker
+  volume and mute (§ 6.1): one mix for every client, mono, with whatever
+  the shack has mixed in (sub receiver, sidetone, media deck). A separate
+  per-client audio bus is future work.
+* A client's own spectrum window (revision 7) is a view inside the span
+  the radio samples. It cannot look outside it, and there is one analyzer:
+  its resolution is the shack's FFT, whatever the window.
 * No cloud relay or accounts: LAN, the operator's VPN, or their own
   port-forward — the same trust model as Hermit Remote.

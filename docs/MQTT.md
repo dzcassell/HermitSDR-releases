@@ -87,6 +87,8 @@ Modes that are published today:
 | `rtty` | The RTTY decoder's print, one message per line (see below). |
 | `cw_skimmer` | The CW skimmer's rows (SKIM), one message per row as its text changes (see below). |
 | `rds` | The broadcast-FM station's RDS name and text, when they change. |
+| `acars` | Each whole ACARS message heard on VHF, from the Aircraft Messages log (multi-block messages are sent once, assembled). |
+| `hfdl_acars` | Each ACARS message carried by HFDL, from the same log. |
 
 Only off-air decodes are published: a time-machine rewind or a file replay
 publishes nothing.
@@ -222,6 +224,8 @@ keep-alive runs out (brokers allow one and a half times that).
 | `aprs` | `destination`, `path`, `summary`, and `latitude` / `longitude` when the packet has a position. `text` is the raw packet. |
 | `ale` | `type` (`TIS`, `TWAS`, `TO`, …), `sounding` (`true` / `false`), `golay_errors` |
 | `navtex` | `header`, `subject`, `transmitter`, `serial`, `complete` (`true` / `false`), `errors` |
+| `ais` | `mmsi` (nine digits), `type` (AIS message number), `channel` (`A` / `B`), and when the message or the station's row has them: `name`, `latitude`, `longitude`, `sog_kn`, `cog_deg`, `heading_deg`, `destination`. `call` is the ship's radio call sign once heard; `frequency_hz` is the AIS channel. See `docs/AIS.md`. |
+| `acars`, `hfdl_acars` | `link` (`VHF` / `HFDL`), `label`, `label_name`, `flight`, `mode`, `block_id`, `message_number`, `ack`, `direction` (`uplink` / `downlink`), `blocks`, `complete` (`true` / `false`). `call` is the aircraft registration. See [ACARS.md](ACARS.md). |
 
 ### `spot/needed`
 

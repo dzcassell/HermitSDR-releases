@@ -268,8 +268,9 @@ and has none of these gestures.
 * **Audio**: the 20 ms PCM frames are placed on the Web Audio clock as 12 kHz
   `AudioBuffer`s (the browser resamples), 90 ms of lead, late frames drop
   the backlog instead of drifting. Volume and mute on the page are local to
-  that browser; the shack's own volume/mute still shape the downlink and
-  the page says so when the shack is muted. Stopping or disconnecting cancels
+  that browser; the downlink is taken ahead of the shack's own volume and
+  mute, so muting the shack does not silence the page (corrected
+  2026-11-27; the page notes when the shack is muted). Stopping or disconnecting cancels
   already queued audio. Stream gaps and excessive backlog cancel old sources
   before rescheduling, with bounded pending playback. Unsupported audio rates or
   frames outside the documented 12 kHz / at most 20 ms profile are ignored.
@@ -380,9 +381,9 @@ Nothing on the server was loosened for the browser.
   would then be typed into that page. Keep **Allow LAN** off outside your
   own network; for remote use, reach the shack through your own VPN —
   the same trust model as Hermit Remote. No relay or account exists.
-* Volume and mute on the page are local; the downlink is the shack's
-  speaker mix, so the operator's volume and mute apply to listeners too
-  (`docs/ControlAPI.md` § 12).
+* Volume and mute on the page are local; the downlink is the receiver's
+  final mix ahead of the shack speaker's volume and mute, so the operator's
+  volume and mute do not apply to listeners (`docs/ControlAPI.md` § 12).
 
 ## Limits and policy
 

@@ -24,6 +24,19 @@ decoded-message classification.
 | Threshold | −160–0 dBm, default −100; choose above the measured channel noise floor |
 | Hysteresis | 1–30 dB, default 6; an active hold continues above threshold minus this amount |
 | Hang | 0.1–30 s, default 1; time below the lower threshold before leaving an active channel |
+| Hold on voice only | off by default; hold only while the Voice squelch hears speech |
+
+**Hold on voice only.** With this on, a channel above the threshold holds the
+scanner only when the [Voice squelch](VoiceSquelch.md) reports speech, so a
+steady carrier, noise, FT8 or RTTY is passed after the dwell time. A hold
+taken on speech ends one hang time after the speech stops, even if a carrier
+stays. Choose **Voice** as the squelch first: the scanner reads that
+detector and does not switch it on. Each hop starts with the detector
+closed, and it needs up to about 0.3 s of speech to open, so keep the dwell
+at 1 s or more. In a mode the voice squelch does not cover (CW, data, DSB,
+FM), or with the Voice squelch off, the list holds on receive power as
+before and the status line says so. Tested on generated speech and
+carriers only; not yet used on the air.
 
 All values must be finite and inside their bounds. Start uses the saved list.
 The list's ID order is used for scanning. Save takes the selected memories in
