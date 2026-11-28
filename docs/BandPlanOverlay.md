@@ -103,10 +103,12 @@ it with any text editor:
 | R2 | IARU Region 2 Band Plan, September 2020 (plus 2 m and 70 cm) | 160 m – 10 m, 2 m, 70 cm, including 60 m |
 | R3 | IARU Region 3 Band Plan, R3-004 rev. 2, November 2024 (plus 2 m and 70 cm) | 160 m – 10 m, 2 m, 70 cm, including 60 m |
 | Broadcast | ITU broadcasting allocations for the plan's region | Long wave (Region 1), medium wave, 120 m – 11 m |
+| QO-100 | AMSAT-DL QO-100 NB Transponder Bandplan and Operating Guidelines, read 2026-11-27 (#483; shown in every plan, see `ReferenceBeaconLock.md`) | Narrowband transponder downlink, 10489.500 – 10490.000 MHz |
 
 The IARU plans are voluntary and national rules differ; check your own licence
 conditions. Not bundled: the 2200 m and 630 m bands, 6 m for the IARU plans,
-bands above 70 cm, and national plans other than the US.
+bands above 70 cm other than the QO-100 downlink, and national plans other
+than the US.
 
 Three places where the published Region 3 tables contradict themselves are
 drawn as follows:

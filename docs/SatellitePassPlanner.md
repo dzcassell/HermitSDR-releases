@@ -184,7 +184,15 @@ Enter the satellite name and, if known, its uplink/downlink code. ADIF export
 writes `PROP_MODE=SAT`, `SAT_NAME` and the optional `SAT_MODE`. Viewing a pass or
 previewing a Doppler correction does not mark any contact as satellite.
 
+The three fields are written as a set, in ADIF exports, logbook uploads and
+logger broadcasts, and only for a satellite contact. An imported contact that
+names a satellite but has no `PROP_MODE` is treated as a satellite contact and
+is written with `PROP_MODE=SAT`. A contact with another propagation mode, or
+with only a `SAT_MODE`, is written without `SAT_NAME` and `SAT_MODE`. The stored
+log entry is not changed; open the contact to correct it.
+
 In **Worked & Confirmed**, **Satellite grids** counts explicitly tagged
-satellite contacts separately from **Grids**. Both use the selected grid
+satellite contacts separately from **Grids**, including an imported contact
+that names a satellite without `PROP_MODE`. Both use the selected grid
 precision, scope and confirmation source. An imported satellite confirmation
 must name the same satellite before it can confirm the contact.

@@ -5,16 +5,20 @@ that sits next to an RTL-SDR dongle (often on a Raspberry Pi at the antenna)
 and sends its samples over the network. The dongle does not have to be
 plugged into the Mac.
 
-This is the first part of "network receivers" (#472). KiwiSDR / Web-888 and
-SpyServer are not built yet.
+This is the first part of "network receivers" (#472). KiwiSDR / Web-888 is
+a separate connect scheme (`kiwi://…`, see [KiwiSDR.md](KiwiSDR.md)).
+SpyServer is not built yet.
 
 It is **receive-only**. No transmitter object exists for an rtl_tcp server:
 ARM, PTT, TUNE and drive stay closed.
 
-> **Not yet checked against a real server.** Everything below was built from
-> public descriptions of the protocol and tested against a loopback server
-> inside HermitSDR's own test suite. No real rtl_tcp server or RTL-SDR dongle
-> has been connected. Expect to find differences; please report them.
+> **Heard on a local server (2026-11-27).** Pre-review build was heard live
+> against `rtl_tcp://127.0.0.1:1234` with a Realtek RTL2838UHIDIR (`SN:
+> 00000001`, R820T tuner) at `1.536 MS/s` for normal receive and `2.0 MS/s`
+> (`2000000.052982 Hz` reported by the dongle) while `Decode ADS-B` was active
+> at `1090 MHz`, including live 1090 MHz decodes. Post-review changes are tested
+> against the loopback server and synthetic IQ only. Expect differences; please
+> report them.
 
 ## Connect
 
@@ -47,9 +51,12 @@ answer (up to 2 s to look up a name, 4 s to connect, 3 s for the greeting).
   24 MHz to 1.7 GHz. For HF, turn on **Direct sampling** (below) or use an
   upconverter. HermitSDR lets you tune from 10 kHz to 2.2 GHz and leaves the
   limits to the server.
-- **Sample rates** 48 kHz to 1536 kHz. The server always runs at 1.536 MS/s
+- **Sample rates** 48 kHz to 1536 kHz. The server usually runs at 1.536 MS/s
   and the Mac decimates. The samples are only 8-bit, and every halving of the
   rate recovers about 3 dB of dynamic range, so narrower spans are cleaner.
+  **Reduced network rate** asks for 240 kS/s at 48 kHz or 288 kS/s at 96 kHz.
+  While ADS-B is on, the dongle stays at 2.0 MS/s and that switch does not
+  lower the rate.
 - **Network load** is about 3 MB/s (25 Mbit/s) at 1.536 MS/s. On Wi-Fi or a
   remote link turn on **Reduced network rate**.
 - **The S-meter is not calibrated** for this receiver: the tuner's gain in dB
@@ -70,7 +77,7 @@ remembered per server address.
 | Correction | Crystal error in ppm, −200 to +200. |
 | Swap I/Q | For a mirrored spectrum. |
 | Remove DC | Removes the spike in the middle of the span. |
-| Reduced network rate | At 48 and 96 kHz asks the server for 240 or 288 kS/s: about a sixth of the traffic, roughly 8 dB less dynamic range. |
+| Reduced network rate | At 48 and 96 kHz asks the server for 240 or 288 kS/s: about a sixth of the traffic, roughly 8 dB less dynamic range. While ADS-B is on, the dongle stays at 2.0 MS/s. |
 | Bias tee | DC on the dongle's antenna jack. See below. |
 
 Everything is off or automatic until you change it.

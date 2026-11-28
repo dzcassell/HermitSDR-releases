@@ -107,7 +107,7 @@ The log is kept in memory only; it is not written to disk unless you export.
 | Acknowledges | The block ID of the block this one acknowledges, or NAK when it acknowledges nothing. |
 | Label | Two characters saying what kind of message it is. |
 | Block ID | One character. Digits `0`–`9` are downlinks (aircraft to ground); letters are uplinks. |
-| Message number | Downlinks only: four characters at the start of the text, for example `M01A`. The last one counts the blocks of one message: A, B, C … |
+| Message number | Downlinks only: four characters at the start of the text, for example `M01A`. When the last one is a letter it counts the blocks of one message: A, B, C … Some aircraft send another form, such as four digits (minutes and seconds past the hour), which carries no block count. |
 | Flight | Downlinks only: the six characters after the message number, for example `UA0123`. |
 
 The message number and flight are cut from the text only when the block is a
@@ -121,14 +121,18 @@ message sent in several blocks is shown **once**, when its last block
 arrives, with the texts joined.
 
 - Blocks of one downlink share the first three characters of the message
-  number and step the fourth; blocks of an uplink follow one another for the
-  same aircraft and label.
+  number and step the fourth. An uplink has no message number: its blocks
+  are joined, for the same aircraft and label, while the block ID steps by
+  one (`A`…`Z`, `a`…`z`, then `A` again). An uplink with any other block ID
+  is a different message; the unfinished one is then shown as partial.
 - A block that is sent again (no acknowledgement reached the sender) is
   dropped and counted as a repeat. So is a whole single-block message heard
   again within 60 seconds.
-- A message is marked **partial** when a block is missing: its first blocks
-  were never heard, a block in the middle was lost, or the rest did not arrive
-  within 5 minutes.
+- A message is marked **partial** only when a block is known to be missing:
+  the first block heard carried a block letter after A, a block in the middle
+  was lost, or the rest did not arrive within 5 minutes. A downlink whose
+  number has no block letter is joined like an uplink, by its block ID
+  (`0`…`9`, then `0` again), and is not called partial for its number alone.
 - Bounds: 64 unfinished messages at a time (the oldest is released as partial
   when one more starts), 16 blocks and 4,096 characters per message.
 

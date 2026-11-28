@@ -7,6 +7,45 @@ at `001` each day and increments. Earlier releases used `X.YZ` (`Y` =
 feature, `Z` = bugfix, `X` = major milestone; `2.00` was transmit). Every
 batch of improvements ships as a new version.
 
+## [2026.1128_001] — 2026-11-28
+
+Hover help on every control, a fix for the freeze when connecting with a
+Multi-Output audio device, and three contributions from rezolytics finished
+with review fixes: the audio output start, an ADS-B decoder and a KiwiSDR
+network receiver. The Multi-Output check was run on the contributor's Mac
+Studio (refused in 0.41 s, audio on the default output in 0.78 s, no stuck
+audio threads). The hover help was checked on screen in one place. The ADS-B
+position fixes, the KiwiSDR fixes and the beacon lock are tested on generated
+signals and loopback servers only. Nothing changes what is transmitted.
+
+### Added
+
+- **1090 MHz Mode S / ADS-B receive decoder** (`Decode ▸ Text & Messaging ▸ ADS-B (1090 MHz)`, [docs](docs/ADSB.md), PR #542 by rezolytics, part of #472): decodes aircraft address, callsign, altitude, speed, track, vertical rate, squawk and position from an rtl_tcp dongle (2.0 MS/s) or a single-tuner SDRplay (3.072 MS/s), without changing the panadapter or audio rate. Aircraft table and message list with CSV and JSON export, an ADS-B layer with trails on Stations Heard, and ADS-B in Decode a Recording for IQ files of 1.9 MS/s or more. A position is plotted only after an even and an odd message within 10 s; a single message is resolved against that aircraft's own fix only while the fix is under 300 s old. Receive only. The contributor heard live aircraft once with an RTL2838 / R820T dongle on the first version; everything changed since, the SDRplay path and recording decode are tested on generated signals only. Check plotted positions against a known source before relying on them.
+- **KiwiSDR / Web-888 network receiver** (#472, [docs](docs/KiwiSDR.md), PR #544 by rezolytics): type `kiwi://host:port` in Connect for a receive-only channel of about 12 kHz, resampled to 48 kHz. A password is typed once as `kiwi://:password@host:port` and kept in the Keychain; the saved address never contains it. A KiwiSDR is treated as a shared public receiver: tuning is sent at most eight times a second, the scanners, Recording Schedule and Receive Watch refuse to run on it, and a session nobody is using ends after 60 minutes (Settings ▸ Hardware ▸ KiwiSDR, 10 minutes to 8 hours). A kick, a time limit, a lost connection or audio HermitSDR cannot use disconnects with the reason shown. The contributor connected to one public receiver once; everything since is tested against a loopback server only.
+- **Hover help everywhere** (owner request): every view file was audited and about 1,900 tips were added or rewritten, so each button, switch, slider, field and menu explains what it does, with its units, range and side effects. Fixed-choice menus and segmented controls explain each option when the pointer rests on it in the open menu, for example Shared processing / Follow mode, noise blanker, AGC speed, noise reduction, receive mode keys, SAM sideband, filter board, TX source, voice profile, compressor topology and keyer mode. Transmit tips state exactly when RF is sent and when a control does not arm or key.
+- **Reference Beacon Lock** (Radio menu, #483, [docs](docs/ReferenceBeaconLock.md)): follow a drifting converter. A beacon of known frequency attached to a transverter profile is measured from the span the radio is already sampling and the receiver is shifted by its offset, continuously. Lock state, correction, drift rate, a 24-hour chart with CSV export; holds on loss and glides back on relock; a change larger than the jump limit waits for you to confirm it. QO-100 preset with the three beacons (frequencies taken from the AMSAT-DL band plan), the narrowband band plan on the strip and a receive-only 9750 MHz LNB profile. Receive only: it never changes a profile's stored offset, the transmit frequency or the TX policy, and it is off while a transmit-enabled profile is armed or the transmitter is keyed. Off by default. The panadapter scale is not yet shifted by the correction, and only the main receiver is corrected. Tested on generated signals only.
+
+### Fixed
+
+- **Connecting with a Multi-Output or stalled audio device no longer freezes the app** (#512, PR #524 by rezolytics). The audio output now starts off the main thread; a device that does not respond within 8 seconds is abandoned for a plain one, with a notice, and is remembered between launches so the next launch goes straight to the fallback (pick another output and then that one again to retry it). A Multi-Output device (Audio MIDI Setup's stacked kind) is recognised before starting and is not used as the receive output. The fallback is the Mac's default output if that is a plain device, then the built-in speakers. The SUB receiver's output and independent receiver windows report the same. The contributor's listening test on a Mac Studio passed, and his rerun confirmed the Multi-Output check on that machine; the five-times device switch and quit-and-relaunch cases were reported as passing but not captured in diagnostics. An ordinary 16-channel aggregate that starts but is silent is still open; each start now records the device and mixer formats in the audio diagnostics.
+- GMDSS DSC: End-of-Sequence symbols 117 (RQ, acknowledgement required) and 122 (BQ, acknowledgement) were swapped in the protocol constants, detail labels and documentation (#545).
+- rtl_tcp receive stutter: the live sample queue for rtl_tcp now holds 48 batches (about one 256 KiB read from the dongle) instead of 8, so a burst from the network is no longer dropped. Other radios keep 8. Found by rezolytics against a real RTL2838 dongle.
+- Hover tips now appear in windows that had none: a window without a bubble host showed no hover tip at all (MAGNET Emergency, Band Geology, Band DVR, FM DX Catalog, Search Scan, Space Weather and others). A hover tip falls back to the standard tooltip there.
+- A control with its own hover tip inside a row or tile that also has one now shows its own tip (the BYPASS latch in TX Audio Chain, CESSB in the Comp row, the EQ faders and others showed the row's tip or nothing).
+- HFDL skimmer: the channel filter is now sized for the span. At 384 kHz and wider it was too short, losing about 4 dB of sensitivity at 384 kHz, 10 dB at 1.536 MHz and 13 dB at 3.072 MHz and letting nearby signals fold onto each channel. Tested on generated signals only.
+- HFDL: a System Table broadcast heard off air is shown but no longer replaces the bundled station table, until its layout has been checked against real captures ([docs](docs/HFDL.md)).
+- Replay Decode Trials: HFDL Skimmer is offered only for non-inverted IQ recordings, like ALE Skimmer, and no longer fails with an ALE error.
+- Duwalami: when the MODEM73 decoder falls behind and audio is dropped, it restarts cleanly at the gap and Decoder Activity notes how much audio was lost.
+- SDRplay: the helper switches antenna power (Bias-T) off itself before it exits on disconnect or when the app quits (not yet checked on the hardware).
+- FTDX10: the radio no longer drops out of the Connect list while it is connected. Discovery no longer tries to look up a saved Airspy, SDRplay or FTDX10 address on the network.
+- Logbook: `PROP_MODE=SAT`, `SAT_NAME` and `SAT_MODE` are exported, uploaded and broadcast as a set, and only for a satellite contact; a contact that names a satellite without `PROP_MODE` counts under Satellite grids (#399).
+- AIS: switching Decode on while neither channel is inside the sampled span shows the tune hint instead of a stale status.
+- ACARS: an unrelated uplink no longer joins a pending multi-block uplink with the same registration and label; a downlink is marked incomplete only when a block is known to be missing.
+
+### Documentation
+
+- Duwalami: the guide and the message detail panel say that Verified means the text was signed by a key you marked verified, and that the time, recipient and mode are not signed, so a recorded message can be replayed and still show Verified.
+
 ## [2026.1127_003] — 2026-11-27
 
 A second batch the same day: two aircraft and ship decoders, the iPad
